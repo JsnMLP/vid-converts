@@ -25,23 +25,38 @@
   text-decoration: none;
 }
 
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.userEmail {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
 .signout {
   font-size: 14px;
   color: var(--text-muted);
-  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
   transition: color 0.2s;
+  padding: 0;
 }
 
 .signout:hover { color: var(--text-primary); }
 
 .main {
-  max-width: 900px;
+  max-width: 860px;
   margin: 0 auto;
   padding: 60px 24px;
 }
 
 .header {
-  margin-bottom: 48px;
+  margin-bottom: 40px;
 }
 
 .header h1 {
@@ -54,52 +69,6 @@
 .header p {
   font-size: 16px;
   color: var(--text-secondary);
-}
-
-.uploadPlaceholder {
-  background: var(--bg-card);
-  border: 1.5px dashed var(--teal-border);
-  border-radius: 20px;
-  padding: 60px 40px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 60px;
-}
-
-.uploadIcon {
-  width: 88px;
-  height: 88px;
-  background: var(--teal-glow);
-  border: 1px solid var(--teal-border);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 8px;
-}
-
-.uploadPlaceholder h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.uploadPlaceholder p {
-  font-size: 15px;
-  color: var(--text-secondary);
-}
-
-.note {
-  margin-top: 12px;
-  background: var(--teal-glow);
-  border: 1px solid var(--teal-border);
-  color: var(--teal) !important;
-  font-size: 13px !important;
-  padding: 10px 20px;
-  border-radius: 8px;
 }
 
 .reportsSection h3 {
@@ -120,4 +89,10 @@
 .emptyState p {
   font-size: 15px;
   color: var(--text-muted);
+}
+
+@media (max-width: 600px) {
+  .nav { padding: 0 20px; }
+  .userEmail { display: none; }
+  .main { padding: 40px 16px; }
 }
