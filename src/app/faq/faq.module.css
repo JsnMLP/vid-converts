@@ -1,0 +1,144 @@
+.main {
+  min-height: 100vh;
+  padding-top: 64px;
+  position: relative;
+}
+
+.gridBg {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(45,212,191,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45,212,191,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.header {
+  text-align: center;
+  padding: 72px 0 56px;
+  position: relative;
+  z-index: 1;
+}
+
+.title {
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.subtitle {
+  font-size: 18px;
+  color: var(--text-secondary);
+}
+
+.list {
+  max-width: 720px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.itemOpen {
+  border-color: var(--teal-border);
+}
+
+.question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+  gap: 16px;
+}
+
+.question:hover {
+  color: var(--teal);
+}
+
+.chevron {
+  font-size: 20px;
+  color: var(--teal);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.answer {
+  padding: 0 24px 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.answer p {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.cta {
+  text-align: center;
+  padding: 60px 0 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.cta p {
+  font-size: 16px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.ctaLink {
+  color: var(--teal);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  text-decoration: none;
+}
+
+.ctaLink:hover { text-decoration: underline; }
+
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 28px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  position: relative;
+  z-index: 1;
+}
+
+.by {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.by a { color: var(--teal); }

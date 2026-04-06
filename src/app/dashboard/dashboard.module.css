@@ -1,0 +1,123 @@
+.page {
+  min-height: 100vh;
+  background: var(--bg-void);
+}
+
+.nav {
+  height: 64px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  background: rgba(8,12,15,0.9);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.signout {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.signout:hover { color: var(--text-primary); }
+
+.main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 24px;
+}
+
+.header {
+  margin-bottom: 48px;
+}
+
+.header h1 {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.header p {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+.uploadPlaceholder {
+  background: var(--bg-card);
+  border: 1.5px dashed var(--teal-border);
+  border-radius: 20px;
+  padding: 60px 40px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 60px;
+}
+
+.uploadIcon {
+  width: 88px;
+  height: 88px;
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.uploadPlaceholder h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.uploadPlaceholder p {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+.note {
+  margin-top: 12px;
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  color: var(--teal) !important;
+  font-size: 13px !important;
+  padding: 10px 20px;
+  border-radius: 8px;
+}
+
+.reportsSection h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+}
+
+.emptyState {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 48px;
+  text-align: center;
+}
+
+.emptyState p {
+  font-size: 15px;
+  color: var(--text-muted);
+}
