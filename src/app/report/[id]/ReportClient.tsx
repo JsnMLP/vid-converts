@@ -174,7 +174,14 @@ function ResourceLinks({ category, tier }: { category: string; tier: string }) {
 }
 
 export default function ReportClient({ report }: Props) {
-  const data = report.report_data
+  const data = {
+  ...report.report_data,
+  missingEvidence: Array.isArray(report.report_data.missingEvidence)
+    ? report.report_data.missingEvidence
+    : report.report_data.missingEvidence
+    ? [report.report_data.missingEvidence]
+    : []
+}
   const isPaid = report.tier === 'complete' || report.tier === 'premium'
   const date = new Date(report.created_at).toLocaleDateString('en-US', {
     month: 'long', day: 'numeric', year: 'numeric'
