@@ -31,6 +31,8 @@ export default function DashboardClient({ user }: Props) {
   const plan = searchParams.get('plan')
   const [reports, setReports] = useState<Report[]>([])
   const [loadingReports, setLoadingReports] = useState(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -47,9 +49,34 @@ export default function DashboardClient({ user }: Props) {
       .select('id, video_name, niche, tier, created_at, report_data')
       .order('created_at', { ascending: false })
       .limit(20)
-
     setReports(data || [])
     setLoadingReports(false)
+  }
+
+  const handleDeleteClick = (e: React.MouseEvent, reportId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setConfirmDeleteId(reportId)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmDeleteId) return
+    setDeletingId(confirmDeleteId)
+    setConfirmDeleteId(null)
+    try {
+      const res = await fetch('/api/reports/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reportId: confirmDeleteId }),
+      })
+      if (res.ok) {
+        setReports(prev => prev.filter(r => r.id !== confirmDeleteId))
+      }
+    } catch (err) {
+      console.error('Delete failed:', err)
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   const formatDate = (dateStr: string) => {
@@ -62,6 +89,18 @@ export default function DashboardClient({ user }: Props) {
     if (score >= 70) return 'var(--teal)'
     if (score >= 45) return '#f59e0b'
     return '#f87171'
+  }
+
+  const getTierLabel = (tier: string) => {
+    if (tier === 'premium') return '⭐ Premium'
+    if (tier === 'complete') return '✦ Complete'
+    return 'Free'
+  }
+
+  const getTierClass = (tier: string) => {
+    if (tier === 'premium') return styles.reportTierPremium
+    if (tier === 'complete') return styles.reportTierComplete
+    return ''
   }
 
   return (
@@ -92,7 +131,7 @@ export default function DashboardClient({ user }: Props) {
 
         <div className={styles.header}>
           <h1>Hey {firstName} 👋</h1>
-          <p>Upload a video to get your evidence-based conversion audit.</p>
+          <p>Upload a video or paste a URL to get your evidence-based conversion audit.</p>
         </div>
 
         <UploadZone userId={user.id} />
@@ -102,7 +141,9 @@ export default function DashboardClient({ user }: Props) {
           <div className={styles.reportsSectionHeader}>
             <h3>Your reports</h3>
             {reports.length > 0 && (
-              <span className={styles.reportsCount}>{reports.length} report{reports.length !== 1 ? 's' : ''}</span>
+              <span className={styles.reportsCount}>
+                {reports.length} report{reports.length !== 1 ? 's' : ''}
+              </span>
             )}
           </div>
 
@@ -112,36 +153,73 @@ export default function DashboardClient({ user }: Props) {
             </div>
           ) : reports.length === 0 ? (
             <div className={styles.emptyState}>
-              <p>No reports yet. Upload your first video above to get started.</p>
+              <div className={styles.emptyIcon}>🎬</div>
+              <h4>No reports yet</h4>
+              <p>Upload your first video above to get your evidence-based conversion audit.</p>
             </div>
           ) : (
             <div className={styles.reportsList}>
               {reports.map((report) => {
                 const score = report.report_data?.overallScore || 0
+                const isDeleting = deletingId === report.id
                 return (
-                  <Link key={report.id} href={`/report/${report.id}`} className={styles.reportCard}>
-                    <div className={styles.reportScore} style={{ color: getScoreColor(score) }}>
-                      {score}
-                      <span>/100</span>
-                    </div>
-                    <div className={styles.reportInfo}>
-                      <strong>{report.video_name}</strong>
-                      <span>{report.niche}</span>
-                    </div>
-                    <div className={styles.reportMeta}>
-                      <span className={`${styles.reportTier} ${report.tier !== 'free' ? styles.reportTierPaid : ''}`}>
-                        {report.tier}
-                      </span>
-                      <span className={styles.reportDate}>{formatDate(report.created_at)}</span>
-                    </div>
-                    <div className={styles.reportArrow}>→</div>
-                  </Link>
+                  <div key={report.id} className={`${styles.reportCardWrap} ${isDeleting ? styles.reportCardDeleting : ''}`}>
+                    <Link href={`/report/${report.id}`} className={styles.reportCard}>
+                      <div className={styles.reportScore} style={{ color: getScoreColor(score) }}>
+                        {score}
+                        <span>/100</span>
+                      </div>
+                      <div className={styles.reportInfo}>
+                        <strong>{report.video_name}</strong>
+                        <span>{report.niche}</span>
+                      </div>
+                      <div className={styles.reportMeta}>
+                        <span className={`${styles.reportTier} ${getTierClass(report.tier)}`}>
+                          {getTierLabel(report.tier)}
+                        </span>
+                        <span className={styles.reportDate}>{formatDate(report.created_at)}</span>
+                      </div>
+                      <div className={styles.reportArrow}>→</div>
+                    </Link>
+                    <button
+                      className={styles.deleteBtn}
+                      onClick={(e) => handleDeleteClick(e, report.id)}
+                      aria-label="Delete report"
+                      title="Delete report">
+                      {isDeleting ? (
+                        <span className={styles.deletingSpinner} />
+                      ) : (
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M1 3h12M5 3V2h4v1M2 3l1 9h8l1-9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
+                    </button>
+                  </div>
                 )
               })}
             </div>
           )}
         </div>
       </main>
+
+      {/* Delete confirmation modal */}
+      {confirmDeleteId && (
+        <div className={styles.modalOverlay} onClick={() => setConfirmDeleteId(null)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalIcon}>🗑</div>
+            <h3>Delete this report?</h3>
+            <p>This action cannot be undone. The report and all its data will be permanently removed.</p>
+            <div className={styles.modalActions}>
+              <button className={styles.modalCancel} onClick={() => setConfirmDeleteId(null)}>
+                Cancel
+              </button>
+              <button className={styles.modalConfirm} onClick={handleDeleteConfirm}>
+                Yes, delete it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -11,29 +11,31 @@ const plans = [
     monthlyPrice: 0,
     yearlyPrice: 0,
     description: 'Try it before you commit',
-    cta: 'Get started free',
+    cta: 'Start for free',
     ctaHref: '/',
     highlight: false,
     priceId: null,
     plan: null,
+    badge: null,
     features: [
-      'Overall score + 4 rubric scores',
+      '2 video analyses per month',
+      'Overall conversion score',
+      '4 of 8 rubric scores',
       '2 strengths identified',
       '3 conversion blockers',
       '3 action checklist items',
       '2 transcript highlights',
       '2 frame observations',
-      '3 measurement guidance items',
     ],
     locked: [
-      'Full rubric breakdown (8 categories)',
+      'Full rubric breakdown (all 8 scores)',
       'All strengths & blockers',
       'Full action checklist',
-      'Transcript + frame deep-dive',
-      'Rewrite My Script',
-      'Before/after comparison',
-      'Competitor benchmark',
-      'Email PDF delivery',
+      '1 expert resource link per finding',
+      '1 "How To" article per finding',
+      'Downloadable PDF report',
+      'Script rewrite tools',
+      'A/B test variants',
     ],
   },
   {
@@ -45,53 +47,85 @@ const plans = [
     highlight: false,
     priceId: process.env.NEXT_PUBLIC_STRIPE_COMPLETE_PRICE_ID,
     plan: 'complete',
+    badge: null,
     features: [
+      '10 video analyses per month',
       'Full rubric breakdown (all 8 scores)',
       'All strengths & blockers',
       'Full action checklist',
-      'All transcript highlights',
-      'All frame observations',
+      'All transcript highlights & frame observations',
       'Full measurement guidance',
-      'Email PDF report delivery',
-      'Before/after comparison mode',
+      '1 expert YouTube resource per finding',
+      '1 "How To" article link per finding',
+      'Downloadable PDF report',
+      'Social media video add-on available (discounted)',
     ],
     locked: [
-      'Rewrite My Script (AI full script)',
-      'Competitor benchmark mode',
+      '2 expert resources per finding',
+      'Script rewrite tool (AI full rewrite)',
+      'A/B test variants',
+      'Before/after comparison mode',
+      '1 social media video/month included',
     ],
   },
   {
     name: 'Premium',
     monthlyPrice: 40,
     yearlyPrice: 32,
-    description: 'The full conversion system',
+    description: 'Your complete conversion system',
     cta: 'Start Premium',
     highlight: true,
     priceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID,
     plan: 'premium',
+    badge: 'Most Popular',
     features: [
+      'Unlimited video analyses',
       'Everything in Complete',
-      'Rewrite My Script — full AI rewrite',
+      '2 expert YouTube resources per finding',
+      '2 "How To" article links per finding',
+      'Script rewrite tool — full AI rewrite',
       'Hook, offer & CTA rewrites',
-      'Competitor benchmark mode',
+      'A/B test variants (2 versions)',
       'Before/after comparison mode',
       'Priority analysis queue',
-      'Email PDF delivery (full report)',
+      '1 × 60-second social media video/month included',
+      'Up to 3 business day turnaround on video',
     ],
     locked: [],
   },
 ]
 
+const addOn = {
+  name: 'Social Media Video Add-on',
+  description: 'We edit your footage into a polished 60-second social media video — ready to post.',
+  completePrice: 47,
+  standardPrice: 97,
+  turnaround: 'Up to 5 business days',
+  premiumNote: '1 × 60-second social media video/month included in Premium',
+  details: [
+    '60-second edited video optimised for your platform',
+    'Captions, cuts, and colour grading included',
+    'Submit raw footage + your audit report',
+    'Receive a download link when ready',
+    'Available as many times as you need (pay per video)',
+    'Complete members: discounted rate of $47/video',
+  ],
+}
+
 export default function PricingPage() {
   const [annual, setAnnual] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
+  const [showAddOn, setShowAddOn] = useState(false)
 
-  const handleUpgrade = async (priceId: string | null | undefined, plan: string | null | undefined) => {
+  const handleUpgrade = async (
+    priceId: string | null | undefined,
+    plan: string | null | undefined,
+    ctaHref?: string
+  ) => {
     if (!priceId || !plan) {
-      window.location.href = '/'
+      window.location.href = ctaHref || '/'
       return
     }
-
     setLoading(plan)
     try {
       const response = await fetch('/api/stripe/checkout', {
@@ -99,9 +133,7 @@ export default function PricingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ priceId, plan }),
       })
-
       const data = await response.json()
-
       if (data.url) {
         window.location.href = data.url
       } else if (data.error === 'Unauthorized') {
@@ -109,7 +141,7 @@ export default function PricingPage() {
       } else {
         alert('Something went wrong. Please try again.')
       }
-    } catch (error) {
+    } catch {
       alert('Something went wrong. Please try again.')
     } finally {
       setLoading(null)
@@ -133,14 +165,12 @@ export default function PricingPage() {
             <div className={styles.toggle}>
               <button
                 className={`${styles.toggleBtn} ${!annual ? styles.toggleActive : ''}`}
-                onClick={() => setAnnual(false)}
-              >
+                onClick={() => setAnnual(false)}>
                 Monthly
               </button>
               <button
                 className={`${styles.toggleBtn} ${annual ? styles.toggleActive : ''}`}
-                onClick={() => setAnnual(true)}
-              >
+                onClick={() => setAnnual(true)}>
                 Annually
                 <span className={styles.saveBadge}>Save 20%</span>
               </button>
@@ -149,12 +179,10 @@ export default function PricingPage() {
 
           <div className={styles.grid}>
             {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={`${styles.card} ${plan.highlight ? styles.cardHighlight : ''}`}
-              >
-                {plan.highlight && (
-                  <div className={styles.popularBadge}>Most Popular</div>
+              <div key={plan.name}
+                className={`${styles.card} ${plan.highlight ? styles.cardHighlight : ''}`}>
+                {plan.badge && (
+                  <div className={styles.popularBadge}>{plan.badge}</div>
                 )}
 
                 <div className={styles.cardHeader}>
@@ -175,9 +203,8 @@ export default function PricingPage() {
 
                 <button
                   className={`${styles.cta} ${plan.highlight ? styles.ctaPrimary : styles.ctaSecondary}`}
-                  onClick={() => handleUpgrade(plan.priceId, plan.plan)}
-                  disabled={loading === plan.plan}
-                >
+                  onClick={() => handleUpgrade(plan.priceId, plan.plan, (plan as any).ctaHref)}
+                  disabled={loading === plan.plan}>
                   {loading === plan.plan ? (
                     <span className={styles.spinner} />
                   ) : plan.cta}
@@ -201,15 +228,74 @@ export default function PricingPage() {
             ))}
           </div>
 
+          {/* Social Media Video Add-on */}
+          <div className={styles.addOnSection}>
+            <button
+              className={styles.addOnToggle}
+              onClick={() => setShowAddOn(!showAddOn)}>
+              <span>🎬</span>
+              <div>
+                <strong>{addOn.name}</strong>
+                <span>{addOn.description}</span>
+              </div>
+              <span className={styles.addOnChevron}>{showAddOn ? '▲' : '▼'}</span>
+            </button>
+
+            {showAddOn && (
+              <div className={styles.addOnContent}>
+                <div className={styles.addOnPrices}>
+                  <div className={styles.addOnPrice}>
+                    <strong>Complete plan members</strong>
+                    <span className={styles.addOnPriceAmount}>
+                      ${addOn.completePrice}<small>/video</small>
+                    </span>
+                    <span className={styles.addOnPriceSub}>
+                      Discounted rate · {addOn.turnaround}
+                    </span>
+                  </div>
+                  <div className={`${styles.addOnPrice} ${styles.addOnPricePremium}`}>
+                    <strong>Premium plan members</strong>
+                    <span className={styles.addOnPriceAmount}>Included</span>
+                    <span className={styles.addOnPriceSub}>
+                      {addOn.premiumNote}
+                    </span>
+                  </div>
+                </div>
+                <div className={styles.addOnDetails}>
+                  {addOn.details.map((d, i) => (
+                    <div key={i} className={styles.addOnDetail}>
+                      <span>✓</span>
+                      <span>{d}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className={styles.addOnNote}>
+                  Social media video add-on launches soon.{' '}
+                  <Link href="/dashboard" className={styles.faqLink}>Join the waitlist →</Link>
+                </p>
+              </div>
+            )}
+          </div>
+
           <p className={styles.guarantee}>
-            No contracts. Cancel anytime. Questions? <Link href="/faq" className={styles.faqLink}>See our FAQ →</Link>
+            Questions?{' '}
+            <Link href="/faq" className={styles.faqLink}>See our FAQ →</Link>
+            {' · '}
+            <Link href="/terms" className={styles.faqLink}>Terms of Service</Link>
+            {' · '}
+            <Link href="/privacy" className={styles.faqLink}>Privacy Policy</Link>
           </p>
         </div>
       </main>
 
       <footer className={styles.footer}>
         <span>Vid Converts</span>
-        <span className={styles.by}>by <a href="https://digitalnuclei.com" target="_blank" rel="noopener noreferrer">Digital Nuclei</a></span>
+        <span className={styles.by}>
+          by{' '}
+          <a href="https://digitalnuclei.com" target="_blank" rel="noopener noreferrer">
+            Digital Nuclei
+          </a>
+        </span>
       </footer>
     </>
   )

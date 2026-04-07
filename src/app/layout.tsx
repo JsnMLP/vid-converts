@@ -1,17 +1,19 @@
 import type { Metadata } from 'next'
-import { Syne, DM_Sans } from 'next/font/google'
+import { Encode_Sans_Expanded, Mulish } from 'next/font/google'
 import './globals.css'
 
-const syne = Syne({
+const encodeSansExpanded = Encode_Sans_Expanded({
   subsets: ['latin'],
-  variable: '--font-syne',
-  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-encode',
+  weight: ['700', '800', '900'],
+  display: 'swap',
 })
 
-const dmSans = DM_Sans({
+const mulish = Mulish({
   subsets: ['latin'],
-  variable: '--font-dm-sans',
-  weight: ['300', '400', '500'],
+  variable: '--font-mulish',
+  weight: ['400', '600', '700', '800'],
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -26,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${syne.variable} ${dmSans.variable}`}>
+    <html lang="en" className={`${encodeSansExpanded.variable} ${mulish.variable}`}>
       <body>{children}</body>
     </html>
   )

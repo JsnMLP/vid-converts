@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { sendEmail } from '@/lib/email/resend'
+import { PaymentSuccessEmail } from '@/lib/email/templates/PaymentSuccessEmail'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
@@ -17,7 +19,6 @@ export async function POST(request: NextRequest) {
   const signature = request.headers.get('stripe-signature')!
 
   let event: Stripe.Event
-
   try {
     event = stripe.webhooks.constructEvent(
       body,
@@ -54,6 +55,30 @@ export async function POST(request: NextRequest) {
               status: 'active',
               updated_at: new Date().toISOString(),
             }, { onConflict: 'user_id' })
+
+          // Send payment success email (non-blocking)
+          try {
+            const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId)
+            const userEmail = userData?.user?.email
+            const userName =
+              userData?.user?.user_metadata?.full_name ??
+              userData?.user?.email?.split('@')[0] ??
+              'there'
+
+            if (userEmail) {
+              await sendEmail({
+                to: userEmail,
+                subject: `You're on the ${plan} plan — full access unlocked`,
+                react: PaymentSuccessEmail({
+                  userName,
+                  plan,
+                  dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+                }),
+              })
+            }
+          } catch (emailErr) {
+            console.error('[Email] Payment success email failed:', emailErr)
+          }
         }
         break
       }

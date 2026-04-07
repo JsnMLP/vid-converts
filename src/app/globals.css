@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
-
 :root {
   --teal: #2DD4BF;
   --teal-dim: #14b8a6;
@@ -15,8 +13,8 @@
   --text-primary: #F0F4F8;
   --text-secondary: #8B9AB0;
   --text-muted: #4A5568;
-  --font-display: var(--font-syne), 'Syne', sans-serif;
-  --font-body: var(--font-dm-sans), 'DM Sans', sans-serif;
+  --font-display: var(--font-encode), 'Encode Sans Expanded', sans-serif;
+  --font-body: var(--font-mulish), 'Mulish', sans-serif;
 }
 
 *, *::before, *::after {
@@ -25,9 +23,7 @@
   padding: 0;
 }
 
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
 body {
   background-color: var(--bg-void);
@@ -39,44 +35,24 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-deep); }
 ::-webkit-scrollbar-thumb { background: var(--teal-border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--teal-dim); }
 
-/* Typography */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; border: none; background: none; font-family: inherit; }
+input, textarea, select { font-family: inherit; }
 
-button {
-  cursor: pointer;
-  border: none;
-  background: none;
-  font-family: inherit;
-}
-
-input, textarea, select {
-  font-family: inherit;
-}
-
-/* Utility */
 .teal { color: var(--teal); }
-.container {
-  max-width: 1160px;
-  margin: 0 auto;
-  padding: 0 24px;
-}
+.container { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
 
-/* Animations */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -94,9 +70,7 @@ input, textarea, select {
   100% { transform: translateY(100vh); }
 }
 
-.fade-up {
-  animation: fadeUp 0.6s ease forwards;
-}
+.fade-up { animation: fadeUp 0.6s ease forwards; }
 .fade-up-delay-1 { animation-delay: 0.1s; opacity: 0; animation-fill-mode: forwards; animation-name: fadeUp; animation-duration: 0.6s; animation-timing-function: ease; }
 .fade-up-delay-2 { animation-delay: 0.2s; opacity: 0; animation-fill-mode: forwards; animation-name: fadeUp; animation-duration: 0.6s; animation-timing-function: ease; }
 .fade-up-delay-3 { animation-delay: 0.35s; opacity: 0; animation-fill-mode: forwards; animation-name: fadeUp; animation-duration: 0.6s; animation-timing-function: ease; }
