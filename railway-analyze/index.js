@@ -381,6 +381,10 @@ Respond ONLY with a valid JSON object matching this structure exactly:
 
   const raw = response.choices[0]?.message?.content || '{}'
   const parsed = JSON.parse(raw)
+  // Normalize missingEvidence to always be an array
+  if (typeof parsed.missingEvidence === 'string') {
+    parsed.missingEvidence = [parsed.missingEvidence]
+  }
   return { ...parsed, generatedAt: new Date().toISOString() }
 }
 
