@@ -14,6 +14,8 @@ const plans = [
     cta: 'Get started free',
     ctaHref: '/',
     highlight: false,
+    priceId: null,
+    plan: null,
     features: [
       'Overall score + 4 rubric scores',
       '2 strengths identified',
@@ -36,12 +38,13 @@ const plans = [
   },
   {
     name: 'Complete',
-    monthlyPrice: 20,
-    yearlyPrice: 16,
+    monthlyPrice: 25,
+    yearlyPrice: 20,
     description: 'Everything you need to improve',
     cta: 'Start Complete',
-    ctaHref: '/?plan=complete',
     highlight: false,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_COMPLETE_PRICE_ID,
+    plan: 'complete',
     features: [
       'Full rubric breakdown (all 8 scores)',
       'All strengths & blockers',
@@ -63,8 +66,9 @@ const plans = [
     yearlyPrice: 32,
     description: 'The full conversion system',
     cta: 'Start Premium',
-    ctaHref: '/?plan=premium',
     highlight: true,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID,
+    plan: 'premium',
     features: [
       'Everything in Complete',
       'Rewrite My Script — full AI rewrite',
@@ -80,6 +84,37 @@ const plans = [
 
 export default function PricingPage() {
   const [annual, setAnnual] = useState(false)
+  const [loading, setLoading] = useState<string | null>(null)
+
+  const handleUpgrade = async (priceId: string | null | undefined, plan: string | null | undefined) => {
+    if (!priceId || !plan) {
+      window.location.href = '/'
+      return
+    }
+
+    setLoading(plan)
+    try {
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId, plan }),
+      })
+
+      const data = await response.json()
+
+      if (data.url) {
+        window.location.href = data.url
+      } else if (data.error === 'Unauthorized') {
+        window.location.href = '/?signin=true'
+      } else {
+        alert('Something went wrong. Please try again.')
+      }
+    } catch (error) {
+      alert('Something went wrong. Please try again.')
+    } finally {
+      setLoading(null)
+    }
+  }
 
   return (
     <>
@@ -95,7 +130,6 @@ export default function PricingPage() {
               Start free. Upgrade when you need more depth.
             </p>
 
-            {/* Toggle */}
             <div className={styles.toggle}>
               <button
                 className={`${styles.toggleBtn} ${!annual ? styles.toggleActive : ''}`}
@@ -139,12 +173,15 @@ export default function PricingPage() {
                   <p className={styles.planDesc}>{plan.description}</p>
                 </div>
 
-                <Link
-                  href={plan.ctaHref}
+                <button
                   className={`${styles.cta} ${plan.highlight ? styles.ctaPrimary : styles.ctaSecondary}`}
+                  onClick={() => handleUpgrade(plan.priceId, plan.plan)}
+                  disabled={loading === plan.plan}
                 >
-                  {plan.cta}
-                </Link>
+                  {loading === plan.plan ? (
+                    <span className={styles.spinner} />
+                  ) : plan.cta}
+                </button>
 
                 <div className={styles.features}>
                   {plan.features.map((f) => (
