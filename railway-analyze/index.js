@@ -11,7 +11,6 @@ const { createClient } = require('@supabase/supabase-js')
 const { Resend } = require('resend')
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
 const ffprobePath = require('@ffprobe-installer/ffprobe')?.path || 'ffprobe'
-const ytDlp = require('yt-dlp-exec')
 
 const app = express()
 app.use(cors())
@@ -181,23 +180,22 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-async function downloadWithYtDlp(url, tempDir) {
-  const outputTemplate = path.join(tempDir, '%(title)s.%(ext)s')
-  try {
-    const result = await ytDlp(url, {
-      noPlaylist: true,
-      format: 'mp4/bestvideo+bestaudio/best',
-      output: outputTemplate,
-      print: 'filename',
+function downloadWithYtDlp(url, tempDir) {
+  return new Promise((resolve, reject) => {
+    const outputTemplate = path.join(tempDir, '%(title)s.%(ext)s')
+    execFile('yt-dlp', [
+      '--no-playlist',
+      '--format', 'mp4/bestvideo+bestaudio/best',
+      '--output', outputTemplate,
+      '--print', 'filename',
+      url
+    ], { timeout: 120000 }, (err, stdout, stderr) => {
+      if (err) return reject(new Error(`yt-dlp failed: ${stderr || err.message}`))
+      const videoPath = stdout.trim().split('\n').pop()
+      const title = path.basename(videoPath, path.extname(videoPath))
+      resolve({ videoPath, title })
     })
-    // result is the stdout string
-    const lines = (result || '').trim().split('\n')
-    const videoPath = lines[lines.length - 1].trim()
-    const title = path.basename(videoPath, path.extname(videoPath))
-    return { videoPath, title }
-  } catch (err) {
-    throw new Error(`yt-dlp failed: ${err.message}`)
-  }
+  })
 }
 
 function extractAudio(videoPath, audioPath) {
