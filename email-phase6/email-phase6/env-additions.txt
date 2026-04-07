@@ -1,5 +1,0 @@
-# Add these to your .env.local file:
-
-RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxx        # Get from resend.com → API Keys
-EMAIL_FROM=Vid Converts <noreply@yourdomain.com>  # Use your verified domain, or omit to use Resend's default
-NEXT_PUBLIC_APP_URL=http://localhost:3000         # Change to https://vidconverts.com on Vercel
