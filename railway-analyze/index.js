@@ -9,6 +9,8 @@ const multer = require('multer')
 const OpenAI = require('openai').default
 const { createClient } = require('@supabase/supabase-js')
 const { Resend } = require('resend')
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
+const ffprobePath = require('@ffprobe-installer/ffprobe')?.path || 'ffprobe'
 
 const app = express()
 app.use(cors())
@@ -198,7 +200,7 @@ function downloadWithYtDlp(url, tempDir) {
 
 function extractAudio(videoPath, audioPath) {
   return new Promise((resolve, reject) => {
-    execFile('ffmpeg', [
+    execFile(ffmpegPath, [
       '-i', videoPath,
       '-vn',
       '-ar', '16000',
@@ -258,7 +260,7 @@ async function extractFrameDescriptions(videoPath, tempDir) {
 
 function getVideoDuration(videoPath) {
   return new Promise((resolve, reject) => {
-    execFile('ffprobe', [
+    execFile(ffprobePath, [
       '-v', 'error',
       '-show_entries', 'format=duration',
       '-of', 'default=noprint_wrappers=1:nokey=1',
@@ -272,7 +274,7 @@ function getVideoDuration(videoPath) {
 
 function extractFrame(videoPath, timestamp, outputPath) {
   return new Promise((resolve, reject) => {
-    execFile('ffmpeg', [
+    execFile(ffmpegPath, [
       '-ss', String(timestamp),
       '-i', videoPath,
       '-frames:v', '1',
