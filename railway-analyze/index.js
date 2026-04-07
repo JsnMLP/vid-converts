@@ -188,6 +188,8 @@ function downloadWithYtDlp(url, tempDir) {
       '--format', 'mp4/bestvideo+bestaudio/best',
       '--output', outputTemplate,
       '--print', 'filename',
+      '--extractor-args', 'youtube:player_client=ios',
+      '--no-check-certificates',
       url
     ], { timeout: 120000 }, (err, stdout, stderr) => {
       if (err) return reject(new Error(`yt-dlp failed: ${stderr || err.message}`))
