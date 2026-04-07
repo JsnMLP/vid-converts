@@ -109,24 +109,24 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
       // Check if user has paid plan
       const { data: profile } = await supabase
         .from('profiles')
-        .select('plan')
+        .select('tier')
         .eq('id', user_id)
         .single()
 
-      isPaid = profile?.plan === 'complete' || profile?.plan === 'premium'
+      isPaid = profile?.tier === 'complete' || profile?.tier === 'premium'
 
       const { data: saved, error: saveError } = await supabase
         .from('reports')
         .insert({
           user_id,
-          video_title: videoTitle,
-          video_url: videoUrl || null,
+          video_name: videoTitle,
+          video_source: videoUrl ? 'url' : 'upload',
           niche,
           audience,
           goal,
-          overall_score: report.overallScore,
+          transcript: transcript || null,
           report_data: report,
-          is_paid: isPaid,
+          tier: isPaid ? 'complete' : 'free',
           created_at: new Date().toISOString(),
         })
         .select('id')
