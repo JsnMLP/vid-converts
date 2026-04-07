@@ -182,19 +182,21 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
 
 function downloadWithYtDlp(url, tempDir) {
   return new Promise((resolve, reject) => {
-    const outputTemplate = path.join(tempDir, '%(title)s.%(ext)s')
+    const outputTemplate = path.join(tempDir, 'video.%(ext)s')
     execFile('yt-dlp', [
       '--no-playlist',
       '--format', 'mp4/bestvideo+bestaudio/best',
       '--output', outputTemplate,
-      '--print', 'filename',
       '--extractor-args', 'youtube:player_client=ios',
       '--no-check-certificates',
       url
     ], { timeout: 120000 }, (err, stdout, stderr) => {
       if (err) return reject(new Error(`yt-dlp failed: ${stderr || err.message}`))
-      const videoPath = stdout.trim().split('\n').pop()
-      const title = path.basename(videoPath, path.extname(videoPath))
+      const files = require('fs').readdirSync(tempDir)
+      const videoFile = files.find(f => f.startsWith('video.'))
+      if (!videoFile) return reject(new Error('Downloaded video file not found'))
+      const videoPath = path.join(tempDir, videoFile)
+      const title = 'your video'
       resolve({ videoPath, title })
     })
   })
