@@ -27,24 +27,77 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://vidconverts.com'
 const EMAIL_FROM = process.env.EMAIL_FROM || 'hello@vidconverts.com'
 const ANALYSIS_MODEL = process.env.OPENAI_ANALYSIS_MODEL || 'gpt-4o'
 
-// ── YouTube cookies setup ─────────────────────────────────────────────────────
+// ── YouTube API setup ─────────────────────────────────────────────────────────
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
 const COOKIES_PATH = path.join(os.tmpdir(), 'yt-cookies.txt')
 
-async function setupCookies() {
-  const cookieData = process.env.YOUTUBE_COOKIES
-  if (cookieData) {
-    try {
-      await writeFile(COOKIES_PATH, cookieData, 'utf8')
-      console.log('YouTube cookies written to', COOKIES_PATH)
-    } catch (err) {
-      console.warn('Failed to write YouTube cookies:', err.message)
-    }
-  } else {
-    console.log('No YOUTUBE_COOKIES env var set — yt-dlp will run without cookies')
-  }
+// Extract YouTube video ID from any YouTube URL format
+function extractYouTubeId(url) {
+  try {
+    const parsed = new URL(url)
+    if (parsed.hostname === 'youtu.be') return parsed.pathname.slice(1).split('?')[0]
+    return parsed.searchParams.get('v')
+  } catch { return null }
 }
 
-setupCookies()
+function isYouTubeUrl(url) {
+  try {
+    const parsed = new URL(url)
+    return ['youtube.com', 'www.youtube.com', 'youtu.be'].includes(parsed.hostname)
+  } catch { return false }
+}
+
+// Fetch video title + captions from YouTube Data API v3 — no cookies, no bot detection
+async function getYouTubeData(videoId) {
+  const apiKey = YOUTUBE_API_KEY
+  if (!apiKey) throw new Error('YOUTUBE_API_KEY not set')
+
+  // Get video title
+  const videoRes = await fetch(
+    `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`
+  )
+  const videoData = await videoRes.json()
+  const title = videoData.items?.[0]?.snippet?.title || 'your video'
+
+  // Get available captions
+  const captionRes = await fetch(
+    `https://www.googleapis.com/youtube/v3/captions?part=snippet&videoId=${videoId}&key=${apiKey}`
+  )
+  const captionData = await captionRes.json()
+
+  // Find English captions (auto-generated or manual)
+  const captions = captionData.items || []
+  const englishCaption = captions.find(c =>
+    c.snippet.language === 'en' && c.snippet.trackKind !== 'asr'
+  ) || captions.find(c => c.snippet.language === 'en') || captions[0]
+
+  let transcript = null
+  if (englishCaption) {
+    // Download the caption track as plain text
+    try {
+      const captionDownloadRes = await fetch(
+        `https://www.googleapis.com/youtube/v3/captions/${englishCaption.id}?tfmt=srt&key=${apiKey}`,
+        { headers: { 'Accept': 'text/plain' } }
+      )
+      if (captionDownloadRes.ok) {
+        const srt = await captionDownloadRes.text()
+        // Strip SRT formatting — keep only the text lines
+        transcript = srt
+          .replace(/\d+\n/g, '')
+          .replace(/\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}\n/g, '')
+          .replace(/<[^>]+>/g, '')
+          .split('\n')
+          .filter(l => l.trim())
+          .join(' ')
+          .trim()
+      }
+    } catch (err) {
+      console.warn('Caption download failed:', err.message)
+    }
+  }
+
+  return { title, transcript }
+}
 
 // ── Health ────────────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ status: 'ok' }))
@@ -88,8 +141,35 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
       const buffer = Buffer.from(await fileRes.arrayBuffer())
       await writeFile(videoPath, buffer)
 
+    } else if (isYouTubeUrl(videoUrl)) {
+      // YouTube: use YouTube Data API v3 — no cookies, no bot detection
+      const videoId = extractYouTubeId(videoUrl)
+      if (!videoId) throw new Error("Could not extract YouTube video ID from URL.")
+      const ytData = await getYouTubeData(videoId)
+      videoTitle = ytData.title
+      if (ytData.transcript && ytData.transcript.length > 50) {
+        // API transcript available — analyze directly, skip video download
+        const report = await analyzeVideo({ transcript: ytData.transcript, frameDescriptions: [], niche, audience, goal, hasTranscript: true, hasFrames: false })
+        let reportId = null, isPaid = false
+        if (user_id) {
+          const { data: profile } = await supabase.from("profiles").select("tier").eq("id", user_id).single()
+          isPaid = profile?.tier === "complete" || profile?.tier === "premium"
+          const { data: saved, error: saveError } = await supabase.from("reports").insert({ user_id, video_name: videoTitle, video_source: "url", niche, audience, goal, transcript: ytData.transcript, report_data: report, tier: isPaid ? "complete" : "free", created_at: new Date().toISOString() }).select("id").single()
+          if (saveError) console.error("Supabase save error:", saveError)
+          else reportId = saved?.id
+        }
+        if (user_email && reportId) {
+          try { await resend.emails.send({ from: EMAIL_FROM, to: user_email, subject: `Your video audit is ready — ${videoTitle}`, html: buildReportEmail({ userName: user_name || "there", videoTitle, reportUrl: `${APP_URL}/reports/${reportId}`, topFinding: report.rubricScores?.[0]?.finding || report.evidenceSummary || "", isPaid }) }) } catch (e) { console.warn("Email failed:", e.message) }
+        }
+        await rm(tempDir, { recursive: true, force: true }).catch(() => {})
+        return res.json({ success: true, reportId, videoTitle, report })
+      }
+      // No API transcript — fall back to yt-dlp
+      console.log("No YouTube API transcript, falling back to yt-dlp")
+      const dlResult = await downloadWithYtDlp(videoUrl, tempDir)
+      videoPath = dlResult.videoPath
     } else {
-      // URL mode: YouTube, Vimeo, Instagram — use yt-dlp
+      // Vimeo, Instagram, etc — use yt-dlp
       const dlResult = await downloadWithYtDlp(videoUrl, tempDir)
       videoPath = dlResult.videoPath
       videoTitle = dlResult.title
