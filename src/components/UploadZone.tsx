@@ -369,7 +369,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
     <div className={styles.container}>
       <div className={styles.processing}>
         <div className={styles.processingSpinner} />
-        <h2>Analysing your video</h2>
+        <h2>Analyzing your video</h2>
         <div className={styles.processingSteps}>
           {PROCESSING_STEPS.map((s, i) => (
             <div key={i} className={`${styles.processingStep} ${i <= processingStep ? styles.processingStepActive : ''}`}>

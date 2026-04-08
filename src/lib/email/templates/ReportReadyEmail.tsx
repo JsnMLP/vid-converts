@@ -28,7 +28,7 @@ export function ReportReadyEmail({
           <Heading style={h1}>Your audit is ready 🎯</Heading>
           <Text style={text}>Hi {userName},</Text>
           <Text style={text}>
-            We've finished analysing <strong>{videoTitle}</strong>. Here's your
+            We've finished analyzing <strong>{videoTitle}</strong>. Here's your
             top finding:
           </Text>
           <Section style={findingBox}>
