@@ -36,9 +36,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://vidconverts.com'
 const EMAIL_FROM = process.env.EMAIL_FROM || 'hello@vidconverts.com'
 const ANALYSIS_MODEL = process.env.OPENAI_ANALYSIS_MODEL || 'gpt-4o'
 
-// ── YouTube transcript setup ──────────────────────────────────────────────────
-const { YoutubeTranscript } = require('youtube-transcript')
-
+// ── YouTube helpers ──────────────────────────────────────────────────────────
 function isYouTubeUrl(url) {
   try {
     const parsed = new URL(url)
@@ -59,20 +57,46 @@ async function getYouTubeTitle(videoId) {
   if (!apiKey) return 'your video'
   try {
     const res = await fetch(
-      `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`
+      'https://www.googleapis.com/youtube/v3/videos?part=snippet&id=' + videoId + '&key=' + apiKey
     )
     const data = await res.json()
     return data.items?.[0]?.snippet?.title || 'your video'
   } catch { return 'your video' }
 }
 
+// Fetch YouTube transcript directly — no package, no cookies, never expires
 async function getYouTubeTranscript(videoId) {
   try {
-    const segments = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' })
-    if (!segments || segments.length === 0) return null
-    return segments.map(s => s.text).join(' ').trim()
+    const pageRes = await fetch('https://www.youtube.com/watch?v=' + videoId, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
+      }
+    })
+    const html = await pageRes.text()
+    const captionMatch = html.match(/"captionTracks":\s*\[.*?"baseUrl":\s*"([^"]+)"/)
+    if (!captionMatch) {
+      console.warn('No caption tracks found for video:', videoId)
+      return null
+    }
+    const captionUrl = captionMatch[1].replace(/\u0026/g, '&')
+    const captionRes = await fetch(captionUrl)
+    const captionXml = await captionRes.text()
+    const transcript = captionXml
+      .replace(/<text[^>]*>/g, '')
+      .replace(/<\/text>/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/
+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+    return transcript.length > 20 ? transcript : null
   } catch (err) {
-    console.warn('youtube-transcript fetch failed:', err.message)
+    console.warn('YouTube transcript fetch failed:', err.message)
     return null
   }
 }
