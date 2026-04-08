@@ -547,14 +547,30 @@ Respond ONLY with a valid JSON object matching this structure exactly:
 
   const response = await anthropic.messages.create({
     model: CLAUDE_MODEL,
-    max_tokens: 4096,
+    max_tokens: 8000,
     messages: [{ role: 'user', content: prompt }],
   })
 
   let raw = response.content?.[0]?.text || '{}'
   // Strip markdown code fences if present
   raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim()
-  const parsed = JSON.parse(raw)
+
+  // Extract JSON object robustly — find first { and last }
+  const jsonStart = raw.indexOf('{')
+  const jsonEnd = raw.lastIndexOf('}')
+  if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+    raw = raw.slice(jsonStart, jsonEnd + 1)
+  }
+
+  let parsed
+  try {
+    parsed = JSON.parse(raw)
+  } catch (e) {
+    console.error('JSON parse failed, raw length:', raw.length, 'stop_reason:', response.stop_reason)
+    console.error('Parse error:', e.message)
+    throw new Error('Analysis response could not be parsed. Please try again.')
+  }
+
   if (typeof parsed.missingEvidence === 'string') {
     parsed.missingEvidence = [parsed.missingEvidence]
   }
