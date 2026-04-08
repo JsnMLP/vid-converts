@@ -112,6 +112,17 @@ const addOn = {
   ],
 }
 
+// Renders "Complete" in purple and "Premium" in amber wherever plan names appear
+function PlanNameStyled({ name }: { name: string }) {
+  if (name === 'Complete') {
+    return <span style={{ color: '#7C5CFC' }}>{name}</span>
+  }
+  if (name === 'Premium') {
+    return <span style={{ color: '#F5A623' }}>{name}</span>
+  }
+  return <>{name}</>
+}
+
 export default function PricingPage() {
   const [annual, setAnnual] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
@@ -177,16 +188,23 @@ export default function PricingPage() {
             </div>
           </div>
 
-          <div className={styles.grid}>
+          {/* FIX: items-stretch + flex flex-col on each card ensures equal height */}
+          <div className={`${styles.grid}`} style={{ alignItems: 'stretch' }}>
             {plans.map((plan) => (
-              <div key={plan.name}
-                className={`${styles.card} ${plan.highlight ? styles.cardHighlight : ''}`}>
+              <div
+                key={plan.name}
+                className={`${styles.card} ${plan.highlight ? styles.cardHighlight : ''}`}
+                style={{ display: 'flex', flexDirection: 'column' }}
+              >
                 {plan.badge && (
                   <div className={styles.popularBadge}>{plan.badge}</div>
                 )}
 
                 <div className={styles.cardHeader}>
-                  <h2 className={styles.planName}>{plan.name}</h2>
+                  {/* FIX: Plan name styled with colour token */}
+                  <h2 className={styles.planName}>
+                    <PlanNameStyled name={plan.name} />
+                  </h2>
                   <div className={styles.priceRow}>
                     <span className={styles.price}>
                       ${annual ? plan.yearlyPrice : plan.monthlyPrice}
@@ -201,6 +219,7 @@ export default function PricingPage() {
                   <p className={styles.planDesc}>{plan.description}</p>
                 </div>
 
+                {/* FIX: Free plan button never waits — always shows label immediately */}
                 <button
                   className={`${styles.cta} ${plan.highlight ? styles.ctaPrimary : styles.ctaSecondary}`}
                   onClick={() => handleUpgrade(plan.priceId, plan.plan, (plan as any).ctaHref)}
@@ -210,7 +229,8 @@ export default function PricingPage() {
                   ) : plan.cta}
                 </button>
 
-                <div className={styles.features}>
+                {/* FIX: flex-1 on features so cards stretch equally, CTA stays at bottom */}
+                <div className={styles.features} style={{ flex: 1 }}>
                   {plan.features.map((f) => (
                     <div key={f} className={styles.featureRow}>
                       <span className={styles.checkIcon}>✓</span>

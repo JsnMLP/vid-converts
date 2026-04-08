@@ -48,7 +48,14 @@ const faqs = [
   },
   {
     q: 'Can I cancel my subscription?',
-    a: 'Yes, any time. No contracts, no cancellation fees. You keep access until the end of your billing period.',
+    // FIX: Removed "No contracts" — annual subscribers are on a contract.
+    // Kept "cancel anytime" which is true for all plans.
+    a: 'Yes, you can cancel at any time. Monthly subscribers retain access until the end of their billing month. Annual subscribers can cancel to stop renewal and retain access until their year ends.',
+  },
+  {
+    q: 'What is your refund policy?',
+    // FIX: Added dedicated refund policy FAQ
+    a: 'Monthly subscribers are eligible for a full refund within 7 days of their initial payment if they are not satisfied. Annual subscribers are eligible for a prorated refund within 14 days of purchase. To request a refund, contact us at support@vidconverts.com and we\'ll take care of it promptly.',
   },
 ]
 

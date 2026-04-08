@@ -52,6 +52,25 @@ const FREE_MEASUREMENT_LIMIT = 3
 const FREE_TRANSCRIPT_LIMIT = 2
 const FREE_FRAMES_LIMIT = 2
 
+// FIX: Map raw AI codes to user-friendly descriptions
+const EVIDENCE_LABEL_MAP: Record<string, string> = {
+  INSUFFICIENT_EVIDENCE: "We didn't have enough footage to evaluate this area",
+  NO_TRANSCRIPT: "No transcript was available for this section",
+  NO_FRAMES: "No frames were captured for this section",
+}
+
+function formatFrameObservation(raw: string): string {
+  if (EVIDENCE_LABEL_MAP[raw]) return EVIDENCE_LABEL_MAP[raw]
+  // Auto-format any other ALL_CAPS_CODES into readable text
+  if (/^[A-Z_]+$/.test(raw)) {
+    return raw
+      .split('_')
+      .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
+      .join(' ')
+  }
+  return raw
+}
+
 function ScoreRing({ score, size = 80 }: { score: number; size?: number }) {
   const pct = score / 10
   const color = score >= 7 ? 'var(--teal)' : score >= 4 ? '#f59e0b' : '#f87171'
@@ -118,12 +137,29 @@ function Tooltip({ text }: { text: string }) {
   )
 }
 
+// FIX: TierBadge styled — Premium = amber, Complete = purple
 function TierBadge({ tier }: { tier: string }) {
   if (tier === 'premium') {
-    return <span className={styles.premiumBadge}>⭐ Premium</span>
+    return (
+      <span className={styles.premiumBadge} style={{
+        background: 'rgba(245, 166, 35, 0.15)',
+        color: '#F5A623',
+        border: '1px solid rgba(245, 166, 35, 0.4)',
+      }}>
+        ⭐ Premium
+      </span>
+    )
   }
   if (tier === 'complete') {
-    return <span className={styles.completeBadge}>✦ Complete</span>
+    return (
+      <span className={styles.completeBadge} style={{
+        background: 'rgba(124, 92, 252, 0.15)',
+        color: '#7C5CFC',
+        border: '1px solid rgba(124, 92, 252, 0.4)',
+      }}>
+        ✦ Complete
+      </span>
+    )
   }
   return <span className={styles.freeBadge}>Free report</span>
 }
@@ -175,13 +211,13 @@ function ResourceLinks({ category, tier }: { category: string; tier: string }) {
 
 export default function ReportClient({ report }: Props) {
   const data = {
-  ...report.report_data,
-  missingEvidence: Array.isArray(report.report_data.missingEvidence)
-    ? report.report_data.missingEvidence
-    : report.report_data.missingEvidence
-    ? [report.report_data.missingEvidence]
-    : []
-}
+    ...report.report_data,
+    missingEvidence: Array.isArray(report.report_data.missingEvidence)
+      ? report.report_data.missingEvidence
+      : report.report_data.missingEvidence
+      ? [report.report_data.missingEvidence]
+      : []
+  }
   const isPaid = report.tier === 'complete' || report.tier === 'premium'
   const date = new Date(report.created_at).toLocaleDateString('en-US', {
     month: 'long', day: 'numeric', year: 'numeric'
@@ -418,6 +454,7 @@ export default function ReportClient({ report }: Props) {
         )}
 
         {/* Frame observations */}
+        {/* FIX: formatFrameObservation() converts INSUFFICIENT_EVIDENCE and other codes to friendly text */}
         {frameObs.length > 0 && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Frame observations</h2>
@@ -425,7 +462,7 @@ export default function ReportClient({ report }: Props) {
               {frameObs.map((f, i) => (
                 <div key={i} className={styles.listItem}>
                   <span className={styles.frameIcon}>🎞</span>
-                  <p>{f}</p>
+                  <p>{formatFrameObservation(f)}</p>
                 </div>
               ))}
             </div>
@@ -455,7 +492,8 @@ export default function ReportClient({ report }: Props) {
               {data.missingEvidence.map((m, i) => (
                 <div key={i} className={styles.missingItem}>
                   <span>⚠</span>
-                  <p>{m}</p>
+                  {/* FIX: also format any codes in missingEvidence */}
+                  <p>{formatFrameObservation(m)}</p>
                 </div>
               ))}
             </div>
@@ -489,7 +527,8 @@ export default function ReportClient({ report }: Props) {
             <Link href="/pricing" className={styles.bigUpgradeBtn}>
               See pricing →
             </Link>
-            <p className={styles.bottomUpgradeNote}>No contracts. Cancel anytime.</p>
+            {/* FIX: Removed "No contracts." — annual subscribers are on a contract. */}
+            <p className={styles.bottomUpgradeNote}>Cancel anytime.</p>
           </div>
         )}
       </main>
