@@ -315,13 +315,14 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function getYtDlpTitle(url) {
+function getYtDlpTitle(url, proxyUrl) {
   return new Promise((resolve) => {
     const hasCookies = existsSync(COOKIES_PATH)
     const args = [
       '--no-playlist',
       '--print', 'title',
       ...(hasCookies ? ['--cookies', COOKIES_PATH] : []),
+      ...(proxyUrl ? ['--proxy', proxyUrl] : []),
       url
     ]
     execFile('yt-dlp', args, { timeout: 30000 }, (err, stdout) => {
@@ -337,9 +338,6 @@ function getYtDlpTitle(url) {
 
 function downloadWithYtDlp(url, tempDir) {
   return new Promise(async (resolve, reject) => {
-    const title = await getYtDlpTitle(url)
-    const outputTemplate = path.join(tempDir, 'video.%(ext)s')
-
     // Build proxy URL from Railway env vars (IPRoyal residential proxy)
     const proxyHost = process.env.IPROYAL_HOST
     const proxyPort = process.env.IPROYAL_PORT
@@ -355,6 +353,9 @@ function downloadWithYtDlp(url, tempDir) {
     } else {
       console.warn('No proxy configured — download may be blocked by YouTube')
     }
+
+    const title = await getYtDlpTitle(url, proxyUrl)
+    const outputTemplate = path.join(tempDir, 'video.%(ext)s')
 
     execFile('yt-dlp', [
       '--no-playlist',
