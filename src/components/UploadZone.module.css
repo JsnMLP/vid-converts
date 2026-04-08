@@ -82,6 +82,12 @@
 .clearUrl { position: absolute; right: 12px; background: none; border: none; color: var(--text-muted); font-size: 13px; cursor: pointer; padding: 4px; transition: color 0.2s; }
 .clearUrl:hover { color: var(--text-primary); }
 .urlHint { font-size: 13px; color: var(--text-muted); margin-top: 8px; padding-left: 4px; }
+.urlWarning {
+  font-size: 12px;
+  color: #f59e0b;
+  margin-top: 6px;
+  line-height: 1.5;
+}
 
 .error { font-size: 14px; color: #f87171; margin-bottom: 16px; padding: 10px 16px; background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); border-radius: 8px; }
 

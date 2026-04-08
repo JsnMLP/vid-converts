@@ -34,6 +34,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [videoUrl, setVideoUrl] = useState('')
   const [urlError, setUrlError] = useState('')
+  const [urlWarning, setUrlWarning] = useState('')
   const [fileError, setFileError] = useState('')
   const [processingStep, setProcessingStep] = useState(0)
   const [errorMessage, setErrorMessage] = useState('')
@@ -70,6 +71,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
 
   const validateUrl = (url: string) => {
     setUrlError('')
+    setUrlWarning('')
 
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       setUrlError("That doesn't look like a URL. Paste the full link starting with https://")
@@ -115,7 +117,11 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
     }
 
     // ── Other supported platforms ──────────────────────────────────────────────
-    if (['youtube.com', 'youtu.be', 'vimeo.com', 'linkedin.com'].includes(host)) return true
+    if (['youtube.com', 'youtu.be', 'vimeo.com'].includes(host)) return true
+    if (host === 'linkedin.com') {
+      setUrlWarning("LinkedIn videos work if they're public. If the video requires you to be logged in, it may fail — in that case, download it and upload as an MP4 instead.")
+      return true
+    }
 
     // ── Unsupported but recognisable ───────────────────────────────────────────
     if (['twitter.com', 'x.com'].includes(host)) {
@@ -220,7 +226,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
 
   const handleReset = () => {
     setStep('upload'); setSelectedFile(null); setVideoUrl('')
-    setFileError(''); setUrlError(''); setNiche(''); setAudience(''); setGoal('')
+    setFileError(''); setUrlError(''); setUrlWarning(''); setNiche(''); setAudience(''); setGoal('')
     setContextErrors({}); setErrorMessage(''); setProcessingStep(0)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
@@ -291,10 +297,11 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
               <path d="M10.5 7.5a3.5 3.5 0 00-5 0l-2 2a3.5 3.5 0 005 5l1-1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
             <input type="url" className={styles.urlInput} placeholder="https://youtube.com/watch?v=..."
-              value={videoUrl} onChange={e => { setVideoUrl(e.target.value); setUrlError('') }} />
+              value={videoUrl} onChange={e => { setVideoUrl(e.target.value); setUrlError(''); setUrlWarning('') }} />
             {videoUrl && <button className={styles.clearUrl} onClick={() => setVideoUrl('')}>✕</button>}
           </div>
           <p className={styles.urlHint}>Supports YouTube, Vimeo, Instagram, Facebook, TikTok, and LinkedIn</p>
+          {urlWarning && <p className={styles.urlWarning}>{urlWarning}</p>}
         </div>
       )}
 
