@@ -7,6 +7,7 @@ const path = require('path')
 const os = require('os')
 const multer = require('multer')
 const OpenAI = require('openai').default
+const Anthropic = require('@anthropic-ai/sdk')
 const { createClient } = require('@supabase/supabase-js')
 const { Resend } = require('resend')
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
@@ -18,6 +19,7 @@ const upload = multer({ storage: multer.memoryStorage() })
 
 // ── Clients ──────────────────────────────────────────────────────────────────
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -25,7 +27,7 @@ const supabase = createClient(
 const resend = new Resend(process.env.RESEND_API_KEY)
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://vidconverts.com'
 const EMAIL_FROM = process.env.EMAIL_FROM || 'hello@vidconverts.com'
-const ANALYSIS_MODEL = process.env.OPENAI_ANALYSIS_MODEL || 'gpt-4o'
+const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-4-5'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const COOKIES_PATH = path.join(os.tmpdir(), 'yt-cookies.txt')
@@ -408,25 +410,25 @@ async function extractFrameDescriptions(videoPath, tempDir) {
     const frameBuffer = await readFile(framePath)
     const base64 = frameBuffer.toString('base64')
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+    const response = await anthropic.messages.create({
+      model: CLAUDE_MODEL,
+      max_tokens: 150,
       messages: [{
         role: 'user',
         content: [
           {
-            type: 'image_url',
-            image_url: { url: `data:image/jpeg;base64,${base64}`, detail: 'low' }
+            type: 'image',
+            source: { type: 'base64', media_type: 'image/jpeg', data: base64 }
           },
           {
             type: 'text',
             text: `Describe this video frame in 1-2 sentences focusing on: what is visible, any text/captions on screen, the setting, and anything relevant to video marketing effectiveness.`
           }
         ]
-      }],
-      max_tokens: 150,
+      }]
     })
 
-    const desc = response.choices[0]?.message?.content?.trim()
+    const desc = response.content?.[0]?.text?.trim()
     if (desc) descriptions.push(`Frame ${i + 1} (~${Math.round(timestamps[i])}s): ${desc}`)
   }
 
@@ -543,14 +545,15 @@ Respond ONLY with a valid JSON object matching this structure exactly:
   "missingEvidence": ["<string>"]
 }`
 
-  const response = await openai.chat.completions.create({
-    model: ANALYSIS_MODEL,
+  const response = await anthropic.messages.create({
+    model: CLAUDE_MODEL,
+    max_tokens: 4096,
     messages: [{ role: 'user', content: prompt }],
-    temperature: 0.4,
-    response_format: { type: 'json_object' },
   })
 
-  const raw = response.choices[0]?.message?.content || '{}'
+  let raw = response.content?.[0]?.text || '{}'
+  // Strip markdown code fences if present
+  raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim()
   const parsed = JSON.parse(raw)
   if (typeof parsed.missingEvidence === 'string') {
     parsed.missingEvidence = [parsed.missingEvidence]
