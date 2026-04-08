@@ -138,9 +138,36 @@ export default function Home() {
 
       {/* Footer */}
       <footer className={styles.footer}>
-        <div className="container">
-          <span className={styles.footerBrand}>Vid Converts</span>
-          <span className={styles.footerBy}>by <a href="https://digitalnuclei.com" target="_blank" rel="noopener noreferrer">Digital Nuclei</a></span>
+        <div className={styles.footerInner}>
+          <div className={styles.footerTop}>
+            <div className={styles.footerBrand}>
+              <span className={styles.footerLogo}><span style={{ color: 'var(--teal)' }}>Vid</span> Converts</span>
+              <span className={styles.footerTagline}>Your videos are costing you clients = lost revenue.<br />Find out exactly why — and fix it.</span>
+            </div>
+            <div className={styles.footerLinks}>
+              <div className={styles.footerCol}>
+                <span className={styles.footerColTitle}>Product</span>
+                <a href="/" className={styles.footerLink}>Home</a>
+                <a href="/pricing" className={styles.footerLink}>Pricing</a>
+                <a href="/faq" className={styles.footerLink}>FAQ</a>
+                <a href="/dashboard" className={styles.footerLink}>Dashboard</a>
+              </div>
+              <div className={styles.footerCol}>
+                <span className={styles.footerColTitle}>Legal</span>
+                <a href="/privacy" className={styles.footerLink}>Privacy Policy</a>
+                <a href="/terms" className={styles.footerLink}>Terms of Service</a>
+              </div>
+              <div className={styles.footerCol}>
+                <span className={styles.footerColTitle}>Company</span>
+                <a href="https://digitalnuclei.com" target="_blank" rel="noopener noreferrer" className={styles.footerLink}>Digital Nuclei</a>
+                <a href="mailto:support@vidconverts.com" className={styles.footerLink}>support@vidconverts.com</a>
+              </div>
+            </div>
+          </div>
+          <div className={styles.footerBottom}>
+            <span>© 2026 Digital Nuclei. All rights reserved.</span>
+            <span>Vid Converts is a product of <a href="https://digitalnuclei.com" target="_blank" rel="noopener noreferrer" className={styles.footerTealLink}>Digital Nuclei</a></span>
+          </div>
         </div>
       </footer>
 

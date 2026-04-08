@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   title: 'Vid Converts — Video Conversion Audit',
   description: 'Evidence-based video conversion audits for coaches, consultants, and service providers. Know exactly what to fix and why.',
   keywords: 'video audit, conversion optimization, marketing video, video analysis',
+  verification: {
+    google: 'DPGm-DK5xeu74cee5ph-3AkZX_fPdq7GYQFqg6f5Gv0',
+  },
 }
 
 export default function RootLayout({
