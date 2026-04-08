@@ -27,18 +27,8 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://vidconverts.com'
 const EMAIL_FROM = process.env.EMAIL_FROM || 'hello@vidconverts.com'
 const ANALYSIS_MODEL = process.env.OPENAI_ANALYSIS_MODEL || 'gpt-4o'
 
-// ── YouTube API setup ─────────────────────────────────────────────────────────
-const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
-const COOKIES_PATH = path.join(os.tmpdir(), 'yt-cookies.txt')
-
-// Extract YouTube video ID from any YouTube URL format
-function extractYouTubeId(url) {
-  try {
-    const parsed = new URL(url)
-    if (parsed.hostname === 'youtu.be') return parsed.pathname.slice(1).split('?')[0]
-    return parsed.searchParams.get('v')
-  } catch { return null }
-}
+// ── YouTube transcript setup ──────────────────────────────────────────────────
+const { YoutubeTranscript } = require('youtube-transcript')
 
 function isYouTubeUrl(url) {
   try {
@@ -47,57 +37,37 @@ function isYouTubeUrl(url) {
   } catch { return false }
 }
 
-// Fetch video title + captions from YouTube Data API v3 — no cookies, no bot detection
-async function getYouTubeData(videoId) {
-  const apiKey = YOUTUBE_API_KEY
-  if (!apiKey) throw new Error('YOUTUBE_API_KEY not set')
-
-  // Get video title
-  const videoRes = await fetch(
-    `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`
-  )
-  const videoData = await videoRes.json()
-  const title = videoData.items?.[0]?.snippet?.title || 'your video'
-
-  // Get available captions
-  const captionRes = await fetch(
-    `https://www.googleapis.com/youtube/v3/captions?part=snippet&videoId=${videoId}&key=${apiKey}`
-  )
-  const captionData = await captionRes.json()
-
-  // Find English captions (auto-generated or manual)
-  const captions = captionData.items || []
-  const englishCaption = captions.find(c =>
-    c.snippet.language === 'en' && c.snippet.trackKind !== 'asr'
-  ) || captions.find(c => c.snippet.language === 'en') || captions[0]
-
-  let transcript = null
-  if (englishCaption) {
-    // Download the caption track as plain text
-    try {
-      const captionDownloadRes = await fetch(
-        `https://www.googleapis.com/youtube/v3/captions/${englishCaption.id}?tfmt=srt&key=${apiKey}`,
-        { headers: { 'Accept': 'text/plain' } }
-      )
-      if (captionDownloadRes.ok) {
-        const srt = await captionDownloadRes.text()
-        // Strip SRT formatting — keep only the text lines
-        transcript = srt
-          .replace(/\d+\n/g, '')
-          .replace(/\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}\n/g, '')
-          .replace(/<[^>]+>/g, '')
-          .split('\n')
-          .filter(l => l.trim())
-          .join(' ')
-          .trim()
-      }
-    } catch (err) {
-      console.warn('Caption download failed:', err.message)
-    }
-  }
-
-  return { title, transcript }
+function extractYouTubeId(url) {
+  try {
+    const parsed = new URL(url)
+    if (parsed.hostname === 'youtu.be') return parsed.pathname.slice(1).split('?')[0]
+    return parsed.searchParams.get('v')
+  } catch { return null }
 }
+
+async function getYouTubeTitle(videoId) {
+  const apiKey = process.env.YOUTUBE_API_KEY
+  if (!apiKey) return 'your video'
+  try {
+    const res = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`
+    )
+    const data = await res.json()
+    return data.items?.[0]?.snippet?.title || 'your video'
+  } catch { return 'your video' }
+}
+
+async function getYouTubeTranscript(videoId) {
+  try {
+    const segments = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' })
+    if (!segments || segments.length === 0) return null
+    return segments.map(s => s.text).join(' ').trim()
+  } catch (err) {
+    console.warn('youtube-transcript fetch failed:', err.message)
+    return null
+  }
+}
+
 
 // ── Health ────────────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ status: 'ok' }))
@@ -142,32 +112,53 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
       await writeFile(videoPath, buffer)
 
     } else if (isYouTubeUrl(videoUrl)) {
-      // YouTube: use YouTube Data API v3 — no cookies, no bot detection
+      // YouTube: fetch transcript directly — no cookies, no bot detection, never expires
       const videoId = extractYouTubeId(videoUrl)
-      if (!videoId) throw new Error("Could not extract YouTube video ID from URL.")
-      const ytData = await getYouTubeData(videoId)
-      videoTitle = ytData.title
-      if (ytData.transcript && ytData.transcript.length > 50) {
-        // API transcript available — analyze directly, skip video download
-        const report = await analyzeVideo({ transcript: ytData.transcript, frameDescriptions: [], niche, audience, goal, hasTranscript: true, hasFrames: false })
+      if (!videoId) throw new Error('Could not extract YouTube video ID from URL.')
+
+      const [ytTitle, ytTranscript] = await Promise.all([
+        getYouTubeTitle(videoId),
+        getYouTubeTranscript(videoId),
+      ])
+      videoTitle = ytTitle
+
+      if (ytTranscript && ytTranscript.length > 50) {
+        // Transcript available — analyze directly, no video download needed
+        console.log('YouTube transcript fetched successfully, skipping video download')
+        const report = await analyzeVideo({
+          transcript: ytTranscript, frameDescriptions: [],
+          niche, audience, goal, hasTranscript: true, hasFrames: false,
+        })
         let reportId = null, isPaid = false
         if (user_id) {
-          const { data: profile } = await supabase.from("profiles").select("tier").eq("id", user_id).single()
-          isPaid = profile?.tier === "complete" || profile?.tier === "premium"
-          const { data: saved, error: saveError } = await supabase.from("reports").insert({ user_id, video_name: videoTitle, video_source: "url", niche, audience, goal, transcript: ytData.transcript, report_data: report, tier: isPaid ? "complete" : "free", created_at: new Date().toISOString() }).select("id").single()
-          if (saveError) console.error("Supabase save error:", saveError)
+          const { data: profile } = await supabase.from('profiles').select('tier').eq('id', user_id).single()
+          isPaid = profile?.tier === 'complete' || profile?.tier === 'premium'
+          const { data: saved, error: saveError } = await supabase.from('reports').insert({
+            user_id, video_name: videoTitle, video_source: 'url',
+            niche, audience, goal, transcript: ytTranscript,
+            report_data: report, tier: isPaid ? 'complete' : 'free',
+            created_at: new Date().toISOString(),
+          }).select('id').single()
+          if (saveError) console.error('Supabase save error:', saveError)
           else reportId = saved?.id
         }
         if (user_email && reportId) {
-          try { await resend.emails.send({ from: EMAIL_FROM, to: user_email, subject: `Your video audit is ready — ${videoTitle}`, html: buildReportEmail({ userName: user_name || "there", videoTitle, reportUrl: `${APP_URL}/reports/${reportId}`, topFinding: report.rubricScores?.[0]?.finding || report.evidenceSummary || "", isPaid }) }) } catch (e) { console.warn("Email failed:", e.message) }
+          try {
+            await resend.emails.send({
+              from: EMAIL_FROM, to: user_email,
+              subject: `Your video audit is ready — ${videoTitle}`,
+              html: buildReportEmail({ userName: user_name || 'there', videoTitle, reportUrl: `${APP_URL}/reports/${reportId}`, topFinding: report.rubricScores?.[0]?.finding || report.evidenceSummary || '', isPaid }),
+            })
+          } catch (e) { console.warn('Email failed:', e.message) }
         }
         await rm(tempDir, { recursive: true, force: true }).catch(() => {})
         return res.json({ success: true, reportId, videoTitle, report })
       }
-      // No API transcript — fall back to yt-dlp
-      console.log("No YouTube API transcript, falling back to yt-dlp")
-      const dlResult = await downloadWithYtDlp(videoUrl, tempDir)
-      videoPath = dlResult.videoPath
+
+      // No transcript available (video has no captions) — still try to analyze with frames only
+      console.log('No YouTube transcript available, proceeding without transcript')
+      // videoPath stays undefined — frame extraction will be skipped gracefully
+
     } else {
       // Vimeo, Instagram, etc — use yt-dlp
       const dlResult = await downloadWithYtDlp(videoUrl, tempDir)
@@ -175,35 +166,41 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
       videoTitle = dlResult.title
     }
 
-    // ── 2. Extract audio with ffmpeg ────────────────────────────────────────
-    const audioPath = path.join(tempDir, 'audio.mp3')
-    await extractAudio(videoPath, audioPath)
-
-    // ── 3. Whisper transcription ────────────────────────────────────────────
+    // ── 2. Extract audio + 3. Whisper + 4. Frames (only if we have a video file) ──
     let transcript = null
     let hasTranscript = false
-    try {
-      const audioBuffer = await readFile(audioPath)
-      const audioFile = new File([audioBuffer], 'audio.mp3', { type: 'audio/mp3' })
-      const whisperResponse = await openai.audio.transcriptions.create({
-        file: audioFile,
-        model: 'whisper-1',
-        language: 'en',
-      })
-      transcript = whisperResponse.text || null
-      hasTranscript = !!transcript && transcript.trim().length > 10
-    } catch (err) {
-      console.warn('Whisper transcription failed (continuing without):', err.message)
-    }
-
-    // ── 4. Frame descriptions (lightweight vision pass) ─────────────────────
     let frameDescriptions = []
     let hasFrames = false
-    try {
-      frameDescriptions = await extractFrameDescriptions(videoPath, tempDir)
-      hasFrames = frameDescriptions.length > 0
-    } catch (err) {
-      console.warn('Frame extraction failed (continuing without):', err.message)
+
+    if (videoPath) {
+      // Extract audio
+      const audioPath = path.join(tempDir, 'audio.mp3')
+      try {
+        await extractAudio(videoPath, audioPath)
+      } catch (err) {
+        console.warn('Audio extraction failed:', err.message)
+      }
+
+      // Whisper transcription
+      try {
+        const audioBuffer = await readFile(audioPath)
+        const audioFile = new File([audioBuffer], 'audio.mp3', { type: 'audio/mp3' })
+        const whisperResponse = await openai.audio.transcriptions.create({
+          file: audioFile, model: 'whisper-1', language: 'en',
+        })
+        transcript = whisperResponse.text || null
+        hasTranscript = !!transcript && transcript.trim().length > 10
+      } catch (err) {
+        console.warn('Whisper transcription failed (continuing without):', err.message)
+      }
+
+      // Frame descriptions
+      try {
+        frameDescriptions = await extractFrameDescriptions(videoPath, tempDir)
+        hasFrames = frameDescriptions.length > 0
+      } catch (err) {
+        console.warn('Frame extraction failed (continuing without):', err.message)
+      }
     }
 
     // ── 5. OpenAI analysis ──────────────────────────────────────────────────
