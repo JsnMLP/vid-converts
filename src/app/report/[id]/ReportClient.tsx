@@ -237,10 +237,10 @@ export default function ReportClient({ report }: Props) {
 
   return (
     <div className={styles.page}>
-      {/* Floating Analyse Another Video button */}
+      {/* Floating Analyze Another Video button */}
       <Link href="/dashboard" className={styles.floatingCta}>
         <span className={styles.floatingCtaIcon}>＋</span>
-        Analyse Another Video
+        Analyze Another Video
       </Link>
 
       <nav className={styles.nav}>
@@ -259,7 +259,12 @@ export default function ReportClient({ report }: Props) {
         {/* Header */}
         <div className={styles.header}>
           <div className={styles.headerMeta}>
-            <span className={styles.metaTag}>🎬 {report.video_name}</span>
+            <span className={styles.metaTag}>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '5px', flexShrink: 0 }}>
+                <path d="M1 3.5h5l1.5 2H13v6.5H1V3.5z" stroke="#FFE9A2" strokeWidth="1.3" strokeLinejoin="round"/>
+              </svg>
+              {report.video_name}
+            </span>
             <span className={styles.metaDot}>·</span>
             <span className={styles.metaTag}>{date}</span>
             <TierBadge tier={report.tier} />

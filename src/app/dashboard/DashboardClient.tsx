@@ -60,8 +60,8 @@ function TagPill({ tag, onRemove }: { tag: string; onRemove?: () => void }) {
   )
 }
 
-// ── Inline organise panel (shown below a report card) ────────────────────────
-function OrganisePanel({
+// ── Inline organize panel (shown below a report card) ────────────────────────
+function OrganizePanel({
   report,
   allFolders,
   allTags,
@@ -119,7 +119,9 @@ function OrganisePanel({
       {/* Folder */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted, #6b7280)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-          📁 Folder
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }}>
+            <path d="M1 3.5h5l1.5 2H13v6.5H1V3.5z" stroke="#FFE9A2" strokeWidth="1.3" strokeLinejoin="round"/>
+          </svg> Folder
         </label>
         <input
           value={folder}
@@ -297,7 +299,7 @@ export default function DashboardClient({ user }: Props) {
     }
   }
 
-  const handleOrganiseSave = async (id: string, folder: string | null, tags: string[]) => {
+  const handleOrganizeSave = async (id: string, folder: string | null, tags: string[]) => {
     try {
       await fetch('/api/reports/update', {
         method: 'PATCH',
@@ -411,7 +413,9 @@ export default function DashboardClient({ user }: Props) {
                     color: activeFolder === folder ? 'var(--teal, #2dd4bf)' : 'var(--text-muted, #6b7280)',
                     cursor: 'pointer', fontWeight: activeFolder === folder ? 700 : 400,
                   }}>
-                  📁 {folder}
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+                    <path d="M1 3.5h5l1.5 2H13v6.5H1V3.5z" stroke="#FFE9A2" strokeWidth="1.3" strokeLinejoin="round"/>
+                  </svg> {folder}
                   <span style={{ opacity: 0.6, fontSize: '11px' }}>
                     {reports.filter(r => r.folder === folder).length}
                   </span>
@@ -486,7 +490,9 @@ export default function DashboardClient({ user }: Props) {
                                 background: 'rgba(45,212,191,0.1)', border: '1px solid rgba(45,212,191,0.2)',
                                 borderRadius: '4px', padding: '1px 6px',
                               }}>
-                                📁 {report.folder}
+                                <svg width="11" height="11" viewBox="0 0 14 14" fill="none" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '2px' }}>
+                                  <path d="M1 3.5h5l1.5 2H13v6.5H1V3.5z" stroke="#FFE9A2" strokeWidth="1.3" strokeLinejoin="round"/>
+                                </svg>{report.folder}
                               </span>
                             )}
                           </span>
@@ -506,7 +512,7 @@ export default function DashboardClient({ user }: Props) {
                         <div className={styles.reportArrow}>→</div>
                       </Link>
 
-                      {/* Organise button */}
+                      {/* Organize button */}
                       <button
                         className={styles.deleteBtn}
                         onClick={(e) => {
@@ -514,7 +520,7 @@ export default function DashboardClient({ user }: Props) {
                           e.stopPropagation()
                           setOrganisingId(isOrganising ? null : report.id)
                         }}
-                        aria-label="Organise report"
+                        aria-label="Organize report"
                         title="Add to folder or tag"
                         style={{ marginRight: '2px' }}>
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -538,13 +544,13 @@ export default function DashboardClient({ user }: Props) {
                       </button>
                     </div>
 
-                    {/* Organise panel — expands inline below the card */}
+                    {/* Organize panel — expands inline below the card */}
                     {isOrganising && (
-                      <OrganisePanel
+                      <OrganizePanel
                         report={report}
                         allFolders={allFolders}
                         allTags={allTags}
-                        onSave={handleOrganiseSave}
+                        onSave={handleOrganizeSave}
                         onClose={() => setOrganisingId(null)}
                       />
                     )}
