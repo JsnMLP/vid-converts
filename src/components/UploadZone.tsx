@@ -70,22 +70,77 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
 
   const validateUrl = (url: string) => {
     setUrlError('')
+
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      setUrlError("That doesn't look like a URL. Paste the full link starting with https://")
+      return false
+    }
+
+    let parsed: URL
     try {
-      const parsed = new URL(url)
-      const validHosts = [
-        'youtube.com', 'www.youtube.com', 'youtu.be',
-        'vimeo.com', 'www.vimeo.com',
-        'instagram.com', 'www.instagram.com',
-        'facebook.com', 'www.facebook.com', 'fb.watch', 'fb.com',
-        'tiktok.com', 'www.tiktok.com', 'vm.tiktok.com', 'vt.tiktok.com',
-      ]
-      if (!validHosts.some(h => parsed.hostname === h)) {
-        setUrlError('Please paste a YouTube, Vimeo, Instagram, Facebook, or TikTok URL.'); return false
+      parsed = new URL(url)
+    } catch {
+      setUrlError("That doesn't look like a valid URL.")
+      return false
+    }
+
+    const host = parsed.hostname.replace(/^www\./, '')
+
+    // ── Instagram: must be a reel ──────────────────────────────────────────────
+    if (host === 'instagram.com') {
+      if (!parsed.pathname.includes('/reel/')) {
+        setUrlError("That looks like an Instagram profile or post, not a reel. Open the reel, tap Share → Copy Link. The URL should contain '/reel/' in it.")
+        return false
       }
       return true
-    } catch {
-      setUrlError('That doesn\'t look like a valid URL.'); return false
     }
+
+    // ── Facebook: must be a reel or video ──────────────────────────────────────
+    if (['facebook.com', 'fb.com'].includes(host)) {
+      if (!parsed.pathname.includes('/reel') && !parsed.pathname.includes('/videos/')) {
+        setUrlError("That looks like a Facebook profile or page. Open the specific reel or video, tap Share → Copy Link. The URL should contain '/reel' or '/videos/' in it.")
+        return false
+      }
+      return true
+    }
+    if (host === 'fb.watch') return true
+
+    // ── TikTok: must be a specific video ───────────────────────────────────────
+    if (['tiktok.com', 'vm.tiktok.com', 'vt.tiktok.com'].includes(host)) {
+      if (host === 'tiktok.com' && !parsed.pathname.includes('/video/')) {
+        setUrlError("That looks like a TikTok profile. Open the specific video, tap Share → Copy Link. The URL should contain '/video/' in it.")
+        return false
+      }
+      return true
+    }
+
+    // ── Other supported platforms ──────────────────────────────────────────────
+    if (['youtube.com', 'youtu.be', 'vimeo.com', 'linkedin.com'].includes(host)) return true
+
+    // ── Unsupported but recognisable ───────────────────────────────────────────
+    if (['twitter.com', 'x.com'].includes(host)) {
+      setUrlError("Twitter/X links aren't supported. Try YouTube, TikTok, Instagram, Facebook, LinkedIn, or Vimeo.")
+      return false
+    }
+    if (host === 'snapchat.com') {
+      setUrlError("Snapchat links aren't supported. Try YouTube, TikTok, Instagram, Facebook, LinkedIn, or Vimeo.")
+      return false
+    }
+    if (host === 'pinterest.com') {
+      setUrlError("Pinterest links aren't supported. Try YouTube, TikTok, Instagram, Facebook, LinkedIn, or Vimeo.")
+      return false
+    }
+    if (['twitch.tv', 'kick.com'].includes(host)) {
+      setUrlError("Twitch/Kick links aren't supported. Upload the video as an MP4 instead.")
+      return false
+    }
+    if (host === 'threads.net') {
+      setUrlError("Threads links aren't supported. Try Instagram, TikTok, YouTube, Facebook, LinkedIn, or Vimeo.")
+      return false
+    }
+
+    setUrlError("That URL isn't supported. Paste a link from YouTube, TikTok, Instagram, Facebook, LinkedIn, or Vimeo.")
+    return false
   }
 
   const handleContinue = () => {
@@ -239,7 +294,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
               value={videoUrl} onChange={e => { setVideoUrl(e.target.value); setUrlError('') }} />
             {videoUrl && <button className={styles.clearUrl} onClick={() => setVideoUrl('')}>✕</button>}
           </div>
-          <p className={styles.urlHint}>Supports YouTube, Vimeo, Instagram, Facebook, and TikTok</p>
+          <p className={styles.urlHint}>Supports YouTube, Vimeo, Instagram, Facebook, TikTok, and LinkedIn</p>
         </div>
       )}
 

@@ -52,6 +52,13 @@ function isTikTokUrl(url) {
   } catch { return false }
 }
 
+function isLinkedInUrl(url) {
+  try {
+    const parsed = new URL(url)
+    return ['linkedin.com', 'www.linkedin.com'].includes(parsed.hostname)
+  } catch { return false }
+}
+
 function extractYouTubeId(url) {
   try {
     const parsed = new URL(url)
@@ -165,6 +172,12 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
 
     } else if (isTikTokUrl(videoUrl)) {
       console.log('TikTok URL detected — downloading via yt-dlp')
+      const dlResult = await downloadWithYtDlp(videoUrl, tempDir)
+      videoPath = dlResult.videoPath
+      videoTitle = dlResult.title
+
+    } else if (isLinkedInUrl(videoUrl)) {
+      console.log('LinkedIn URL detected — downloading via yt-dlp')
       const dlResult = await downloadWithYtDlp(videoUrl, tempDir)
       videoPath = dlResult.videoPath
       videoTitle = dlResult.title
