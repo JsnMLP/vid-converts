@@ -48,7 +48,7 @@ export default function Home() {
           </p>
 
           {/* Upload CTA — the hero element */}
-          <div className={styles.uploadZone + ' fade-up-delay-3'}>
+          <div className={styles.uploadZone + ' fade-up-delay-3'} onClick={() => { if (user) window.location.href = '/dashboard' }}>
             <div className={styles.uploadInner}>
               <div className={styles.uploadIcon}>
                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
@@ -62,9 +62,9 @@ export default function Home() {
               </div>
               <button
                 className={styles.uploadBtn}
-                onClick={() => setShowAuth(true)}
+                onClick={() => user ? window.location.href = '/dashboard' : setShowAuth(true)}
               >
-                {user ? 'Go to Dashboard' : 'Analyse My Video'}
+                Analyze My Video
               </button>
             </div>
             <div className={styles.uploadDivider}>
@@ -75,9 +75,9 @@ export default function Home() {
                 className={styles.urlInput}
                 placeholder="Paste a video URL (YouTube, Vimeo, Instagram…)"
                 readOnly
-                onClick={() => setShowAuth(true)}
+                onClick={() => user ? window.location.href = '/dashboard' : setShowAuth(true)}
               />
-              <button className={styles.urlBtn} onClick={() => setShowAuth(true)}>
+              <button className={styles.urlBtn} onClick={() => user ? window.location.href = '/dashboard' : setShowAuth(true)}>
                 Audit URL
               </button>
             </div>
