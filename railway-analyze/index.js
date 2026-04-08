@@ -27,6 +27,9 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://vidconverts.com'
 const EMAIL_FROM = process.env.EMAIL_FROM || 'hello@vidconverts.com'
 const ANALYSIS_MODEL = process.env.OPENAI_ANALYSIS_MODEL || 'gpt-4o'
 
+// ── Constants ─────────────────────────────────────────────────────────────────
+const COOKIES_PATH = path.join(os.tmpdir(), 'yt-cookies.txt')
+
 // ── YouTube helpers ──────────────────────────────────────────────────────────
 function isYouTubeUrl(url) {
   try {
