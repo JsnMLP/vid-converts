@@ -38,6 +38,20 @@ function isYouTubeUrl(url) {
   } catch { return false }
 }
 
+function isFacebookUrl(url) {
+  try {
+    const parsed = new URL(url)
+    return ['facebook.com', 'www.facebook.com', 'fb.watch', 'fb.com'].includes(parsed.hostname)
+  } catch { return false }
+}
+
+function isTikTokUrl(url) {
+  try {
+    const parsed = new URL(url)
+    return ['tiktok.com', 'www.tiktok.com', 'vm.tiktok.com', 'vt.tiktok.com'].includes(parsed.hostname)
+  } catch { return false }
+}
+
 function extractYouTubeId(url) {
   try {
     const parsed = new URL(url)
@@ -138,14 +152,25 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
       await writeFile(videoPath, buffer)
 
     } else if (isYouTubeUrl(videoUrl)) {
-      // YouTube: download via yt-dlp with residential proxy for full quality analysis
       console.log('YouTube URL detected — downloading via proxy')
       const dlResult = await downloadWithYtDlp(videoUrl, tempDir)
       videoPath = dlResult.videoPath
       videoTitle = dlResult.title
 
+    } else if (isFacebookUrl(videoUrl)) {
+      console.log('Facebook URL detected — downloading via yt-dlp')
+      const dlResult = await downloadWithYtDlp(videoUrl, tempDir)
+      videoPath = dlResult.videoPath
+      videoTitle = dlResult.title
+
+    } else if (isTikTokUrl(videoUrl)) {
+      console.log('TikTok URL detected — downloading via yt-dlp')
+      const dlResult = await downloadWithYtDlp(videoUrl, tempDir)
+      videoPath = dlResult.videoPath
+      videoTitle = dlResult.title
+
     } else {
-      // Vimeo, Instagram, etc — use yt-dlp
+      // Vimeo, Instagram, and anything else yt-dlp supports
       const dlResult = await downloadWithYtDlp(videoUrl, tempDir)
       videoPath = dlResult.videoPath
       videoTitle = dlResult.title

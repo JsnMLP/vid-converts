@@ -76,9 +76,11 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
         'youtube.com', 'www.youtube.com', 'youtu.be',
         'vimeo.com', 'www.vimeo.com',
         'instagram.com', 'www.instagram.com',
+        'facebook.com', 'www.facebook.com', 'fb.watch', 'fb.com',
+        'tiktok.com', 'www.tiktok.com', 'vm.tiktok.com', 'vt.tiktok.com',
       ]
       if (!validHosts.some(h => parsed.hostname === h)) {
-        setUrlError('Please paste a YouTube, Vimeo, or Instagram URL.'); return false
+        setUrlError('Please paste a YouTube, Vimeo, Instagram, Facebook, or TikTok URL.'); return false
       }
       return true
     } catch {
@@ -237,7 +239,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
               value={videoUrl} onChange={e => { setVideoUrl(e.target.value); setUrlError('') }} />
             {videoUrl && <button className={styles.clearUrl} onClick={() => setVideoUrl('')}>✕</button>}
           </div>
-          <p className={styles.urlHint}>Supports YouTube, Vimeo, and Instagram</p>
+          <p className={styles.urlHint}>Supports YouTube, Vimeo, Instagram, Facebook, and TikTok</p>
         </div>
       )}
 
