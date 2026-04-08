@@ -13,7 +13,16 @@ const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
 const ffprobePath = require('@ffprobe-installer/ffprobe')?.path || 'ffprobe'
 
 const app = express()
-app.use(cors())
+app.use(cors({
+  origin: [
+    'https://www.vidconverts.com',
+    'https://vidconverts.com',
+    'https://vid-converts-mdj9.vercel.app',
+    /\.vercel\.app$/,
+  ],
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}))
 const upload = multer({ storage: multer.memoryStorage() })
 
 // ── Clients ──────────────────────────────────────────────────────────────────
@@ -27,7 +36,9 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://vidconverts.com'
 const EMAIL_FROM = process.env.EMAIL_FROM || 'hello@vidconverts.com'
 const ANALYSIS_MODEL = process.env.OPENAI_ANALYSIS_MODEL || 'gpt-4o'
 
-// ── YouTube helpers ──────────────────────────────────────────────────────────
+// ── YouTube transcript setup ──────────────────────────────────────────────────
+const { YoutubeTranscript } = require('youtube-transcript')
+
 function isYouTubeUrl(url) {
   try {
     const parsed = new URL(url)
@@ -55,48 +66,13 @@ async function getYouTubeTitle(videoId) {
   } catch { return 'your video' }
 }
 
-// Fetch YouTube transcript directly — no package needed, no cookies, never expires
 async function getYouTubeTranscript(videoId) {
   try {
-    // Step 1: Fetch the video page to get the caption track URL
-    const pageRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept-Language': 'en-US,en;q=0.9',
-      }
-    })
-    const html = await pageRes.text()
-
-    // Step 2: Extract the caption track URL from the page source
-    const captionMatch = html.match(/"captionTracks":\s*\[.*?"baseUrl":\s*"([^"]+)"/)
-    if (!captionMatch) {
-      console.warn('No caption tracks found for video:', videoId)
-      return null
-    }
-
-    const captionUrl = captionMatch[1].replace(/\u0026/g, '&')
-
-    // Step 3: Fetch the caption XML
-    const captionRes = await fetch(captionUrl)
-    const captionXml = await captionRes.text()
-
-    // Step 4: Parse the XML into plain text
-    const transcript = captionXml
-      .replace(/<text[^>]*>/g, '')
-      .replace(/<\/text>/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/
-/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-
-    return transcript.length > 20 ? transcript : null
+    const segments = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' })
+    if (!segments || segments.length === 0) return null
+    return segments.map(s => s.text).join(' ').trim()
   } catch (err) {
-    console.warn('YouTube transcript fetch failed:', err.message)
+    console.warn('youtube-transcript fetch failed:', err.message)
     return null
   }
 }
