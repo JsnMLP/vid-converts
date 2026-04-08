@@ -144,52 +144,11 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
       await writeFile(videoPath, buffer)
 
     } else if (isYouTubeUrl(videoUrl)) {
-      // YouTube: fetch transcript directly — no cookies, no bot detection, never expires
-      const videoId = extractYouTubeId(videoUrl)
-      if (!videoId) throw new Error('Could not extract YouTube video ID from URL.')
-
-      const [ytTitle, ytTranscript] = await Promise.all([
-        getYouTubeTitle(videoId),
-        getYouTubeTranscript(videoId),
-      ])
-      videoTitle = ytTitle
-
-      if (ytTranscript && ytTranscript.length > 50) {
-        // Transcript available — analyze directly, no video download needed
-        console.log('YouTube transcript fetched successfully, skipping video download')
-        const report = await analyzeVideo({
-          transcript: ytTranscript, frameDescriptions: [],
-          niche, audience, goal, hasTranscript: true, hasFrames: false,
-        })
-        let reportId = null, isPaid = false
-        if (user_id) {
-          const { data: profile } = await supabase.from('profiles').select('tier').eq('id', user_id).single()
-          isPaid = profile?.tier === 'complete' || profile?.tier === 'premium'
-          const { data: saved, error: saveError } = await supabase.from('reports').insert({
-            user_id, video_name: videoTitle, video_source: 'url',
-            niche, audience, goal, transcript: ytTranscript,
-            report_data: report, tier: isPaid ? 'complete' : 'free',
-            created_at: new Date().toISOString(),
-          }).select('id').single()
-          if (saveError) console.error('Supabase save error:', saveError)
-          else reportId = saved?.id
-        }
-        if (user_email && reportId) {
-          try {
-            await resend.emails.send({
-              from: EMAIL_FROM, to: user_email,
-              subject: `Your video audit is ready — ${videoTitle}`,
-              html: buildReportEmail({ userName: user_name || 'there', videoTitle, reportUrl: `${APP_URL}/reports/${reportId}`, topFinding: report.rubricScores?.[0]?.finding || report.evidenceSummary || '', isPaid }),
-            })
-          } catch (e) { console.warn('Email failed:', e.message) }
-        }
-        await rm(tempDir, { recursive: true, force: true }).catch(() => {})
-        return res.json({ success: true, reportId, videoTitle, report })
-      }
-
-      // No transcript available (video has no captions) — still try to analyze with frames only
-      console.log('No YouTube transcript available, proceeding without transcript')
-      // videoPath stays undefined — frame extraction will be skipped gracefully
+      // YouTube: download via yt-dlp with residential proxy for full quality analysis
+      console.log('YouTube URL detected — downloading via proxy')
+      const dlResult = await downloadWithYtDlp(videoUrl, tempDir)
+      videoPath = dlResult.videoPath
+      videoTitle = dlResult.title
 
     } else {
       // Vimeo, Instagram, etc — use yt-dlp
@@ -347,22 +306,33 @@ function getYtDlpTitle(url) {
 function downloadWithYtDlp(url, tempDir) {
   return new Promise(async (resolve, reject) => {
     const title = await getYtDlpTitle(url)
-    const hasCookies = existsSync(COOKIES_PATH)
     const outputTemplate = path.join(tempDir, 'video.%(ext)s')
 
-    // FIX: Removed 'ios' player_client — YouTube now requires a GVS PO Token
-    // for iOS client formats and will reject without it.
-    // Using 'web' + 'android' as fallback chain instead.
+    // Build proxy URL from Railway env vars (IPRoyal residential proxy)
+    const proxyHost = process.env.IPROYAL_HOST
+    const proxyPort = process.env.IPROYAL_PORT
+    const proxyUser = process.env.IPROYAL_USER
+    const proxyPass = process.env.IPROYAL_PASS
+    const hasProxy = proxyHost && proxyPort && proxyUser && proxyPass
+    const proxyUrl = hasProxy
+      ? 'http://' + proxyUser + ':' + proxyPass + '@' + proxyHost + ':' + proxyPort
+      : null
+
+    if (hasProxy) {
+      console.log('Using IPRoyal residential proxy for download')
+    } else {
+      console.warn('No proxy configured — download may be blocked by YouTube')
+    }
+
     execFile('yt-dlp', [
       '--no-playlist',
       '--format', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4/bestvideo+bestaudio/best',
       '--output', outputTemplate,
-      '--extractor-args', 'youtube:player_client=web,android',
       '--no-check-certificates',
-      ...(hasCookies ? ['--cookies', COOKIES_PATH] : []),
+      ...(proxyUrl ? ['--proxy', proxyUrl] : []),
       url
-    ], { timeout: 120000 }, (err, stdout, stderr) => {
-      if (err) return reject(new Error(`yt-dlp failed: ${stderr || err.message}`))
+    ], { timeout: 180000 }, (err, stdout, stderr) => {
+      if (err) return reject(new Error('yt-dlp failed: ' + (stderr || err.message)))
       const files = require('fs').readdirSync(tempDir)
       const videoFile = files.find(f => f.startsWith('video.'))
       if (!videoFile) return reject(new Error('Downloaded video file not found'))
