@@ -52,7 +52,8 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
     if (req.file) {
       videoPath = path.join(tempDir, 'input.mp4')
       await writeFile(videoPath, req.file.buffer)
-      videoTitle = req.file.originalname.replace(/\.[^/.]+$/, '')
+      // FIX: Clean up filename — strip extension and decode any URL encoding
+      videoTitle = decodeURIComponent(req.file.originalname.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ').trim()) || 'your video'
     } else {
       const dlResult = await downloadWithYtDlp(videoUrl, tempDir)
       videoPath = dlResult.videoPath
@@ -180,8 +181,30 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+// FIX: Extract real video title from yt-dlp using --print title before downloading.
+// Falls back to 'your video' only if title extraction fails.
+function getYtDlpTitle(url) {
+  return new Promise((resolve) => {
+    execFile('yt-dlp', [
+      '--no-playlist',
+      '--print', 'title',
+      url
+    ], { timeout: 30000 }, (err, stdout) => {
+      if (err || !stdout?.trim()) {
+        console.warn('yt-dlp title extraction failed, using fallback')
+        resolve('your video')
+      } else {
+        resolve(stdout.trim())
+      }
+    })
+  })
+}
+
 function downloadWithYtDlp(url, tempDir) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
+    // FIX: Get the real title first, then download
+    const title = await getYtDlpTitle(url)
+
     const outputTemplate = path.join(tempDir, 'video.%(ext)s')
     execFile('yt-dlp', [
       '--no-playlist',
@@ -196,7 +219,6 @@ function downloadWithYtDlp(url, tempDir) {
       const videoFile = files.find(f => f.startsWith('video.'))
       if (!videoFile) return reject(new Error('Downloaded video file not found'))
       const videoPath = path.join(tempDir, videoFile)
-      const title = 'your video'
       resolve({ videoPath, title })
     })
   })
