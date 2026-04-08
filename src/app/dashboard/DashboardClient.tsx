@@ -12,7 +12,6 @@ interface Report {
   id: string
   video_name: string
   niche: string
-  overall_score: number
   tier: string
   created_at: string
   report_data: { overallScore: number }
@@ -367,7 +366,7 @@ export default function DashboardClient({ user }: Props) {
           <p>Upload a video or paste a URL to get your evidence-based conversion audit.</p>
         </div>
 
-        <UploadZone userId={user.id} />
+        <UploadZone userId={user.id} userEmail={user.email} userName={user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'there'} />
 
         {/* Past reports */}
         <div className={styles.reportsSection}>

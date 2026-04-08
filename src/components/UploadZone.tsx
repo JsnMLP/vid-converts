@@ -3,10 +3,11 @@
 import { useState, useRef, useCallback } from 'react'
 import styles from './UploadZone.module.css'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
 
 interface Props {
   userId: string
+  userEmail?: string
+  userName?: string
 }
 
 type UploadMode = 'file' | 'url'
@@ -14,6 +15,7 @@ type Step = 'upload' | 'context' | 'processing' | 'error'
 
 const MAX_FILE_SIZE = 500 * 1024 * 1024
 const ACCEPTED_TYPES = ['video/mp4', 'video/quicktime']
+const RAILWAY_URL = 'https://vid-converts-production.up.railway.app'
 
 const PROCESSING_STEPS = [
   'Uploading video…',
@@ -24,9 +26,8 @@ const PROCESSING_STEPS = [
   'Generating evidence-based report…',
 ]
 
-export default function UploadZone({ userId }: Props) {
+export default function UploadZone({ userId, userEmail, userName }: Props) {
   const router = useRouter()
-  const supabase = createClient()
   const [mode, setMode] = useState<UploadMode>('file')
   const [step, setStep] = useState<Step>('upload')
   const [isDragging, setIsDragging] = useState(false)
@@ -36,7 +37,6 @@ export default function UploadZone({ userId }: Props) {
   const [fileError, setFileError] = useState('')
   const [processingStep, setProcessingStep] = useState(0)
   const [errorMessage, setErrorMessage] = useState('')
-  const [uploadProgress, setUploadProgress] = useState(0)
 
   const [niche, setNiche] = useState('')
   const [audience, setAudience] = useState('')
@@ -72,7 +72,11 @@ export default function UploadZone({ userId }: Props) {
     setUrlError('')
     try {
       const parsed = new URL(url)
-      const validHosts = ['youtube.com', 'www.youtube.com', 'youtu.be', 'vimeo.com', 'www.vimeo.com', 'instagram.com', 'www.instagram.com']
+      const validHosts = [
+        'youtube.com', 'www.youtube.com', 'youtu.be',
+        'vimeo.com', 'www.vimeo.com',
+        'instagram.com', 'www.instagram.com',
+      ]
       if (!validHosts.some(h => parsed.hostname === h)) {
         setUrlError('Please paste a YouTube, Vimeo, or Instagram URL.'); return false
       }
@@ -105,7 +109,6 @@ export default function UploadZone({ userId }: Props) {
     setStep('processing')
     setProcessingStep(0)
 
-    // Animate processing steps
     const stepInterval = setInterval(() => {
       setProcessingStep(prev => {
         if (prev < PROCESSING_STEPS.length - 1) return prev + 1
@@ -115,47 +118,24 @@ export default function UploadZone({ userId }: Props) {
     }, 8000)
 
     try {
-      let resolvedVideoUrl = videoUrl
+      // Send directly to Railway — no Vercel, no Supabase Storage involved
+      const formData = new FormData()
+      formData.append('niche', niche)
+      formData.append('audience', audience)
+      formData.append('goal', goal)
+      formData.append('user_id', userId)
+      if (userEmail) formData.append('user_email', userEmail)
+      if (userName) formData.append('user_name', userName)
 
-      // ── FILE UPLOAD: send directly to Supabase Storage (bypasses Vercel 4.5MB limit) ──
       if (selectedFile) {
-        const fileExt = selectedFile.name.split('.').pop()
-        const fileName = `${userId}/${crypto.randomUUID()}.${fileExt}`
-
-        const { error: uploadError } = await supabase.storage
-          .from('videos')
-          .upload(fileName, selectedFile, {
-            cacheControl: '3600',
-            upsert: false,
-          })
-
-        if (uploadError) {
-          clearInterval(stepInterval)
-          setErrorMessage(`Upload failed: ${uploadError.message}`)
-          setStep('error')
-          return
-        }
-
-        // Get the public URL so Railway can fetch the file
-        const { data: { publicUrl } } = supabase.storage
-          .from('videos')
-          .getPublicUrl(fileName)
-
-        resolvedVideoUrl = publicUrl
+        formData.append('file', selectedFile)
+      } else {
+        formData.append('videoUrl', videoUrl)
       }
 
-      // ── SEND ONLY THE URL + CONTEXT to /api/analyze (tiny JSON payload, no 413) ──
-      const response = await fetch('/api/analyze', {
+      const response = await fetch(`${RAILWAY_URL}/analyze`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          videoUrl: resolvedVideoUrl,
-          niche,
-          audience,
-          goal,
-          sourceType: selectedFile ? 'upload' : 'url',
-          fileName: selectedFile ? selectedFile.name : undefined,
-        }),
+        body: formData,
       })
 
       clearInterval(stepInterval)
