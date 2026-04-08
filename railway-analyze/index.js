@@ -90,8 +90,7 @@ async function getYouTubeTranscript(videoId) {
       .replace(/&gt;/g, '>')
       .replace(/&quot;/g, '"')
       .replace(/&#39;/g, "'")
-      .replace(/
-/g, ' ')
+      .replace(/[\n\r]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim()
     return transcript.length > 20 ? transcript : null
