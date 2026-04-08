@@ -28,8 +28,6 @@ const EMAIL_FROM = process.env.EMAIL_FROM || 'hello@vidconverts.com'
 const ANALYSIS_MODEL = process.env.OPENAI_ANALYSIS_MODEL || 'gpt-4o'
 
 // ── YouTube cookies setup ─────────────────────────────────────────────────────
-// If YOUTUBE_COOKIES env var is set, write it to a temp file on startup.
-// yt-dlp uses this to authenticate requests and bypass 429 bot detection.
 const COOKIES_PATH = path.join(os.tmpdir(), 'yt-cookies.txt')
 
 async function setupCookies() {
@@ -53,7 +51,7 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }))
 
 // ── Main route ────────────────────────────────────────────────────────────────
 app.post('/analyze', upload.single('file'), async (req, res) => {
-  const { videoUrl, niche, audience, goal, user_id, user_email, user_name } = req.body
+  const { videoUrl, niche, audience, goal, user_id, user_email, user_name, sourceType, fileName } = req.body
 
   if (!niche || !audience || !goal) {
     return res.status(400).json({ error: 'Missing required context fields.' })
@@ -71,11 +69,27 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
     let videoTitle = 'your video'
 
     if (req.file) {
+      // Legacy: file sent directly as multipart (kept for safety)
       videoPath = path.join(tempDir, 'input.mp4')
       await writeFile(videoPath, req.file.buffer)
-      // FIX: Clean up filename — strip extension and decode any URL encoding
       videoTitle = decodeURIComponent(req.file.originalname.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ').trim()) || 'your video'
+
+    } else if (sourceType === 'upload' && videoUrl) {
+      // New: file was uploaded to Supabase Storage — download it from the public URL
+      console.log('Downloading uploaded file from Supabase Storage:', videoUrl)
+      const ext = (fileName || 'input.mp4').split('.').pop() || 'mp4'
+      videoPath = path.join(tempDir, `input.${ext}`)
+      videoTitle = fileName
+        ? decodeURIComponent(fileName.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ').trim())
+        : 'your video'
+
+      const fileRes = await fetch(videoUrl)
+      if (!fileRes.ok) throw new Error(`Failed to download video from storage: ${fileRes.status}`)
+      const buffer = Buffer.from(await fileRes.arrayBuffer())
+      await writeFile(videoPath, buffer)
+
     } else {
+      // URL mode: YouTube, Vimeo, Instagram — use yt-dlp
       const dlResult = await downloadWithYtDlp(videoUrl, tempDir)
       videoPath = dlResult.videoPath
       videoTitle = dlResult.title
@@ -128,7 +142,6 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
     let isPaid = false
 
     if (user_id) {
-      // Check if user has paid plan
       const { data: profile } = await supabase
         .from('profiles')
         .select('tier')
@@ -142,7 +155,7 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
         .insert({
           user_id,
           video_name: videoTitle,
-          video_source: videoUrl ? 'url' : 'upload',
+          video_source: sourceType === 'upload' ? 'upload' : (videoUrl ? 'url' : 'upload'),
           niche,
           audience,
           goal,
@@ -202,8 +215,6 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-// FIX: Extract real video title from yt-dlp using --print title before downloading.
-// Falls back to 'your video' only if title extraction fails.
 function getYtDlpTitle(url) {
   return new Promise((resolve) => {
     const hasCookies = existsSync(COOKIES_PATH)
@@ -229,11 +240,15 @@ function downloadWithYtDlp(url, tempDir) {
     const title = await getYtDlpTitle(url)
     const hasCookies = existsSync(COOKIES_PATH)
     const outputTemplate = path.join(tempDir, 'video.%(ext)s')
+
+    // FIX: Removed 'ios' player_client — YouTube now requires a GVS PO Token
+    // for iOS client formats and will reject without it.
+    // Using 'web' + 'android' as fallback chain instead.
     execFile('yt-dlp', [
       '--no-playlist',
-      '--format', 'mp4/bestvideo+bestaudio/best',
+      '--format', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4/bestvideo+bestaudio/best',
       '--output', outputTemplate,
-      '--extractor-args', 'youtube:player_client=ios',
+      '--extractor-args', 'youtube:player_client=web,android',
       '--no-check-certificates',
       ...(hasCookies ? ['--cookies', COOKIES_PATH] : []),
       url
@@ -267,11 +282,9 @@ function extractAudio(videoPath, audioPath) {
 }
 
 async function extractFrameDescriptions(videoPath, tempDir) {
-  // Extract 4 frames at 10%, 30%, 60%, 85% through the video
   const frameDir = path.join(tempDir, 'frames')
   await mkdir(frameDir, { recursive: true })
 
-  // Get video duration first
   const duration = await getVideoDuration(videoPath)
   const timestamps = [0.1, 0.3, 0.6, 0.85].map(p => Math.floor(duration * p))
 
@@ -427,7 +440,6 @@ Respond ONLY with a valid JSON object matching this structure exactly:
 
   const raw = response.choices[0]?.message?.content || '{}'
   const parsed = JSON.parse(raw)
-  // Normalize missingEvidence to always be an array
   if (typeof parsed.missingEvidence === 'string') {
     parsed.missingEvidence = [parsed.missingEvidence]
   }

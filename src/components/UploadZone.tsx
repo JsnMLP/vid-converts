@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from 'react'
 import styles from './UploadZone.module.css'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/utils/supabase/client'
 
 interface Props {
   userId: string
@@ -25,6 +26,7 @@ const PROCESSING_STEPS = [
 
 export default function UploadZone({ userId }: Props) {
   const router = useRouter()
+  const supabase = createClient()
   const [mode, setMode] = useState<UploadMode>('file')
   const [step, setStep] = useState<Step>('upload')
   const [isDragging, setIsDragging] = useState(false)
@@ -113,16 +115,47 @@ export default function UploadZone({ userId }: Props) {
     }, 8000)
 
     try {
-      const formData = new FormData()
-      if (selectedFile) formData.append('file', selectedFile)
-      if (videoUrl) formData.append('videoUrl', videoUrl)
-      formData.append('niche', niche)
-      formData.append('audience', audience)
-      formData.append('goal', goal)
+      let resolvedVideoUrl = videoUrl
 
+      // ── FILE UPLOAD: send directly to Supabase Storage (bypasses Vercel 4.5MB limit) ──
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop()
+        const fileName = `${userId}/${crypto.randomUUID()}.${fileExt}`
+
+        const { error: uploadError } = await supabase.storage
+          .from('videos')
+          .upload(fileName, selectedFile, {
+            cacheControl: '3600',
+            upsert: false,
+          })
+
+        if (uploadError) {
+          clearInterval(stepInterval)
+          setErrorMessage(`Upload failed: ${uploadError.message}`)
+          setStep('error')
+          return
+        }
+
+        // Get the public URL so Railway can fetch the file
+        const { data: { publicUrl } } = supabase.storage
+          .from('videos')
+          .getPublicUrl(fileName)
+
+        resolvedVideoUrl = publicUrl
+      }
+
+      // ── SEND ONLY THE URL + CONTEXT to /api/analyze (tiny JSON payload, no 413) ──
       const response = await fetch('/api/analyze', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoUrl: resolvedVideoUrl,
+          niche,
+          audience,
+          goal,
+          sourceType: selectedFile ? 'upload' : 'url',
+          fileName: selectedFile ? selectedFile.name : undefined,
+        }),
       })
 
       clearInterval(stepInterval)
@@ -134,7 +167,6 @@ export default function UploadZone({ userId }: Props) {
         return
       }
 
-      // Redirect to report page
       if (data.reportId) {
         router.push(`/report/${data.reportId}`)
       } else {

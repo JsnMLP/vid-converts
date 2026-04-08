@@ -17,7 +17,21 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const formData = await request.formData()
+    const body = await request.json()
+    const { videoUrl, niche, audience, goal, sourceType, fileName } = body
+
+    if (!videoUrl) {
+      return NextResponse.json({ error: 'No video URL provided.' }, { status: 400 })
+    }
+
+    // Build FormData to send to Railway — Railway service stays unchanged
+    const formData = new FormData()
+    formData.append('videoUrl', videoUrl)
+    formData.append('niche', niche ?? '')
+    formData.append('audience', audience ?? '')
+    formData.append('goal', goal ?? '')
+    formData.append('sourceType', sourceType ?? 'url')
+    if (fileName) formData.append('fileName', fileName)
     formData.append('user_id', user.id)
     formData.append('user_email', user.email ?? '')
     formData.append('user_name', user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'there')
