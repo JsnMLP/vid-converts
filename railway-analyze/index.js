@@ -13,16 +13,7 @@ const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
 const ffprobePath = require('@ffprobe-installer/ffprobe')?.path || 'ffprobe'
 
 const app = express()
-app.use(cors({
-  origin: [
-    'https://www.vidconverts.com',
-    'https://vidconverts.com',
-    'https://vid-converts-mdj9.vercel.app',
-    /\.vercel\.app$/,
-  ],
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}))
+app.use(cors())
 const upload = multer({ storage: multer.memoryStorage() })
 
 // ── Clients ──────────────────────────────────────────────────────────────────
