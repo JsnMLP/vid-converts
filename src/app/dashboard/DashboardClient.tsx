@@ -254,7 +254,7 @@ export default function DashboardClient({ user }: Props) {
   const loadReports = async () => {
     const { data } = await supabase
       .from('reports')
-      .select('id, video_name, niche, tier, created_at, report_data, overall_score, folder, tags')
+      .select('id, video_name, niche, tier, created_at, report_data, folder, tags')
       .order('created_at', { ascending: false })
       .limit(50)
     setReports(data || [])
