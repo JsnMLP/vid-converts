@@ -27,6 +27,27 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://vidconverts.com'
 const EMAIL_FROM = process.env.EMAIL_FROM || 'hello@vidconverts.com'
 const ANALYSIS_MODEL = process.env.OPENAI_ANALYSIS_MODEL || 'gpt-4o'
 
+// ── YouTube cookies setup ─────────────────────────────────────────────────────
+// If YOUTUBE_COOKIES env var is set, write it to a temp file on startup.
+// yt-dlp uses this to authenticate requests and bypass 429 bot detection.
+const COOKIES_PATH = path.join(os.tmpdir(), 'yt-cookies.txt')
+
+async function setupCookies() {
+  const cookieData = process.env.YOUTUBE_COOKIES
+  if (cookieData) {
+    try {
+      await writeFile(COOKIES_PATH, cookieData, 'utf8')
+      console.log('YouTube cookies written to', COOKIES_PATH)
+    } catch (err) {
+      console.warn('Failed to write YouTube cookies:', err.message)
+    }
+  } else {
+    console.log('No YOUTUBE_COOKIES env var set — yt-dlp will run without cookies')
+  }
+}
+
+setupCookies()
+
 // ── Health ────────────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ status: 'ok' }))
 
@@ -185,11 +206,14 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
 // Falls back to 'your video' only if title extraction fails.
 function getYtDlpTitle(url) {
   return new Promise((resolve) => {
-    execFile('yt-dlp', [
+    const hasCookies = existsSync(COOKIES_PATH)
+    const args = [
       '--no-playlist',
       '--print', 'title',
+      ...(hasCookies ? ['--cookies', COOKIES_PATH] : []),
       url
-    ], { timeout: 30000 }, (err, stdout) => {
+    ]
+    execFile('yt-dlp', args, { timeout: 30000 }, (err, stdout) => {
       if (err || !stdout?.trim()) {
         console.warn('yt-dlp title extraction failed, using fallback')
         resolve('your video')
@@ -202,9 +226,8 @@ function getYtDlpTitle(url) {
 
 function downloadWithYtDlp(url, tempDir) {
   return new Promise(async (resolve, reject) => {
-    // FIX: Get the real title first, then download
     const title = await getYtDlpTitle(url)
-
+    const hasCookies = existsSync(COOKIES_PATH)
     const outputTemplate = path.join(tempDir, 'video.%(ext)s')
     execFile('yt-dlp', [
       '--no-playlist',
@@ -212,6 +235,7 @@ function downloadWithYtDlp(url, tempDir) {
       '--output', outputTemplate,
       '--extractor-args', 'youtube:player_client=ios',
       '--no-check-certificates',
+      ...(hasCookies ? ['--cookies', COOKIES_PATH] : []),
       url
     ], { timeout: 120000 }, (err, stdout, stderr) => {
       if (err) return reject(new Error(`yt-dlp failed: ${stderr || err.message}`))
