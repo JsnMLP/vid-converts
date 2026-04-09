@@ -52,7 +52,7 @@ const plans = [
     plan: 'complete',
     badge: null,
     features: [
-      '10 video analyses per month',
+      '8 video analyses per month',
       'Full rubric breakdown (all 8 scores)',
       'All strengths & blockers',
       'Full action checklist',
@@ -83,7 +83,7 @@ const plans = [
     plan: 'premium',
     badge: 'Most Popular',
     features: [
-      'Unlimited video analyses',
+      'UNLIMITED video analyses',
       'Everything in Complete',
       '2 expert YouTube resources per finding',
       '2 "How To" article links per finding',
@@ -124,6 +124,27 @@ function PlanNameStyled({ name }: { name: string }) {
     return <span style={{ color: '#F5A623' }}>{name}</span>
   }
   return <>{name}</>
+}
+
+function FeatureText({ text }: { text: string }) {
+  if (text === 'UNLIMITED video analyses') {
+    return (
+      <span>
+        <span style={{
+          color: 'inherit',
+          textDecoration: 'underline',
+          textDecorationColor: '#F5A623',
+          textDecorationThickness: '2px',
+          textUnderlineOffset: '3px',
+          fontWeight: 700,
+        }}>
+          Unlimited
+        </span>
+        {' video analyses'}
+      </span>
+    )
+  }
+  return <span>{text}</span>
 }
 
 export default function PricingPage() {
@@ -240,7 +261,7 @@ export default function PricingPage() {
                   {plan.features.map((f) => (
                     <div key={f} className={styles.featureRow}>
                       <span className={styles.checkIcon}>✓</span>
-                      <span>{f}</span>
+                      <FeatureText text={f} />
                     </div>
                   ))}
                   {plan.locked.map((f) => (
