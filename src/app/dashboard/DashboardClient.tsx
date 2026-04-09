@@ -412,7 +412,7 @@ export default function DashboardClient({ user }: Props) {
                   fontSize: '12px', fontWeight: 700, color: '#f87171',
                   textDecoration: 'underline', marginLeft: '4px',
                 }}>
-                  Upgrade →
+                  Upgrade Now
                 </Link>
               )}
             </div>

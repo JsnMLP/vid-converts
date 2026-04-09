@@ -271,7 +271,7 @@ export default function ReportClient({ report }: Props) {
           color: '#F5A623',
         }}>
           <span className={styles.floatingCtaIcon}>🔒</span>
-          Monthly limit reached — Upgrade
+          Monthly limit reached — Upgrade Now
         </Link>
       ) : (
         <Link href="/dashboard" className={styles.floatingCta}>
