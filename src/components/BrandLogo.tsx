@@ -7,7 +7,7 @@ interface BrandLogoProps {
 
 export default function BrandLogo({ className, style }: BrandLogoProps) {
   return (
-    <span className={className} style={{ ...style, fontFamily: 'inherit' }}>
+    <span className={className} style={style}>
       <span style={{ color: 'var(--teal)' }}>Vid</span>
       <span style={{ color: '#ffffff' }}> Converts</span>
       <span style={{
