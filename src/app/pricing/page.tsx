@@ -12,10 +12,11 @@ const plans = [
     monthlyPrice: 0,
     yearlyPrice: 0,
     description: 'Try it before you commit',
-    cta: 'Start for free',
+    cta: 'Start Free',
     ctaHref: '/',
     highlight: false,
-    priceId: null,
+    monthlyPriceId: null,
+    annualPriceId: null,
     plan: null,
     badge: null,
     features: [
@@ -41,12 +42,13 @@ const plans = [
   },
   {
     name: 'Complete',
-    monthlyPrice: 25,
-    yearlyPrice: 20,
+    monthlyPrice: 35,
+    yearlyPrice: 28,
     description: 'Everything you need to improve',
     cta: 'Start Complete',
     highlight: false,
-    priceId: process.env.NEXT_PUBLIC_STRIPE_COMPLETE_PRICE_ID,
+    monthlyPriceId: process.env.NEXT_PUBLIC_STRIPE_COMPLETE_PRICE_ID,
+    annualPriceId: process.env.NEXT_PUBLIC_STRIPE_COMPLETE_ANNUAL_PRICE_ID,
     plan: 'complete',
     badge: null,
     features: [
@@ -71,12 +73,13 @@ const plans = [
   },
   {
     name: 'Premium',
-    monthlyPrice: 40,
-    yearlyPrice: 32,
+    monthlyPrice: 65,
+    yearlyPrice: 52,
     description: 'Your complete conversion system',
     cta: 'Start Premium',
     highlight: true,
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID,
+    monthlyPriceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID,
+    annualPriceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_ANNUAL_PRICE_ID,
     plan: 'premium',
     badge: 'Most Popular',
     features: [
@@ -129,14 +132,18 @@ export default function PricingPage() {
   const [showAddOn, setShowAddOn] = useState(false)
 
   const handleUpgrade = async (
-    priceId: string | null | undefined,
     plan: string | null | undefined,
+    monthlyPriceId: string | null | undefined,
+    annualPriceId: string | null | undefined,
     ctaHref?: string
   ) => {
-    if (!priceId || !plan) {
+    // Free plan — redirect immediately, never touch Stripe
+    if (!plan || !monthlyPriceId) {
       window.location.href = ctaHref || '/'
       return
     }
+    // Use annual price ID if toggle is on and ID exists, otherwise monthly
+    const priceId = annual && annualPriceId ? annualPriceId : monthlyPriceId
     setLoading(plan)
     try {
       const response = await fetch('/api/stripe/checkout', {
@@ -183,7 +190,7 @@ export default function PricingPage() {
                 className={`${styles.toggleBtn} ${annual ? styles.toggleActive : ''}`}
                 onClick={() => setAnnual(true)}>
                 Annually
-                <span className={styles.saveBadge}>Save 20%</span>
+                <span className={styles.saveBadge}>Save up to $156/year</span>
               </button>
             </div>
           </div>
@@ -217,13 +224,16 @@ export default function PricingPage() {
                   <p className={styles.planDesc}>{plan.description}</p>
                 </div>
 
+                {/* plan.plan !== null prevents null===null collision that caused permanent spinner on Free */}
                 <button
                   className={`${styles.cta} ${plan.highlight ? styles.ctaPrimary : styles.ctaSecondary}`}
-                  onClick={() => handleUpgrade(plan.priceId, plan.plan, (plan as any).ctaHref)}
-                  disabled={loading === plan.plan}>
-                  {loading === plan.plan ? (
+                  onClick={() => handleUpgrade(plan.plan, plan.monthlyPriceId, plan.annualPriceId, (plan as any).ctaHref)}
+                  disabled={plan.plan !== null && loading === plan.plan}>
+                  {plan.plan !== null && loading === plan.plan ? (
                     <span className={styles.spinner} />
-                  ) : plan.cta}
+                  ) : (
+                    plan.cta
+                  )}
                 </button>
 
                 <div className={styles.features} style={{ flex: 1 }}>
