@@ -53,7 +53,7 @@ const faqs = [
   },
   {
     q: 'What is your refund policy?',
-    a: 'Monthly subscribers are eligible for a full refund within 7 days of their initial payment if they are not satisfied. Annual subscribers are eligible for a prorated refund within 14 days of purchase. To request a refund, contact us at support@vidconverts.com and we\'ll take care of it promptly.',
+    a: 'Monthly subscribers are eligible for a full refund within 7 days of their initial payment, provided they have used no more than 1 analysis. Annual subscribers are eligible for a full refund within 14 days of purchase, provided they have used no more than 3 analyses. To request a refund, contact us at support@vidconverts.com and we\'ll take care of it promptly.',
   },
 ]
 
