@@ -17,14 +17,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // ── Get or create subscription row ───────────────────────────────────────────
+  // ── Get subscription row — maybeSingle returns null instead of erroring ───────
   let { data: sub } = await supabase
     .from('subscriptions')
     .select('plan, status, analyses_count, analyses_reset_date')
     .eq('user_id', user.id)
-    .single()
+    .maybeSingle()
 
   if (!sub) {
+    // No row yet — create one for this new user
     const { data: newSub } = await supabase
       .from('subscriptions')
       .upsert({
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
         analyses_reset_date: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
       }, { onConflict: 'user_id' })
       .select('plan, status, analyses_count, analyses_reset_date')
-      .single()
+      .maybeSingle()
     sub = newSub
   }
 
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
     }, { status: 403 })
   }
 
-  // ── Return approval + increment token ────────────────────────────────────────
+  // ── Return approval with user identity for Railway ────────────────────────────
   return NextResponse.json({
     allowed: true,
     plan: effectivePlan,

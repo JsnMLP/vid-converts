@@ -244,13 +244,15 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
     let isPaid = false
 
     if (user_id) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('tier')
-        .eq('id', user_id)
-        .single()
+      // Check subscriptions table for active paid plan (more reliable than profiles)
+      const { data: subscription } = await supabase
+        .from('subscriptions')
+        .select('plan, status')
+        .eq('user_id', user_id)
+        .maybeSingle()
 
-      isPaid = profile?.tier === 'complete' || profile?.tier === 'premium'
+      const activePlan = subscription?.status === 'active' ? subscription?.plan : 'free'
+      isPaid = activePlan === 'complete' || activePlan === 'premium'
 
       const { data: saved, error: saveError } = await supabase
         .from('reports')
@@ -263,7 +265,7 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
           goal,
           transcript: transcript || null,
           report_data: report,
-          tier: isPaid ? 'complete' : 'free',
+          tier: activePlan === 'free' ? 'free' : activePlan,
           created_at: new Date().toISOString(),
         })
         .select('id')

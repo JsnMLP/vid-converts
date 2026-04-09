@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     .from('subscriptions')
     .select('plan, status, analyses_count, analyses_reset_date')
     .eq('user_id', user.id)
-    .single()
+    .maybeSingle()
 
   if (!sub) {
     const { data: newSub } = await supabase
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
         analyses_reset_date: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
       }, { onConflict: 'user_id' })
       .select('plan, status, analyses_count, analyses_reset_date')
-      .single()
+      .maybeSingle()
     sub = newSub
   }
 
@@ -89,22 +89,15 @@ export async function POST(request: NextRequest) {
     let forwardFormData: FormData
 
     if (contentType.includes('multipart/form-data')) {
-      // File upload — parse incoming multipart and forward to Railway
       const incoming = await request.formData()
       forwardFormData = new FormData()
-
-      // FIX: Use Array.from instead of for...of to avoid TypeScript downlevelIteration error
       Array.from(incoming.entries()).forEach(([key, value]) => {
         forwardFormData.append(key, value)
       })
-
-      // Inject user identity
       forwardFormData.set('user_id', user.id)
       forwardFormData.set('user_email', user.email ?? '')
       forwardFormData.set('user_name', user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'there')
-
     } else {
-      // URL submission — parse JSON and build FormData for Railway
       const body = await request.json()
       const { videoUrl, niche, audience, goal, sourceType, fileName } = body
 
