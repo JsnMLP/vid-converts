@@ -7,10 +7,17 @@ interface BrandLogoProps {
 
 export default function BrandLogo({ className, style }: BrandLogoProps) {
   return (
-    <span className={className} style={style}>
+    <span className={className} style={{ ...style, fontFamily: 'inherit' }}>
       <span style={{ color: 'var(--teal)' }}>Vid</span>
       <span style={{ color: '#ffffff' }}> Converts</span>
-      <sup style={{ fontSize: '0.55em', color: '#ffffff', verticalAlign: 'super', marginLeft: '1px' }}>™</sup>
+      <span style={{
+        fontSize: '0.5em',
+        color: '#ffffff',
+        verticalAlign: 'super',
+        lineHeight: 0,
+        marginLeft: '2px',
+        fontWeight: 400,
+      }}>™</span>
     </span>
   )
 }
