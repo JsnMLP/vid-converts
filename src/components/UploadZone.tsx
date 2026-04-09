@@ -15,7 +15,6 @@ type Step = 'upload' | 'context' | 'processing' | 'error'
 
 const MAX_FILE_SIZE = 500 * 1024 * 1024
 const ACCEPTED_TYPES = ['video/mp4', 'video/quicktime']
-const RAILWAY_URL = 'https://vid-converts-production.up.railway.app'
 
 const PROCESSING_STEPS = [
   'Uploading video…',
@@ -38,6 +37,8 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
   const [fileError, setFileError] = useState('')
   const [processingStep, setProcessingStep] = useState(0)
   const [errorMessage, setErrorMessage] = useState('')
+  const [isLimitError, setIsLimitError] = useState(false)
+  const [limitPlan, setLimitPlan] = useState<string>('free')
 
   const [niche, setNiche] = useState('')
   const [audience, setAudience] = useState('')
@@ -88,7 +89,6 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
 
     const host = parsed.hostname.replace(/^www\./, '')
 
-    // ── Instagram: must be a reel ──────────────────────────────────────────────
     if (host === 'instagram.com') {
       if (!parsed.pathname.includes('/reel/')) {
         setUrlError("That looks like an Instagram profile or post, not a reel. Open the reel, tap Share → Copy Link. The URL should contain '/reel/' in it.")
@@ -97,7 +97,6 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
       return true
     }
 
-    // ── Facebook: must be a reel or video ──────────────────────────────────────
     if (['facebook.com', 'fb.com'].includes(host)) {
       if (!parsed.pathname.includes('/reel') && !parsed.pathname.includes('/videos/')) {
         setUrlError("That looks like a Facebook profile or page. Open the specific reel or video, tap Share → Copy Link. The URL should contain '/reel' or '/videos/' in it.")
@@ -107,7 +106,6 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
     }
     if (host === 'fb.watch') return true
 
-    // ── TikTok: must be a specific video ───────────────────────────────────────
     if (['tiktok.com', 'vm.tiktok.com', 'vt.tiktok.com'].includes(host)) {
       if (host === 'tiktok.com' && !parsed.pathname.includes('/video/')) {
         setUrlError("That looks like a TikTok profile. Open the specific video, tap Share → Copy Link. The URL should contain '/video/' in it.")
@@ -116,14 +114,12 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
       return true
     }
 
-    // ── Other supported platforms ──────────────────────────────────────────────
     if (['youtube.com', 'youtu.be', 'vimeo.com'].includes(host)) return true
     if (host === 'linkedin.com') {
       setUrlWarning("LinkedIn videos work if they're public. If the video requires you to be logged in, it may fail — in that case, download it and upload as an MP4 instead.")
       return true
     }
 
-    // ── Unsupported but recognisable ───────────────────────────────────────────
     if (['twitter.com', 'x.com'].includes(host)) {
       setUrlError("Twitter/X links aren't supported. Try YouTube, TikTok, Instagram, Facebook, LinkedIn, or Vimeo.")
       return false
@@ -171,6 +167,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
     if (!validateContext()) return
     setStep('processing')
     setProcessingStep(0)
+    setIsLimitError(false)
 
     const stepInterval = setInterval(() => {
       setProcessingStep(prev => {
@@ -181,28 +178,52 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
     }, 8000)
 
     try {
-      // Send directly to Railway — no Vercel, no Supabase Storage involved
-      const formData = new FormData()
-      formData.append('niche', niche)
-      formData.append('audience', audience)
-      formData.append('goal', goal)
-      formData.append('user_id', userId)
-      if (userEmail) formData.append('user_email', userEmail)
-      if (userName) formData.append('user_name', userName)
+      let response: Response
 
       if (selectedFile) {
+        // ── File upload: send multipart directly through /api/analyze ──────────
+        const formData = new FormData()
         formData.append('file', selectedFile)
-      } else {
-        formData.append('videoUrl', videoUrl)
-      }
+        formData.append('niche', niche)
+        formData.append('audience', audience)
+        formData.append('goal', goal)
+        formData.append('sourceType', 'upload')
+        formData.append('fileName', selectedFile.name)
+        formData.append('user_id', userId)
+        if (userEmail) formData.append('user_email', userEmail)
+        if (userName) formData.append('user_name', userName)
 
-      const response = await fetch(`${RAILWAY_URL}/analyze`, {
-        method: 'POST',
-        body: formData,
-      })
+        response = await fetch('/api/analyze', {
+          method: 'POST',
+          body: formData,
+          // No Content-Type header — browser sets it automatically with boundary
+        })
+      } else {
+        // ── URL: send JSON through /api/analyze ────────────────────────────────
+        response = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            videoUrl,
+            niche,
+            audience,
+            goal,
+            sourceType: 'url',
+          }),
+        })
+      }
 
       clearInterval(stepInterval)
       const data = await response.json()
+
+      // ── Limit reached ──────────────────────────────────────────────────────
+      if (response.status === 403 && data.code === 'LIMIT_REACHED') {
+        setIsLimitError(true)
+        setLimitPlan(data.plan || 'free')
+        setErrorMessage(data.error)
+        setStep('error')
+        return
+      }
 
       if (!response.ok) {
         setErrorMessage(data.error || 'Something went wrong during analysis.')
@@ -226,8 +247,10 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
 
   const handleReset = () => {
     setStep('upload'); setSelectedFile(null); setVideoUrl('')
-    setFileError(''); setUrlError(''); setUrlWarning(''); setNiche(''); setAudience(''); setGoal('')
+    setFileError(''); setUrlError(''); setUrlWarning('')
+    setNiche(''); setAudience(''); setGoal('')
     setContextErrors({}); setErrorMessage(''); setProcessingStep(0)
+    setIsLimitError(false)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -387,12 +410,24 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
   if (step === 'error') return (
     <div className={styles.container}>
       <div className={styles.errorState}>
-        <div className={styles.errorIcon}>⚠</div>
-        <h2>Analysis could not be completed</h2>
+        <div className={styles.errorIcon}>{isLimitError ? '🔒' : '⚠'}</div>
+        <h2>{isLimitError ? "You've reached your monthly limit" : 'Analysis could not be completed'}</h2>
         <p>{errorMessage}</p>
-        <button className={styles.continueBtn} onClick={handleReset} style={{ marginTop: '8px' }}>
-          Try again
-        </button>
+        {isLimitError ? (
+          <a
+            href={`/pricing?limit=reached&plan=${limitPlan}`}
+            className={styles.continueBtn}
+            style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+            See upgrade options
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </a>
+        ) : (
+          <button className={styles.continueBtn} onClick={handleReset} style={{ marginTop: '8px' }}>
+            Try again
+          </button>
+        )}
       </div>
     </div>
   )
