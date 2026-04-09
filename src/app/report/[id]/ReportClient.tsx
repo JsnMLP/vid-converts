@@ -3,8 +3,9 @@ import BrandLogo from '@/components/BrandLogo'
 
 import styles from './report.module.css'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { RUBRIC_TOOLTIPS, RUBRIC_RESOURCES } from '@/utils/analyze'
+import { createClient } from '@/utils/supabase/client'
 
 interface RubricScore {
   category: string
@@ -53,7 +54,12 @@ const FREE_MEASUREMENT_LIMIT = 3
 const FREE_TRANSCRIPT_LIMIT = 2
 const FREE_FRAMES_LIMIT = 2
 
-// FIX: Map raw AI codes to user-friendly descriptions
+const PLAN_LIMITS: Record<string, number> = {
+  free: 2,
+  complete: 8,
+  premium: Infinity,
+}
+
 const EVIDENCE_LABEL_MAP: Record<string, string> = {
   INSUFFICIENT_EVIDENCE: "We didn't have enough footage to evaluate this area",
   NO_TRANSCRIPT: "No transcript was available for this section",
@@ -62,7 +68,6 @@ const EVIDENCE_LABEL_MAP: Record<string, string> = {
 
 function formatFrameObservation(raw: string): string {
   if (EVIDENCE_LABEL_MAP[raw]) return EVIDENCE_LABEL_MAP[raw]
-  // Auto-format any other ALL_CAPS_CODES into readable text
   if (/^[A-Z_]+$/.test(raw)) {
     return raw
       .split('_')
@@ -138,7 +143,6 @@ function Tooltip({ text }: { text: string }) {
   )
 }
 
-// FIX: TierBadge styled — Premium = amber, Complete = purple
 function TierBadge({ tier }: { tier: string }) {
   if (tier === 'premium') {
     return (
@@ -174,7 +178,7 @@ function UpgradeBanner() {
           <strong>Unlock the full report</strong>
           <span>See all 8 scores, every strength and blocker, the complete action checklist, curated expert resources, and a downloadable PDF.</span>
         </div>
-        <Link href="/pricing" className={styles.upgradeBtn}>Upgrade — from $25/mo</Link>
+        <Link href="/pricing" className={styles.upgradeBtn}>Upgrade — from $35 USD/mo</Link>
       </div>
     </div>
   )
@@ -211,6 +215,27 @@ function ResourceLinks({ category, tier }: { category: string; tier: string }) {
 }
 
 export default function ReportClient({ report }: Props) {
+  const [usageCount, setUsageCount] = useState<number | null>(null)
+  const [userPlan, setUserPlan] = useState<string>('free')
+
+  useEffect(() => {
+    const fetchUsage = async () => {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('subscriptions')
+        .select('analyses_count, plan, status')
+        .single()
+      if (data) {
+        setUsageCount(data.analyses_count ?? 0)
+        setUserPlan(data.status === 'active' && data.plan !== 'free' ? data.plan : 'free')
+      }
+    }
+    fetchUsage()
+  }, [])
+
+  const limit = PLAN_LIMITS[userPlan] ?? 2
+  const isAtLimit = limit !== Infinity && usageCount !== null && usageCount >= limit
+
   const data = {
     ...report.report_data,
     missingEvidence: Array.isArray(report.report_data.missingEvidence)
@@ -238,11 +263,22 @@ export default function ReportClient({ report }: Props) {
 
   return (
     <div className={styles.page}>
-      {/* Floating Analyze Another Video button */}
-      <Link href="/dashboard" className={styles.floatingCta}>
-        <span className={styles.floatingCtaIcon}>＋</span>
-        Analyze Another Video
-      </Link>
+      {/* Floating CTA — changes when at limit */}
+      {isAtLimit ? (
+        <Link href={`/pricing?limit=reached&plan=${userPlan}`} className={styles.floatingCta} style={{
+          background: 'rgba(245,166,35,0.15)',
+          border: '1px solid rgba(245,166,35,0.4)',
+          color: '#F5A623',
+        }}>
+          <span className={styles.floatingCtaIcon}>🔒</span>
+          Monthly limit reached — Upgrade
+        </Link>
+      ) : (
+        <Link href="/dashboard" className={styles.floatingCta}>
+          <span className={styles.floatingCtaIcon}>＋</span>
+          Analyze Another Video
+        </Link>
+      )}
 
       <nav className={styles.nav}>
         <Link href="/dashboard" className={styles.logo}>
@@ -278,7 +314,7 @@ export default function ReportClient({ report }: Props) {
           </div>
         </div>
 
-        {/* Opening celebration — only for paid or if available */}
+        {/* Opening celebration */}
         {data.openingCelebration && (
           <div className={styles.celebrationCard}>
             <span className={styles.celebrationIcon}>🎯</span>
@@ -325,7 +361,6 @@ export default function ReportClient({ report }: Props) {
                   </div>
                 </div>
 
-                {/* Celebration — always show */}
                 {item.celebration && (
                   <div className={styles.celebrationMini}>
                     <span>✦</span>
@@ -356,14 +391,12 @@ export default function ReportClient({ report }: Props) {
                   )}
                 </div>
 
-                {/* Resource links for paid plans */}
                 {isPaid && (
                   <ResourceLinks category={item.category} tier={report.tier} />
                 )}
               </div>
             ))}
 
-            {/* Blurred locked cards */}
             {hiddenRubric.map((item, i) => (
               <div key={`locked-${i}`} className={`${styles.rubricCard} ${styles.rubricCardLocked}`}>
                 <div className={styles.rubricTop}>
@@ -460,7 +493,6 @@ export default function ReportClient({ report }: Props) {
         )}
 
         {/* Frame observations */}
-        {/* FIX: formatFrameObservation() converts INSUFFICIENT_EVIDENCE and other codes to friendly text */}
         {frameObs.length > 0 && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Frame observations</h2>
@@ -498,7 +530,6 @@ export default function ReportClient({ report }: Props) {
               {data.missingEvidence.map((m, i) => (
                 <div key={i} className={styles.missingItem}>
                   <span>⚠</span>
-                  {/* FIX: also format any codes in missingEvidence */}
                   <p>{formatFrameObservation(m)}</p>
                 </div>
               ))}
@@ -533,7 +564,6 @@ export default function ReportClient({ report }: Props) {
             <Link href="/pricing" className={styles.bigUpgradeBtn}>
               See pricing →
             </Link>
-            {/* FIX: Removed "No contracts." — annual subscribers are on a contract. */}
             <p className={styles.bottomUpgradeNote}>Cancel anytime.</p>
           </div>
         )}

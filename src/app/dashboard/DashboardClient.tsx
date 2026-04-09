@@ -240,6 +240,8 @@ export default function DashboardClient({ user }: Props) {
   const [loadingReports, setLoadingReports] = useState(true)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [usageCount, setUsageCount] = useState<number | null>(null)
+  const [userPlan, setUserPlan] = useState<string>('free')
 
   // Tags & folders state
   const [organisingId, setOrganisingId] = useState<string | null>(null)
@@ -251,7 +253,21 @@ export default function DashboardClient({ user }: Props) {
     router.push('/')
   }
 
-  useEffect(() => { loadReports() }, [])
+  useEffect(() => {
+    loadReports()
+    loadUsage()
+  }, [])
+
+  const loadUsage = async () => {
+    const { data } = await supabase
+      .from('subscriptions')
+      .select('analyses_count, plan, status')
+      .single()
+    if (data) {
+      setUsageCount(data.analyses_count ?? 0)
+      setUserPlan(data.status === 'active' && data.plan !== 'free' ? data.plan : 'free')
+    }
+  }
 
   const loadReports = async () => {
     const { data } = await supabase
@@ -368,6 +384,40 @@ export default function DashboardClient({ user }: Props) {
           <h1>Hey {firstName} 👋</h1>
           <p>Upload a video or paste a URL to get your evidence-based conversion audit.</p>
         </div>
+
+        {/* Usage counter — shown for free and complete plans */}
+        {userPlan !== 'premium' && usageCount !== null && (() => {
+          const limit = userPlan === 'complete' ? 8 : 2
+          const remaining = Math.max(0, limit - usageCount)
+          const isAtLimit = remaining === 0
+          return (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '10px',
+              padding: '10px 16px', borderRadius: '8px', marginBottom: '12px',
+              background: isAtLimit ? 'rgba(248,113,113,0.08)' : 'rgba(45,212,191,0.08)',
+              border: `1px solid ${isAtLimit ? 'rgba(248,113,113,0.25)' : 'rgba(45,212,191,0.25)'}`,
+            }}>
+              <span style={{ fontSize: '16px' }}>{isAtLimit ? '🔒' : '📊'}</span>
+              <span style={{
+                fontSize: '13px', fontWeight: 600,
+                color: isAtLimit ? '#f87171' : '#2dd4bf',
+              }}>
+                {isAtLimit
+                  ? `You've used all ${limit} analyses this month. `
+                  : `${remaining} of ${limit} ${userPlan === 'complete' ? 'Complete' : 'free'} anal${remaining === 1 ? 'ysis' : 'yses'} remaining this month.`
+                }
+              </span>
+              {isAtLimit && (
+                <Link href={`/pricing?limit=reached&plan=${userPlan}`} style={{
+                  fontSize: '12px', fontWeight: 700, color: '#f87171',
+                  textDecoration: 'underline', marginLeft: '4px',
+                }}>
+                  Upgrade →
+                </Link>
+              )}
+            </div>
+          )
+        })()}
 
         <UploadZone userId={user.id} userEmail={user.email} userName={user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'there'} />
 
