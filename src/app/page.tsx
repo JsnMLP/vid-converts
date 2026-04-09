@@ -1,120 +1,185 @@
-import type { Metadata } from 'next'
-import Link from 'next/link'
-import styles from './legal.module.css'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Terms of Service — Vid Converts',
-  description: 'Terms of Service for Vid Converts, a product of Digital Nuclei.',
-}
+import { useState, useEffect } from 'react'
+import { createClient } from '@/utils/supabase/client'
+import styles from './page.module.css'
+import AuthModal from '@/components/AuthModal'
+import Navbar from '@/components/Navbar'
+import { User } from '@supabase/supabase-js'
 
-export default function TermsPage() {
+export default function Home() {
+  const [user, setUser] = useState<User | null>(null)
+  const [showAuth, setShowAuth] = useState(false)
+  const supabase = createClient()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
   return (
-    <div className={styles.page}>
-      <nav className={styles.nav}>
-        <Link href="/" className={styles.logo}>
-          <span style={{ color: 'var(--teal)' }}>Vid</span> Converts
-        </Link>
-        <Link href="/pricing" className={styles.navLink}>Pricing</Link>
-      </nav>
+    <>
+      <Navbar user={user} onSignIn={() => setShowAuth(true)} />
 
       <main className={styles.main}>
-        <div className={styles.header}>
-          <p className={styles.lastUpdated}>Last updated: April 7, 2026</p>
-          <h1>Terms of Service</h1>
-          <p className={styles.intro}>
-            These Terms of Service govern your use of Vid Converts, operated by Digital Nuclei.
-            By using our service, you agree to these terms. Please read them carefully.
+        {/* Background grid */}
+        <div className={styles.gridBg} aria-hidden />
+        <div className={styles.glowOrb} aria-hidden />
+
+        {/* Hero */}
+        <section className={styles.hero}>
+          <div className={styles.badge + ' fade-up'}>
+            <span className={styles.badgeDot} />
+            Evidence-based video audits
+          </div>
+
+          <h1 className={styles.headline + ' fade-up-delay-1'}>
+            Your video is losing<br />
+            <span className={styles.tealGradient}>conversions.</span><br />
+            Here&apos;s exactly why.
+          </h1>
+
+          <p className={styles.subheadline + ' fade-up-delay-2'}>
+            Upload your marketing video and get a scored audit grounded in your real transcript and frames —
+            not templates, not guesswork.
           </p>
-        </div>
 
-        <div className={styles.content}>
+          {/* Upload CTA — the hero element */}
+          <div className={styles.uploadZone + ' fade-up-delay-3'} onClick={() => { if (user) window.location.href = '/dashboard' }}>
+            <div className={styles.uploadInner}>
+              <div className={styles.uploadIcon}>
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                  <path d="M20 8v16M13 15l7-7 7 7" stroke="var(--teal)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M8 28v2a2 2 0 002 2h20a2 2 0 002-2v-2" stroke="var(--teal)" strokeWidth="2.5" strokeLinecap="round"/>
+                </svg>
+              </div>
+              <div className={styles.uploadText}>
+                <strong>Drop your video here to get started</strong>
+                <span>MP4 or MOV up to 500MB · or paste a URL below</span>
+              </div>
+              <button
+                className={styles.uploadBtn}
+                onClick={() => user ? window.location.href = '/dashboard' : setShowAuth(true)}
+              >
+                Analyze My Video
+              </button>
+            </div>
+            <div className={styles.uploadDivider}>
+              <span>or</span>
+            </div>
+            <div className={styles.urlRow}>
+              <input
+                className={styles.urlInput}
+                placeholder="Paste a video URL (YouTube, Vimeo, Instagram…)"
+                readOnly
+                onClick={() => user ? window.location.href = '/dashboard' : setShowAuth(true)}
+              />
+              <button className={styles.urlBtn} onClick={() => user ? window.location.href = '/dashboard' : setShowAuth(true)}>
+                Audit URL
+              </button>
+            </div>
+          </div>
 
-          <section>
-            <h2>1. Service Description</h2>
-            <p>Vid Converts is an AI-powered video conversion audit service. We analyse video content using artificial intelligence and provide evidence-based reports to help improve marketing video performance. Reports are generated automatically and are intended for informational and educational purposes.</p>
-          </section>
+          <p className={styles.disclaimer + ' fade-up-delay-4'}>
+            Free audit available — no credit card required
+          </p>
+        </section>
 
-          <section>
-            <h2>2. Eligibility</h2>
-            <p>You must be at least 18 years of age to use this service. By creating an account, you confirm that the information you provide is accurate and that you have the authority to accept these terms on behalf of any organisation you represent.</p>
-          </section>
+        {/* Rubric preview */}
+        <section className={styles.rubric}>
+          <div className="container">
+            <p className={styles.rubricLabel}>Every video is scored on 8 conversion factors</p>
+            <div className={styles.rubricGrid}>
+              {[
+                { label: 'Hook', desc: 'Does it stop the scroll?' },
+                { label: 'Problem Clarity', desc: 'Is the pain obvious?' },
+                { label: 'Offer Clarity', desc: 'Is the solution clear?' },
+                { label: 'Trust & Proof', desc: 'Is credibility shown?' },
+                { label: 'CTA', desc: 'Is the ask specific?' },
+                { label: 'Visual Communication', desc: 'Is the screen readable?' },
+                { label: 'Platform Fit', desc: 'Right format for the channel?' },
+                { label: 'Measurement Readiness', desc: 'Can you track performance?' },
+              ].map((item) => (
+                <div key={item.label} className={styles.rubricCard}>
+                  <div className={styles.rubricDot} />
+                  <strong>{item.label}</strong>
+                  <span>{item.desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-          <section>
-            <h2>3. Subscriptions and Billing</h2>
-            <h3>3.1 Monthly Plans</h3>
-            <p>Monthly subscriptions are billed on a recurring basis. You may cancel at any time. Upon cancellation, you retain access to your plan until the end of your current billing period. No partial refunds are issued for unused days on monthly plans.</p>
-
-            <h3>3.2 Annual Plans</h3>
-            <p>Annual subscriptions are billed upfront for a 12-month term at a discounted rate. If you cancel an annual subscription before the end of the 12-month term, an early termination fee equal to 50% of the remaining months will be charged. For example, if you cancel after 4 months of a 12-month plan, you will be charged 50% of the remaining 8 months.</p>
-
-            <h3>3.3 Price Changes</h3>
-            <p>We reserve the right to adjust pricing with at least 30 days' advance notice to active subscribers. Price changes will not affect your current billing period.</p>
-          </section>
-
-          <section>
-            <h2>4. Refund Policy</h2>
-            <p>We offer a <strong>14-day refund</strong> for first-time subscribers on any paid plan. To request a refund within this window, contact us at support@vidconverts.com with your account email and reason for the request.</p>
-            <p>Refunds are not available after 14 days, for renewals, or for accounts that have generated more than 3 reports during the refund window. The Social Media Video Add-on is non-refundable once production has commenced.</p>
-          </section>
-
-          <section>
-            <h2>5. Acceptable Use</h2>
-            <p>You agree not to use Vid Converts to:</p>
-            <ul>
-              <li>Upload video content that is illegal, defamatory, or infringes third-party intellectual property rights</li>
-              <li>Attempt to reverse-engineer, scrape, or extract data from the service in bulk</li>
-              <li>Share account credentials or allow access by multiple users on a single-user plan</li>
-              <li>Use the service to train competing AI models</li>
-            </ul>
-            <p>Violation of these terms may result in immediate account suspension without refund.</p>
-          </section>
-
-          <section>
-            <h2>6. Intellectual Property</h2>
-            <p>You retain full ownership of any video content you upload. By uploading content, you grant Vid Converts a limited, temporary licence to process that content for the purpose of generating your audit report. We do not store, sell, or share your video content with third parties. Generated reports are owned by you once produced.</p>
-            <p>The Vid Converts platform, including its design, code, and AI systems, is the intellectual property of Digital Nuclei. Nothing in these terms transfers ownership of our platform to you.</p>
-          </section>
-
-          <section>
-            <h2>7. AI-Generated Content Disclaimer</h2>
-            <p>Reports are generated using artificial intelligence and are provided for informational purposes only. While we strive for accuracy and evidence-based analysis, we do not guarantee specific conversion outcomes or business results. AI analysis is a tool to inform your decisions — not a substitute for professional marketing advice.</p>
-          </section>
-
-          <section>
-            <h2>8. Limitation of Liability</h2>
-            <p>To the maximum extent permitted by applicable law, Digital Nuclei shall not be liable for any indirect, incidental, consequential, or punitive damages arising from your use of Vid Converts. Our total liability to you for any claim shall not exceed the amount you paid us in the 3 months preceding the claim.</p>
-          </section>
-
-          <section>
-            <h2>9. Termination</h2>
-            <p>We reserve the right to suspend or terminate accounts that violate these terms, engage in fraudulent activity, or use the service in ways that harm other users or the platform. Where possible, we will provide notice before termination.</p>
-          </section>
-
-          <section>
-            <h2>10. Governing Law</h2>
-            <p>These terms are governed by the laws of the Province of Ontario, Canada, and the federal laws of Canada applicable therein. Any disputes shall be resolved in the courts of Ontario.</p>
-          </section>
-
-          <section>
-            <h2>11. Changes to These Terms</h2>
-            <p>We may update these terms from time to time. We will notify active subscribers by email at least 14 days before material changes take effect. Continued use of the service after that date constitutes acceptance of the updated terms.</p>
-          </section>
-
-          <section>
-            <h2>12. Contact</h2>
-            <p>For questions about these terms, contact us at <a href="mailto:support@vidconverts.com" className={styles.link}>support@vidconverts.com</a>.</p>
-          </section>
-
-        </div>
-
-        <div className={styles.footer}>
-          <Link href="/privacy" className={styles.footerLink}>Privacy Policy</Link>
-          <span>·</span>
-          <Link href="/pricing" className={styles.footerLink}>Pricing</Link>
-          <span>·</span>
-          <Link href="/" className={styles.footerLink}>Home</Link>
-        </div>
+        {/* Trust bar */}
+        <section className={styles.trustBar}>
+          <div className="container">
+            <div className={styles.trustGrid}>
+              <div className={styles.trustItem}>
+                <strong>Real transcript</strong>
+                <span>Every word extracted via Whisper AI</span>
+              </div>
+              <div className={styles.trustDivider} />
+              <div className={styles.trustItem}>
+                <strong>Real frame analysis</strong>
+                <span>Actual screenshots reviewed, not guesses</span>
+              </div>
+              <div className={styles.trustDivider} />
+              <div className={styles.trustItem}>
+                <strong>No fake reports</strong>
+                <span>If evidence is missing, we say so plainly</span>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
-    </div>
+
+      {/* Footer */}
+      <footer className={styles.footer}>
+        <div className={styles.footerInner}>
+          <div className={styles.footerTop}>
+            <div className={styles.footerBrand}>
+              <span className={styles.footerLogo}><span style={{ color: 'var(--teal)' }}>Vid</span> Converts</span>
+              <span className={styles.footerTagline}>Your videos are costing you clients = lost revenue.<br />Find out exactly why — and fix it.</span>
+            </div>
+            <div className={styles.footerLinks}>
+              <div className={styles.footerCol}>
+                <span className={styles.footerColTitle}>Product</span>
+                <a href="/" className={styles.footerLink}>Home</a>
+                <a href="/pricing" className={styles.footerLink}>Pricing</a>
+                <a href="/faq" className={styles.footerLink}>FAQ</a>
+                <a href="/dashboard" className={styles.footerLink}>Dashboard</a>
+              </div>
+              <div className={styles.footerCol}>
+                <span className={styles.footerColTitle}>Legal</span>
+                <a href="/privacy" className={styles.footerLink}>Privacy Policy</a>
+                <a href="/terms" className={styles.footerLink}>Terms of Service</a>
+              </div>
+              <div className={styles.footerCol}>
+                <span className={styles.footerColTitle}>Company</span>
+                <a href="https://digitalnuclei.com" target="_blank" rel="noopener noreferrer" className={styles.footerLink}>Digital Nuclei</a>
+                <a href="mailto:support@vidconverts.com" className={styles.footerLink}>support@vidconverts.com</a>
+              </div>
+            </div>
+          </div>
+          <div className={styles.footerBottom}>
+            <span>© 2026 Digital Nuclei. All rights reserved.</span>
+            <span>Vid Converts is a product of <a href="https://digitalnuclei.com" target="_blank" rel="noopener noreferrer" className={styles.footerTealLink}>Digital Nuclei</a></span>
+          </div>
+        </div>
+      </footer>
+
+      {showAuth && (
+        <AuthModal
+          onClose={() => setShowAuth(false)}
+          onSuccess={() => {
+            setShowAuth(false)
+            window.location.href = '/dashboard'
+          }}
+        />
+      )}
+    </>
   )
 }
