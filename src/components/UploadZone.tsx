@@ -181,7 +181,33 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
       let response: Response
 
       if (selectedFile) {
-        // ── File upload: send multipart directly through /api/analyze ──────────
+        // ── File upload: check limit first (lightweight), then go direct to Railway ──
+        // Vercel has a 4.5MB body limit — cannot send 500MB files through it.
+        // Solution: check limit via /api/check-limit, then send file straight to Railway.
+        const limitCheck = await fetch('/api/check-limit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        })
+        const limitData = await limitCheck.json()
+
+        if (limitCheck.status === 403 && limitData.code === 'LIMIT_REACHED') {
+          clearInterval(stepInterval)
+          setIsLimitError(true)
+          setLimitPlan(limitData.plan || 'free')
+          setErrorMessage(limitData.error)
+          setStep('error')
+          return
+        }
+
+        if (!limitCheck.ok) {
+          clearInterval(stepInterval)
+          setErrorMessage(limitData.error || 'Could not verify your account. Please try again.')
+          setStep('error')
+          return
+        }
+
+        // Limit cleared — send file directly to Railway (bypasses Vercel body limit)
         const formData = new FormData()
         formData.append('file', selectedFile)
         formData.append('niche', niche)
@@ -189,14 +215,13 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
         formData.append('goal', goal)
         formData.append('sourceType', 'upload')
         formData.append('fileName', selectedFile.name)
-        formData.append('user_id', userId)
-        if (userEmail) formData.append('user_email', userEmail)
-        if (userName) formData.append('user_name', userName)
+        formData.append('user_id', limitData.userId)
+        formData.append('user_email', limitData.userEmail)
+        formData.append('user_name', limitData.userName)
 
-        response = await fetch('/api/analyze', {
+        response = await fetch('https://vid-converts-production.up.railway.app/analyze', {
           method: 'POST',
           body: formData,
-          // No Content-Type header — browser sets it automatically with boundary
         })
       } else {
         // ── URL: send JSON through /api/analyze ────────────────────────────────
@@ -232,6 +257,10 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
       }
 
       if (data.reportId) {
+        // If file upload went direct to Railway, increment counter now
+        if (selectedFile) {
+          await fetch('/api/increment-usage', { method: 'POST' }).catch(() => {})
+        }
         router.push(`/report/${data.reportId}`)
       } else {
         setErrorMessage('Report was generated but could not be saved. Please try again.')
