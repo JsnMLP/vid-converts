@@ -235,7 +235,9 @@ export default function PricingPage() {
                     <span className={styles.price}>
                       ${annual ? plan.yearlyPrice : plan.monthlyPrice}
                     </span>
-                    <span className={styles.period}>/ month</span>
+                    <span className={styles.period}>
+                      USD / month
+                    </span>
                     {annual && plan.monthlyPrice > 0 && (
                       <span style={{
                         color: '#2DD4BF',
@@ -250,7 +252,7 @@ export default function PricingPage() {
                   </div>
                   {annual && plan.monthlyPrice > 0 && (
                     <p className={styles.billedAs}>
-                      Billed as ${plan.yearlyPrice * 12}/year
+                      Billed as ${plan.yearlyPrice * 12} USD/year
                     </p>
                   )}
                   <p className={styles.planDesc}>{plan.description}</p>
