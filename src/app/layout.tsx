@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Encode_Sans_Expanded, Mulish } from 'next/font/google'
 import './globals.css'
+import GlobalFooter from '@/components/GlobalFooter'
 
 const encodeSansExpanded = Encode_Sans_Expanded({
   subsets: ['latin'],
@@ -32,7 +33,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${encodeSansExpanded.variable} ${mulish.variable}`}>
-      <body>{children}</body>
+      <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        {children}
+        <GlobalFooter />
+      </body>
     </html>
   )
 }
