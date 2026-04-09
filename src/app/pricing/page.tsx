@@ -211,7 +211,7 @@ export default function PricingPage() {
                 className={`${styles.toggleBtn} ${annual ? styles.toggleActive : ''}`}
                 onClick={() => setAnnual(true)}>
                 Annually
-                <span className={styles.saveBadge}>Save up to $156/year</span>
+                <span className={styles.saveBadge}>Save 20%</span>
               </button>
             </div>
           </div>
@@ -236,10 +236,21 @@ export default function PricingPage() {
                       ${annual ? plan.yearlyPrice : plan.monthlyPrice}
                     </span>
                     <span className={styles.period}>/ month</span>
+                    {annual && plan.monthlyPrice > 0 && (
+                      <span style={{
+                        color: '#2DD4BF',
+                        fontSize: '0.85rem',
+                        fontWeight: 600,
+                        marginLeft: '8px',
+                        alignSelf: 'center',
+                      }}>
+                        Save ${(plan.monthlyPrice - plan.yearlyPrice) * 12}/yr
+                      </span>
+                    )}
                   </div>
                   {annual && plan.monthlyPrice > 0 && (
                     <p className={styles.billedAs}>
-                      Billed as ${(annual ? plan.yearlyPrice : plan.monthlyPrice) * 12}/year
+                      Billed as ${plan.yearlyPrice * 12}/year
                     </p>
                   )}
                   <p className={styles.planDesc}>{plan.description}</p>
