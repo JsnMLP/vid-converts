@@ -89,13 +89,14 @@ export async function POST(request: NextRequest) {
     let forwardFormData: FormData
 
     if (contentType.includes('multipart/form-data')) {
-      // File upload — parse incoming multipart and forward as-is to Railway
+      // File upload — parse incoming multipart and forward to Railway
       const incoming = await request.formData()
       forwardFormData = new FormData()
 
-      for (const [key, value] of incoming.entries()) {
+      // FIX: Use Array.from instead of for...of to avoid TypeScript downlevelIteration error
+      Array.from(incoming.entries()).forEach(([key, value]) => {
         forwardFormData.append(key, value)
-      }
+      })
 
       // Inject user identity
       forwardFormData.set('user_id', user.id)
