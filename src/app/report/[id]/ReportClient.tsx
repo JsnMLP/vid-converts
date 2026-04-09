@@ -1,4 +1,5 @@
 'use client'
+import BrandLogo from '@/components/BrandLogo'
 
 import styles from './report.module.css'
 import Link from 'next/link'
@@ -245,7 +246,7 @@ export default function ReportClient({ report }: Props) {
 
       <nav className={styles.nav}>
         <Link href="/dashboard" className={styles.logo}>
-          <span style={{ color: 'var(--teal)' }}>Vid</span> Converts
+          <BrandLogo />
         </Link>
         <div className={styles.navRight}>
           <Link href="/dashboard" className={styles.backLink}>← Dashboard</Link>

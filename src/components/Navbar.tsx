@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
+import BrandLogo from '@/components/BrandLogo'
 
 interface NavbarProps {
   user: User | null
@@ -24,8 +25,7 @@ export default function Navbar({ user, onSignIn }: NavbarProps) {
     <nav className={styles.nav}>
       <div className={styles.inner}>
         <Link href="/" className={styles.logo}>
-          <span className={styles.logoVid}>Vid</span>
-          <span className={styles.logoConverts}> Converts</span>
+          <BrandLogo />
         </Link>
 
         <div className={styles.links}>

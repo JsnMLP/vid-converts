@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Navbar from '@/components/Navbar'
 import styles from './pricing.module.css'
 import Link from 'next/link'
+import BrandLogo from '@/components/BrandLogo'
 
 const plans = [
   {
@@ -112,7 +113,6 @@ const addOn = {
   ],
 }
 
-// Renders "Complete" in purple and "Premium" in amber wherever plan names appear
 function PlanNameStyled({ name }: { name: string }) {
   if (name === 'Complete') {
     return <span style={{ color: '#7C5CFC' }}>{name}</span>
@@ -188,7 +188,6 @@ export default function PricingPage() {
             </div>
           </div>
 
-          {/* FIX: items-stretch + flex flex-col on each card ensures equal height */}
           <div className={`${styles.grid}`} style={{ alignItems: 'stretch' }}>
             {plans.map((plan) => (
               <div
@@ -201,7 +200,6 @@ export default function PricingPage() {
                 )}
 
                 <div className={styles.cardHeader}>
-                  {/* FIX: Plan name styled with colour token */}
                   <h2 className={styles.planName}>
                     <PlanNameStyled name={plan.name} />
                   </h2>
@@ -219,7 +217,6 @@ export default function PricingPage() {
                   <p className={styles.planDesc}>{plan.description}</p>
                 </div>
 
-                {/* FIX: Free plan button never waits — always shows label immediately */}
                 <button
                   className={`${styles.cta} ${plan.highlight ? styles.ctaPrimary : styles.ctaSecondary}`}
                   onClick={() => handleUpgrade(plan.priceId, plan.plan, (plan as any).ctaHref)}
@@ -229,7 +226,6 @@ export default function PricingPage() {
                   ) : plan.cta}
                 </button>
 
-                {/* FIX: flex-1 on features so cards stretch equally, CTA stays at bottom */}
                 <div className={styles.features} style={{ flex: 1 }}>
                   {plan.features.map((f) => (
                     <div key={f} className={styles.featureRow}>
@@ -309,7 +305,7 @@ export default function PricingPage() {
       </main>
 
       <footer className={styles.footer}>
-        <span>Vid Converts</span>
+        <BrandLogo />
         <span className={styles.by}>
           by{' '}
           <a href="https://digitalnuclei.com" target="_blank" rel="noopener noreferrer">

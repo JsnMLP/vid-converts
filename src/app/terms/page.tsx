@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import styles from './legal.module.css'
+import BrandLogo from '@/components/BrandLogo'
 
 export const metadata: Metadata = {
   title: 'Terms of Service — Vid Converts',
@@ -12,7 +13,7 @@ export default function TermsPage() {
     <div className={styles.page}>
       <nav className={styles.nav}>
         <Link href="/" className={styles.logo}>
-          <span style={{ color: 'var(--teal)' }}>Vid</span> Converts
+          <BrandLogo />
         </Link>
         <Link href="/pricing" className={styles.navLink}>Pricing</Link>
       </nav>
@@ -31,7 +32,7 @@ export default function TermsPage() {
 
           <section>
             <h2>1. Service Description</h2>
-            <p>Vid Converts is an AI-powered video conversion audit service. We analyse video content using artificial intelligence and provide evidence-based reports to help improve marketing video performance. Reports are generated automatically and are intended for informational and educational purposes.</p>
+            <p>Vid Converts is an AI-powered video conversion audit service. We analyze video content using artificial intelligence and provide evidence-based reports to help improve marketing video performance. Reports are generated automatically and are intended for informational and educational purposes.</p>
           </section>
 
           <section>

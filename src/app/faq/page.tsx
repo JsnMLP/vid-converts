@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Navbar from '@/components/Navbar'
 import styles from './faq.module.css'
 import Link from 'next/link'
+import BrandLogo from '@/components/BrandLogo'
 
 const faqs = [
   {
@@ -24,7 +25,7 @@ const faqs = [
   },
   {
     q: 'What video formats do you support?',
-    a: 'You can upload MP4 or MOV files up to 500MB, or paste a URL from YouTube, Vimeo, or Instagram. If you paste a URL, we fetch and analyse the video directly — no download needed on your end.',
+    a: 'You can upload MP4 or MOV files up to 500MB, or paste a URL from YouTube, Vimeo, or Instagram. If you paste a URL, we fetch and analyze the video directly — no download needed on your end.',
   },
   {
     q: 'What is the difference between Free and paid tiers?',
@@ -48,13 +49,10 @@ const faqs = [
   },
   {
     q: 'Can I cancel my subscription?',
-    // FIX: Removed "No contracts" — annual subscribers are on a contract.
-    // Kept "cancel anytime" which is true for all plans.
     a: 'Yes, you can cancel at any time. Monthly subscribers retain access until the end of their billing month. Annual subscribers can cancel to stop renewal and retain access until their year ends.',
   },
   {
     q: 'What is your refund policy?',
-    // FIX: Added dedicated refund policy FAQ
     a: 'Monthly subscribers are eligible for a full refund within 7 days of their initial payment if they are not satisfied. Annual subscribers are eligible for a prorated refund within 14 days of purchase. To request a refund, contact us at support@vidconverts.com and we\'ll take care of it promptly.',
   },
 ]
@@ -72,7 +70,7 @@ export default function FAQPage() {
           <div className={styles.header}>
             <h1 className={styles.title}>Frequently asked questions</h1>
             <p className={styles.subtitle}>
-              Everything you need to know about Vid Converts.
+              Everything you need to know about <BrandLogo />.
             </p>
           </div>
 
@@ -107,7 +105,7 @@ export default function FAQPage() {
       </main>
 
       <footer className={styles.footer}>
-        <span>Vid Converts</span>
+        <BrandLogo />
         <span className={styles.by}>by <a href="https://digitalnuclei.com" target="_blank" rel="noopener noreferrer">Digital Nuclei</a></span>
       </footer>
     </>

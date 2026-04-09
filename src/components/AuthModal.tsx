@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import styles from './AuthModal.module.css'
+import BrandLogo from '@/components/BrandLogo'
 
 interface AuthModalProps {
   onClose: () => void
@@ -71,8 +72,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
 
         <div className={styles.header}>
           <div className={styles.logo}>
-            <span className={styles.logoVid}>Vid</span>
-            <span className={styles.logoConverts}> Converts</span>
+            <BrandLogo />
           </div>
           <h2 className={styles.title}>
             {sent ? 'Check your email' : 'Sign in to get your audit'}

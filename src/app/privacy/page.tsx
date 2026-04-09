@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import styles from '../terms/legal.module.css'
+import BrandLogo from '@/components/BrandLogo'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy — Vid Converts',
@@ -12,7 +13,7 @@ export default function PrivacyPage() {
     <div className={styles.page}>
       <nav className={styles.nav}>
         <Link href="/" className={styles.logo}>
-          <span style={{ color: 'var(--teal)' }}>Vid</span> Converts
+          <BrandLogo />
         </Link>
         <Link href="/pricing" className={styles.navLink}>Pricing</Link>
       </nav>
@@ -67,7 +68,8 @@ export default function PrivacyPage() {
             <p>We use the following third-party services to operate Vid Converts:</p>
             <ul>
               <li><strong>Supabase</strong> — database and authentication</li>
-              <li><strong>OpenAI</strong> — AI analysis (audio transcription and report generation)</li>
+              <li><strong>Anthropic</strong> — AI analysis (report generation)</li>
+              <li><strong>OpenAI</strong> — audio transcription via Whisper</li>
               <li><strong>Stripe</strong> — payment processing</li>
               <li><strong>Resend</strong> — transactional email delivery</li>
               <li><strong>Vercel</strong> — hosting and infrastructure</li>

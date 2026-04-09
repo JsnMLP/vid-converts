@@ -1,4 +1,5 @@
 'use client'
+import BrandLogo from '@/components/BrandLogo'
 
 import { useState, useEffect, useRef } from 'react'
 import { User } from '@supabase/supabase-js'
@@ -341,7 +342,7 @@ export default function DashboardClient({ user }: Props) {
     <div className={styles.page}>
       <nav className={styles.nav}>
         <Link href="/" className={styles.logo}>
-          <span style={{ color: 'var(--teal)' }}>Vid</span> Converts
+          <BrandLogo />
         </Link>
         <div className={styles.navRight}>
           <Link href="/pricing" className={styles.pricingLink}>Pricing</Link>
