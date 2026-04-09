@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client'
 import styles from './page.module.css'
 import AuthModal from '@/components/AuthModal'
 import Navbar from '@/components/Navbar'
+import BrandLogo from '@/components/BrandLogo'
 import { User } from '@supabase/supabase-js'
 
 export default function Home() {
@@ -141,7 +142,7 @@ export default function Home() {
         <div className={styles.footerInner}>
           <div className={styles.footerTop}>
             <div className={styles.footerBrand}>
-              <span className={styles.footerLogo}><span style={{ color: 'var(--teal)' }}>Vid</span> Converts</span>
+              <BrandLogo className={styles.footerLogo} />
               <span className={styles.footerTagline}>Your videos are costing you clients = lost revenue.<br />Find out exactly why — and fix it.</span>
             </div>
             <div className={styles.footerLinks}>
@@ -166,7 +167,7 @@ export default function Home() {
           </div>
           <div className={styles.footerBottom}>
             <span>© 2026 Digital Nuclei. All rights reserved.</span>
-            <span>Vid Converts is a product of <a href="https://digitalnuclei.com" target="_blank" rel="noopener noreferrer" className={styles.footerTealLink}>Digital Nuclei</a></span>
+            <span><BrandLogo /> is a product of <a href="https://digitalnuclei.com" target="_blank" rel="noopener noreferrer" className={styles.footerTealLink}>Digital Nuclei</a></span>
           </div>
         </div>
       </footer>
