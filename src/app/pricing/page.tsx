@@ -19,6 +19,7 @@ const plans = [
     annualPriceId: null,
     plan: null,
     badge: null,
+    showTopup: true,
     features: [
       '2 video analyses per month',
       'Overall conversion score',
@@ -51,6 +52,7 @@ const plans = [
     annualPriceId: process.env.NEXT_PUBLIC_STRIPE_COMPLETE_ANNUAL_PRICE_ID,
     plan: 'complete',
     badge: null,
+    showTopup: true,
     features: [
       '8 video analyses per month',
       'Full rubric breakdown (all 8 scores)',
@@ -82,6 +84,7 @@ const plans = [
     annualPriceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_ANNUAL_PRICE_ID,
     plan: 'premium',
     badge: 'Most Popular',
+    showTopup: false,
     features: [
       'UNLIMITED video analyses',
       'Everything in Complete',
@@ -155,12 +158,16 @@ function PlanCard({
   plan,
   annual,
   loading,
+  topupLoading,
   onUpgrade,
+  onTopup,
 }: {
   plan: typeof plans[0]
   annual: boolean
   loading: string | null
+  topupLoading: boolean
   onUpgrade: (p: string | null | undefined, m: string | null | undefined, a: string | null | undefined, href?: string) => void
+  onTopup: () => void
 }) {
   const score = annual ? plan.yearlyPrice : plan.monthlyPrice
   return (
@@ -170,7 +177,7 @@ function PlanCard({
     >
       {plan.badge && <div className={styles.popularBadge}>{plan.badge}</div>}
 
-      <div className={styles.cardHeader}>
+      <div className={styles.cardHeader} style={{ minHeight: '180px' }}>
         <h2 className={styles.planName}><PlanNameStyled name={plan.name} /></h2>
         <div className={styles.priceRow}>
           <span className={styles.price}>${score}</span>
@@ -212,6 +219,24 @@ function PlanCard({
           </div>
         ))}
       </div>
+
+      {/* Top-up button — Free and Complete only */}
+      {plan.showTopup && (
+        <div className={styles.topupWrap}>
+          <div className={styles.topupDivider} />
+          <button
+            className={styles.topupBtn}
+            onClick={onTopup}
+            disabled={topupLoading}
+          >
+            {topupLoading ? <span className={styles.spinner} /> : 'Buy 1 Complete Report — $5'}
+          </button>
+          <p className={styles.topupNote}>
+            Available once you reach your monthly limit.<br />
+            <span>* Complete report — more detailed than a Free report.</span>
+          </p>
+        </div>
+      )}
     </div>
   )
 }
@@ -219,6 +244,7 @@ function PlanCard({
 export default function PricingPage() {
   const [annual, setAnnual] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
+  const [topupLoading, setTopupLoading] = useState(false)
   const [showAddOn, setShowAddOn] = useState(false)
   const [activeTab, setActiveTab] = useState(0)
 
@@ -255,6 +281,27 @@ export default function PricingPage() {
     }
   }
 
+  const handleTopup = async () => {
+    setTopupLoading(true)
+    try {
+      const response = await fetch('/api/stripe/topup', {
+        method: 'POST',
+      })
+      const data = await response.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else if (data.error === 'Unauthorized') {
+        window.location.href = '/?signin=true'
+      } else {
+        alert('Something went wrong. Please try again.')
+      }
+    } catch {
+      alert('Something went wrong. Please try again.')
+    } finally {
+      setTopupLoading(false)
+    }
+  }
+
   return (
     <>
       <Navbar user={null} onSignIn={() => window.location.href = '/'} />
@@ -282,7 +329,7 @@ export default function PricingPage() {
             <p className={styles.startFree}>Start Free.</p>
           </div>
 
-          {/* ── DESKTOP toggle (inside header area, not sticky) ── */}
+          {/* ── DESKTOP toggle ── */}
           <div className={styles.desktopToggleWrap}>
             <div className={styles.toggle}>
               <button
@@ -299,9 +346,8 @@ export default function PricingPage() {
             </div>
           </div>
 
-          {/* ── MOBILE: sticky control bar (toggle + plan tabs combined) ── */}
+          {/* ── MOBILE: sticky control bar ── */}
           <div className={styles.stickyControls}>
-            {/* Monthly / Annual row */}
             <div className={styles.toggle} style={{ width: '100%' }}>
               <button
                 className={`${styles.toggleBtn} ${!annual ? styles.toggleActive : ''}`}
@@ -315,7 +361,6 @@ export default function PricingPage() {
                 <span className={styles.saveBadge}>Save 20%</span>
               </button>
             </div>
-            {/* Plan tabs row */}
             <div className={styles.mobileTabs}>
               {plans.map((plan, i) => (
                 <button
@@ -332,7 +377,15 @@ export default function PricingPage() {
           {/* ── DESKTOP: 3-col grid ── */}
           <div className={styles.grid} style={{ alignItems: 'stretch' }}>
             {plans.map((plan) => (
-              <PlanCard key={plan.name} plan={plan} annual={annual} loading={loading} onUpgrade={handleUpgrade} />
+              <PlanCard
+                key={plan.name}
+                plan={plan}
+                annual={annual}
+                loading={loading}
+                topupLoading={topupLoading}
+                onUpgrade={handleUpgrade}
+                onTopup={handleTopup}
+              />
             ))}
           </div>
 
@@ -342,7 +395,9 @@ export default function PricingPage() {
               plan={plans[activeTab]}
               annual={annual}
               loading={loading}
+              topupLoading={topupLoading}
               onUpgrade={handleUpgrade}
+              onTopup={handleTopup}
             />
           </div>
 
