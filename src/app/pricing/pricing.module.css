@@ -2,7 +2,7 @@
   min-height: 100vh;
   padding-top: 64px;
   position: relative;
-  overflow: hidden;
+
 }
 
 .gridBg {
@@ -288,7 +288,7 @@
   margin: 40px auto 0;
   border: 1px solid var(--border);
   border-radius: 16px;
-  overflow: hidden;
+
   background: var(--bg-card);
 }
 .addOnToggle {
@@ -499,18 +499,12 @@
 }
 
 /* ── Desktop toggle wrapper ───────────────────────────────────────────────── */
-/* Visible on desktop, hidden on mobile (mobile uses stickyControls) */
 .desktopToggleWrap {
   display: flex;
   justify-content: center;
   margin-bottom: 40px;
   position: relative;
   z-index: 1;
-}
-
-/* ── Sticky control bar (MOBILE ONLY) ────────────────────────────────────── */
-.stickyControls {
-  display: none; /* hidden on desktop */
 }
 
 /* ── Mobile tab rows ──────────────────────────────────────────────────────── */
@@ -546,6 +540,10 @@
   box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 
+/* ── Sticky control bar (MOBILE ONLY) ────────────────────────────────────── */
+/* Hidden on desktop */
+.stickyControls { display: none; }
+
 /* ── Mobile plan card container ───────────────────────────────────────────── */
 .mobilePlans { display: none; }
 
@@ -569,26 +567,27 @@
     margin-top: 12px;
   }
 
-  /* Sticky control bar */
+  /* Sticky control bar — KEY: must NOT be inside overflow:hidden parent */
+  /* position:sticky works because we removed overflow:hidden from .main */
   .stickyControls {
     display: flex;
     flex-direction: column;
     gap: 8px;
     position: sticky;
-    top: 64px; /* sits just below the navbar */
+    top: 64px;
     z-index: 50;
-    background: rgba(8, 12, 15, 0.92);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 0 10px;
-    margin: 0 -16px; /* bleed to edges */
-    padding-left: 16px;
-    padding-right: 16px;
+    background: rgba(8, 12, 15, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(45, 212, 191, 0.15);
+    padding: 10px 16px;
+    /* Bleed to edges past container padding */
+    margin-left: -24px;
+    margin-right: -24px;
     box-sizing: border-box;
   }
 
-  /* Toggle inside sticky bar — full width */
+  /* Toggle inside sticky bar */
   .stickyControls .toggle {
     width: 100%;
     box-sizing: border-box;
@@ -613,4 +612,8 @@
 @media (max-width: 600px) {
   .header { padding: 32px 0 20px; }
   .guarantee { padding: 32px 0 20px; font-size: 13px; }
+  .stickyControls {
+    margin-left: -16px;
+    margin-right: -16px;
+  }
 }
