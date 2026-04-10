@@ -143,7 +143,7 @@ export default function Home() {
           <div className={styles.footerTop}>
             <div className={styles.footerBrand}>
               <BrandLogo className={styles.footerLogo} />
-              <span className={styles.footerTagline}>Your videos are costing you clients = lost revenue.<br />Find out exactly why — and fix it.</span>
+              <span className={styles.footerTagline}>Your videos should be your #1 client acquisition asset.<br />Vid Converts makes sure they are.</span>
             </div>
             <div className={styles.footerLinks}>
               <div className={styles.footerCol}>
