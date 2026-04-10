@@ -61,13 +61,106 @@ function TagPill({ tag, onRemove }: { tag: string; onRemove?: () => void }) {
   )
 }
 
+// ── Top-up block — shown when limit is hit ────────────────────────────────────
+function TopUpBlock({ onTopup, topupLoading }: {
+  onTopup: () => void
+  topupLoading: boolean
+}) {
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', gap: '12px',
+      padding: '20px', background: 'var(--card, #151b2d)',
+      border: '1px solid var(--border, #1e2433)',
+      borderRadius: '16px', marginBottom: '24px',
+    }}>
+      {/* Warning banner */}
+      <div style={{
+        background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
+        borderRadius: '10px', padding: '12px 14px',
+        display: 'flex', alignItems: 'flex-start', gap: '10px',
+      }}>
+        <span style={{ fontSize: '16px', flexShrink: 0 }}>⚠️</span>
+        <p style={{ fontSize: '13px', color: '#f87171', lineHeight: 1.5, margin: 0 }}>
+          <strong style={{ color: '#fca5a5' }}>You've reached your monthly analyses limit.</strong>{' '}
+          Buy 1 report for $5, or upgrade to a monthly plan.
+        </p>
+      </div>
+
+      {/* Top-up card */}
+      <div style={{
+        background: 'linear-gradient(135deg, rgba(45,212,191,0.06) 0%, rgba(45,212,191,0.02) 100%)',
+        border: '1px solid rgba(45,212,191,0.2)', borderRadius: '12px', padding: '18px',
+      }}>
+        <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#2DD4BF', marginBottom: '6px' }}>
+          ⚡ One-time top up
+        </p>
+        <p style={{ fontSize: '16px', fontWeight: 800, color: '#fff', marginBottom: '4px' }}>
+          Need one more report?
+        </p>
+        <p style={{ fontSize: '13px', color: '#6b7f85', marginBottom: '14px', lineHeight: 1.5 }}>
+          Get 1 full Complete-style analysis. No subscription. Yours to keep.
+        </p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+          <span style={{ fontSize: '32px', fontWeight: 900, color: '#fff', lineHeight: 1 }}>
+            <span style={{ fontSize: '16px', color: '#6b7f85' }}>$</span>5
+            <span style={{ fontSize: '14px', color: '#6b7f85', fontWeight: 400 }}> USD</span>
+          </span>
+          <span style={{
+            background: 'rgba(45,212,191,0.1)', border: '1px solid rgba(45,212,191,0.2)',
+            borderRadius: '20px', padding: '4px 10px', fontSize: '11px', fontWeight: 700, color: '#2DD4BF',
+          }}>1 report credit</span>
+        </div>
+        <button
+          onClick={onTopup}
+          disabled={topupLoading}
+          style={{
+            width: '100%', padding: '13px',
+            background: '#2DD4BF', color: '#080C0F',
+            fontWeight: 800, fontSize: '15px',
+            border: 'none', borderRadius: '10px', cursor: topupLoading ? 'not-allowed' : 'pointer',
+            opacity: topupLoading ? 0.7 : 1,
+            fontFamily: 'var(--font-display)',
+          }}
+        >
+          {topupLoading ? 'Redirecting...' : 'Buy 1 Complete Report — $5'}
+        </button>
+        <p style={{ fontSize: '11px', color: '#3d5560', textAlign: 'center', marginTop: '8px', lineHeight: 1.6 }}>
+          One-time charge. No subscription. Instant access.<br />
+          <em>* Complete report — more detailed than a Free report.</em>
+        </p>
+      </div>
+
+      {/* Upgrade nudge */}
+      <div style={{
+        background: 'rgba(124,92,252,0.06)', border: '1px solid rgba(124,92,252,0.2)',
+        borderRadius: '12px', padding: '14px 16px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
+      }}>
+        <div>
+          <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#7C5CFC', marginBottom: '3px' }}>
+            Monthly plan
+          </p>
+          <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>
+            More reports every month
+          </p>
+          <p style={{ fontSize: '12px', color: '#4a6068' }}>Plans from $28/mo · cancel anytime</p>
+        </div>
+        <a href="/pricing" style={{
+          background: 'rgba(124,92,252,0.15)', border: '1px solid rgba(124,92,252,0.3)',
+          borderRadius: '8px', padding: '10px 14px',
+          fontSize: '13px', fontWeight: 700, color: '#a78bfa',
+          textDecoration: 'none', whiteSpace: 'nowrap',
+        }}>
+          See plans →
+        </a>
+      </div>
+    </div>
+  )
+}
+
 // ── Inline organize panel (shown below a report card) ────────────────────────
 function OrganizePanel({
-  report,
-  allFolders,
-  allTags,
-  onSave,
-  onClose,
+  report, allFolders, allTags, onSave, onClose,
 }: {
   report: Report
   allFolders: string[]
@@ -105,7 +198,6 @@ function OrganizePanel({
     onClose()
   }
 
-  // Suggestions: folders and tags not already selected
   const folderSuggestions = allFolders.filter(f => f !== folder && f.toLowerCase().includes(folder.toLowerCase()))
   const tagSuggestions = allTags.filter(t => !tags.includes(t) && t.includes(tagInput.toLowerCase()))
 
@@ -114,9 +206,7 @@ function OrganizePanel({
       background: 'var(--card, #151b2d)', border: '1px solid var(--border, #1e2433)',
       borderRadius: '10px', padding: '16px', marginTop: '4px',
       display: 'flex', flexDirection: 'column', gap: '14px',
-    }}
-      onClick={e => e.stopPropagation()}
-    >
+    }} onClick={e => e.stopPropagation()}>
       {/* Folder */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted, #6b7280)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
@@ -134,7 +224,6 @@ function OrganizePanel({
             fontSize: '13px', outline: 'none', width: '100%',
           }}
         />
-        {/* Folder suggestions */}
         {folderSuggestions.length > 0 && folder && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
             {folderSuggestions.map(f => (
@@ -142,13 +231,10 @@ function OrganizePanel({
                 background: 'var(--bg, #0f1117)', border: '1px solid var(--border, #1e2433)',
                 borderRadius: '6px', padding: '3px 10px', fontSize: '12px',
                 color: 'var(--text-muted, #6b7280)', cursor: 'pointer',
-              }}>
-                {f}
-              </button>
+              }}>{f}</button>
             ))}
           </div>
         )}
-        {/* All existing folders as quick picks when input is empty */}
         {!folder && allFolders.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
             {allFolders.map(f => (
@@ -156,9 +242,7 @@ function OrganizePanel({
                 background: 'var(--bg, #0f1117)', border: '1px solid var(--border, #1e2433)',
                 borderRadius: '6px', padding: '3px 10px', fontSize: '12px',
                 color: 'var(--text-muted, #6b7280)', cursor: 'pointer',
-              }}>
-                {f}
-              </button>
+              }}>{f}</button>
             ))}
           </div>
         )}
@@ -169,14 +253,11 @@ function OrganizePanel({
         <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted, #6b7280)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
           🏷 Tags
         </label>
-        {/* Tag input + existing tags */}
-        <div
-          onClick={() => inputRef.current?.focus()}
-          style={{
-            background: 'var(--bg, #0f1117)', border: '1px solid var(--border, #1e2433)',
-            borderRadius: '6px', padding: '6px 10px', minHeight: '38px',
-            display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center', cursor: 'text',
-          }}>
+        <div onClick={() => inputRef.current?.focus()} style={{
+          background: 'var(--bg, #0f1117)', border: '1px solid var(--border, #1e2433)',
+          borderRadius: '6px', padding: '6px 10px', minHeight: '38px',
+          display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center', cursor: 'text',
+        }}>
           {tags.map(t => <TagPill key={t} tag={t} onRemove={() => removeTag(t)} />)}
           <input
             ref={inputRef}
@@ -191,13 +272,10 @@ function OrganizePanel({
             }}
           />
         </div>
-        {/* Tag suggestions */}
         {tagSuggestions.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
             {tagSuggestions.map(t => (
-              <button key={t} onClick={() => addTag(t)} style={{
-                background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-              }}>
+              <button key={t} onClick={() => addTag(t)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                 <TagPill tag={t} />
               </button>
             ))}
@@ -211,17 +289,13 @@ function OrganizePanel({
           background: 'none', border: '1px solid var(--border, #1e2433)',
           borderRadius: '6px', padding: '7px 14px', color: 'var(--text-muted, #6b7280)',
           fontSize: '13px', cursor: 'pointer',
-        }}>
-          Cancel
-        </button>
+        }}>Cancel</button>
         <button onClick={handleSave} disabled={saving} style={{
           background: 'var(--teal, #2dd4bf)', border: 'none',
           borderRadius: '6px', padding: '7px 16px', color: '#0f1117',
           fontSize: '13px', fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer',
           opacity: saving ? 0.7 : 1,
-        }}>
-          {saving ? 'Saving…' : 'Save'}
-        </button>
+        }}>{saving ? 'Saving…' : 'Save'}</button>
       </div>
     </div>
   )
@@ -235,6 +309,7 @@ export default function DashboardClient({ user }: Props) {
   const searchParams = useSearchParams()
   const upgraded = searchParams.get('upgraded')
   const plan = searchParams.get('plan')
+  const topupSuccess = searchParams.get('topup')
 
   const [reports, setReports] = useState<Report[]>([])
   const [loadingReports, setLoadingReports] = useState(true)
@@ -242,6 +317,7 @@ export default function DashboardClient({ user }: Props) {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [usageCount, setUsageCount] = useState<number | null>(null)
   const [userPlan, setUserPlan] = useState<string>('free')
+  const [topupLoading, setTopupLoading] = useState(false)
 
   // Tags & folders state
   const [organisingId, setOrganisingId] = useState<string | null>(null)
@@ -278,6 +354,29 @@ export default function DashboardClient({ user }: Props) {
     setReports(data || [])
     setLoadingReports(false)
   }
+
+  const handleTopup = async () => {
+    setTopupLoading(true)
+    try {
+      const res = await fetch('/api/stripe/topup', { method: 'POST' })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else if (data.error === 'Unauthorized') {
+        window.location.href = '/?signin=true'
+      } else {
+        alert('Something went wrong. Please try again.')
+      }
+    } catch {
+      alert('Something went wrong. Please try again.')
+    } finally {
+      setTopupLoading(false)
+    }
+  }
+
+  // Derived limits
+  const planLimit = userPlan === 'premium' ? Infinity : userPlan === 'complete' ? 8 : 2
+  const isAtLimit = userPlan !== 'premium' && usageCount !== null && usageCount >= planLimit
 
   // Derived: all unique folders and tags across reports
   const allFolders = Array.from(new Set(reports.map(r => r.folder).filter(Boolean) as string[])).sort()
@@ -323,7 +422,6 @@ export default function DashboardClient({ user }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reportId: id, folder, tags }),
       })
-      // Optimistic update
       setReports(prev => prev.map(r => r.id === id ? { ...r, folder, tags } : r))
     } catch (err) {
       console.error('Save failed:', err)
@@ -380,16 +478,27 @@ export default function DashboardClient({ user }: Props) {
           </div>
         )}
 
+        {/* Top-up success banner */}
+        {topupSuccess && (
+          <div className={styles.upgradeBanner}>
+            <span>⚡</span>
+            <div>
+              <strong>Report credit added!</strong>
+              <span>You have 1 Complete report credit ready to use.</span>
+            </div>
+            <button className={styles.bannerClose} onClick={() => router.replace('/dashboard')}>✕</button>
+          </div>
+        )}
+
         <div className={styles.header}>
           <h1>Hey {firstName} 👋</h1>
           <p>Upload a video or paste a URL to get your evidence-based conversion audit.</p>
         </div>
 
-        {/* Usage counter — shown for free and complete plans */}
+        {/* Usage counter */}
         {userPlan !== 'premium' && usageCount !== null && (() => {
           const limit = userPlan === 'complete' ? 8 : 2
           const remaining = Math.max(0, limit - usageCount)
-          const isAtLimit = remaining === 0
           return (
             <div style={{
               display: 'flex', alignItems: 'center', gap: '10px',
@@ -398,28 +507,26 @@ export default function DashboardClient({ user }: Props) {
               border: `1px solid ${isAtLimit ? 'rgba(248,113,113,0.25)' : 'rgba(45,212,191,0.25)'}`,
             }}>
               <span style={{ fontSize: '16px' }}>{isAtLimit ? '🔒' : '📊'}</span>
-              <span style={{
-                fontSize: '13px', fontWeight: 600,
-                color: isAtLimit ? '#f87171' : '#2dd4bf',
-              }}>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: isAtLimit ? '#f87171' : '#2dd4bf' }}>
                 {isAtLimit
-                  ? `You've used all ${limit} analyses this month. `
+                  ? `You've reached your monthly analyses limit.`
                   : `${remaining} of ${limit} ${userPlan === 'complete' ? 'Complete' : 'free'} anal${remaining === 1 ? 'ysis' : 'yses'} remaining this month.`
                 }
               </span>
-              {isAtLimit && (
-                <Link href={`/pricing?limit=reached&plan=${userPlan}`} style={{
-                  fontSize: '12px', fontWeight: 700, color: '#f87171',
-                  textDecoration: 'underline', marginLeft: '4px',
-                }}>
-                  Upgrade Now
-                </Link>
-              )}
             </div>
           )
         })()}
 
-        <UploadZone userId={user.id} userEmail={user.email} userName={user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'there'} />
+        {/* Top-up block — shown instead of upload zone when at limit */}
+        {isAtLimit ? (
+          <TopUpBlock onTopup={handleTopup} topupLoading={topupLoading} />
+        ) : (
+          <UploadZone
+            userId={user.id}
+            userEmail={user.email}
+            userName={user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'there'}
+          />
+        )}
 
         {/* Past reports */}
         <div className={styles.reportsSection}>
@@ -432,67 +539,45 @@ export default function DashboardClient({ user }: Props) {
             )}
           </div>
 
-          {/* ── Folder + Tag filter bar ── */}
+          {/* Folder + Tag filter bar */}
           {(allFolders.length > 0 || allTags.length > 0) && (
-            <div style={{
-              display: 'flex', flexWrap: 'wrap', gap: '8px',
-              marginBottom: '16px', alignItems: 'center',
-            }}>
-              {/* All reports reset */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px', alignItems: 'center' }}>
               {(activeFolder || activeTag) && (
-                <button
-                  onClick={() => { setActiveFolder(null); setActiveTag(null) }}
-                  style={{
-                    background: 'none', border: '1px solid var(--border, #1e2433)',
-                    borderRadius: '999px', padding: '4px 12px', fontSize: '12px',
-                    color: 'var(--text-muted, #6b7280)', cursor: 'pointer',
-                  }}>
-                  ✕ All reports
-                </button>
+                <button onClick={() => { setActiveFolder(null); setActiveTag(null) }} style={{
+                  background: 'none', border: '1px solid var(--border, #1e2433)',
+                  borderRadius: '999px', padding: '4px 12px', fontSize: '12px',
+                  color: 'var(--text-muted, #6b7280)', cursor: 'pointer',
+                }}>✕ All reports</button>
               )}
-
-              {/* Folder pills */}
               {allFolders.map(folder => (
-                <button
-                  key={folder}
-                  onClick={() => setActiveFolder(activeFolder === folder ? null : folder)}
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '5px',
-                    background: activeFolder === folder ? 'rgba(45,212,191,0.15)' : 'var(--card, #151b2d)',
-                    border: activeFolder === folder ? '1px solid rgba(45,212,191,0.4)' : '1px solid var(--border, #1e2433)',
-                    borderRadius: '999px', padding: '4px 12px', fontSize: '12px',
-                    color: activeFolder === folder ? 'var(--teal, #2dd4bf)' : 'var(--text-muted, #6b7280)',
-                    cursor: 'pointer', fontWeight: activeFolder === folder ? 700 : 400,
-                  }}>
+                <button key={folder} onClick={() => setActiveFolder(activeFolder === folder ? null : folder)} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '5px',
+                  background: activeFolder === folder ? 'rgba(45,212,191,0.15)' : 'var(--card, #151b2d)',
+                  border: activeFolder === folder ? '1px solid rgba(45,212,191,0.4)' : '1px solid var(--border, #1e2433)',
+                  borderRadius: '999px', padding: '4px 12px', fontSize: '12px',
+                  color: activeFolder === folder ? 'var(--teal, #2dd4bf)' : 'var(--text-muted, #6b7280)',
+                  cursor: 'pointer', fontWeight: activeFolder === folder ? 700 : 400,
+                }}>
                   <svg width="12" height="12" viewBox="0 0 14 14" fill="none" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
                     <path d="M1 3.5h5l1.5 2H13v6.5H1V3.5z" stroke="#FFE9A2" strokeWidth="1.3" strokeLinejoin="round"/>
                   </svg> {folder}
-                  <span style={{ opacity: 0.6, fontSize: '11px' }}>
-                    {reports.filter(r => r.folder === folder).length}
-                  </span>
+                  <span style={{ opacity: 0.6, fontSize: '11px' }}>{reports.filter(r => r.folder === folder).length}</span>
                 </button>
               ))}
-
-              {/* Tag pills */}
               {allTags.map(tag => {
                 const color = getTagColor(tag)
                 const isActive = activeTag === tag
                 return (
-                  <button
-                    key={tag}
-                    onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: '5px',
-                      background: isActive ? color.bg : 'var(--card, #151b2d)',
-                      border: isActive ? `1px solid ${color.border}` : '1px solid var(--border, #1e2433)',
-                      borderRadius: '999px', padding: '4px 12px', fontSize: '12px',
-                      color: isActive ? color.text : 'var(--text-muted, #6b7280)',
-                      cursor: 'pointer', fontWeight: isActive ? 700 : 400,
-                    }}>
+                  <button key={tag} onClick={() => setActiveTag(activeTag === tag ? null : tag)} style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '5px',
+                    background: isActive ? color.bg : 'var(--card, #151b2d)',
+                    border: isActive ? `1px solid ${color.border}` : '1px solid var(--border, #1e2433)',
+                    borderRadius: '999px', padding: '4px 12px', fontSize: '12px',
+                    color: isActive ? color.text : 'var(--text-muted, #6b7280)',
+                    cursor: 'pointer', fontWeight: isActive ? 700 : 400,
+                  }}>
                     🏷 {tag}
-                    <span style={{ opacity: 0.6, fontSize: '11px' }}>
-                      {reports.filter(r => (r.tags || []).includes(tag)).length}
-                    </span>
+                    <span style={{ opacity: 0.6, fontSize: '11px' }}>{reports.filter(r => (r.tags || []).includes(tag)).length}</span>
                   </button>
                 )
               })}
@@ -500,9 +585,7 @@ export default function DashboardClient({ user }: Props) {
           )}
 
           {loadingReports ? (
-            <div className={styles.loadingState}>
-              <div className={styles.loadingSpinner} />
-            </div>
+            <div className={styles.loadingState}><div className={styles.loadingSpinner} /></div>
           ) : filteredReports.length === 0 && reports.length === 0 ? (
             <div className={styles.emptyState}>
               <div className={styles.emptyIcon}>🎬</div>
@@ -521,20 +604,17 @@ export default function DashboardClient({ user }: Props) {
                 const score = report.report_data?.overallScore || 0
                 const isDeleting = deletingId === report.id
                 const isOrganising = organisingId === report.id
-
                 return (
                   <div key={report.id}>
                     <div className={`${styles.reportCardWrap} ${isDeleting ? styles.reportCardDeleting : ''}`}>
                       <Link href={`/report/${report.id}`} className={styles.reportCard}>
                         <div className={styles.reportScore} style={{ color: getScoreColor(score) }}>
-                          {score}
-                          <span>/100</span>
+                          {score}<span>/100</span>
                         </div>
                         <div className={styles.reportInfo}>
                           <strong>{report.video_name}</strong>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                             {report.niche}
-                            {/* Folder badge */}
                             {report.folder && (
                               <span style={{
                                 fontSize: '11px', color: 'var(--teal, #2dd4bf)',
@@ -547,7 +627,6 @@ export default function DashboardClient({ user }: Props) {
                               </span>
                             )}
                           </span>
-                          {/* Tag pills on the card */}
                           {report.tags?.length > 0 && (
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
                               {report.tags.map(t => <TagPill key={t} tag={t} />)}
@@ -555,55 +634,26 @@ export default function DashboardClient({ user }: Props) {
                           )}
                         </div>
                         <div className={styles.reportMeta}>
-                          <span className={`${styles.reportTier} ${getTierClass(report.tier)}`}>
-                            {getTierLabel(report.tier)}
-                          </span>
+                          <span className={`${styles.reportTier} ${getTierClass(report.tier)}`}>{getTierLabel(report.tier)}</span>
                           <span className={styles.reportDate}>{formatDate(report.created_at)}</span>
                         </div>
                         <div className={styles.reportArrow}>→</div>
                       </Link>
-
-                      {/* Organize button */}
-                      <button
-                        className={styles.deleteBtn}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          setOrganisingId(isOrganising ? null : report.id)
-                        }}
-                        aria-label="Organize report"
-                        title="Add to folder or tag"
-                        style={{ marginRight: '2px' }}>
+                      <button className={styles.deleteBtn} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOrganisingId(isOrganising ? null : report.id) }} aria-label="Organize report" title="Add to folder or tag" style={{ marginRight: '2px' }}>
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                           <path d="M1 3.5h5l1.5 2H13v6.5H1V3.5z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
                         </svg>
                       </button>
-
-                      {/* Delete button */}
-                      <button
-                        className={styles.deleteBtn}
-                        onClick={(e) => handleDeleteClick(e, report.id)}
-                        aria-label="Delete report"
-                        title="Delete report">
-                        {isDeleting ? (
-                          <span className={styles.deletingSpinner} />
-                        ) : (
+                      <button className={styles.deleteBtn} onClick={(e) => handleDeleteClick(e, report.id)} aria-label="Delete report" title="Delete report">
+                        {isDeleting ? <span className={styles.deletingSpinner} /> : (
                           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                             <path d="M1 3h12M5 3V2h4v1M2 3l1 9h8l1-9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         )}
                       </button>
                     </div>
-
-                    {/* Organize panel — expands inline below the card */}
                     {isOrganising && (
-                      <OrganizePanel
-                        report={report}
-                        allFolders={allFolders}
-                        allTags={allTags}
-                        onSave={handleOrganizeSave}
-                        onClose={() => setOrganisingId(null)}
-                      />
+                      <OrganizePanel report={report} allFolders={allFolders} allTags={allTags} onSave={handleOrganizeSave} onClose={() => setOrganisingId(null)} />
                     )}
                   </div>
                 )
@@ -613,7 +663,6 @@ export default function DashboardClient({ user }: Props) {
         </div>
       </main>
 
-      {/* Delete confirmation modal */}
       {confirmDeleteId && (
         <div className={styles.modalOverlay} onClick={() => setConfirmDeleteId(null)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
@@ -621,12 +670,8 @@ export default function DashboardClient({ user }: Props) {
             <h3>Delete this report?</h3>
             <p>This action cannot be undone. The report and all its data will be permanently removed.</p>
             <div className={styles.modalActions}>
-              <button className={styles.modalCancel} onClick={() => setConfirmDeleteId(null)}>
-                Cancel
-              </button>
-              <button className={styles.modalConfirm} onClick={handleDeleteConfirm}>
-                Yes, delete it
-              </button>
+              <button className={styles.modalCancel} onClick={() => setConfirmDeleteId(null)}>Cancel</button>
+              <button className={styles.modalConfirm} onClick={handleDeleteConfirm}>Yes, delete it</button>
             </div>
           </div>
         </div>

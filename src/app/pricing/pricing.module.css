@@ -617,3 +617,55 @@
     margin-right: -16px;
   }
 }
+
+/* ── Top-up button (Free + Complete cards) ───────────────────────────────── */
+.topupWrap {
+  margin-top: 24px;
+}
+
+.topupDivider {
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 16px;
+}
+
+.topupBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 13px;
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  background: rgba(45, 212, 191, 0.08);
+  color: #2DD4BF;
+  border: 1px solid rgba(45, 212, 191, 0.25);
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 46px;
+}
+
+.topupBtn:hover:not(:disabled) {
+  background: rgba(45, 212, 191, 0.15);
+  border-color: rgba(45, 212, 191, 0.4);
+}
+
+.topupBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.topupNote {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
+.topupNote span {
+  color: #3d5560;
+  font-style: italic;
+}
