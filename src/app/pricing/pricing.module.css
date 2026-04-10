@@ -479,3 +479,138 @@
   .header { padding: 32px 0 24px; }
   .guarantee { padding: 32px 0 20px; font-size: 13px; }
 }
+
+/* ── New hero copy styles ─────────────────────────────────────────────────── */
+.startFree {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 32px;
+  margin-top: 6px;
+}
+
+.footnote {
+  text-align: center;
+  font-size: 12px;
+  color: #475569;
+  padding-bottom: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Desktop toggle wrapper ───────────────────────────────────────────────── */
+/* Visible on desktop, hidden on mobile (mobile uses stickyControls) */
+.desktopToggleWrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Sticky control bar (MOBILE ONLY) ────────────────────────────────────── */
+.stickyControls {
+  display: none; /* hidden on desktop */
+}
+
+/* ── Mobile tab rows ──────────────────────────────────────────────────────── */
+.mobileTabs {
+  display: flex;
+  gap: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mobileTab {
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.mobileTabActive {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+/* ── Mobile plan card container ───────────────────────────────────────────── */
+.mobilePlans { display: none; }
+
+/* ── MOBILE BREAKPOINT ────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+
+  /* Hide desktop grid and desktop toggle */
+  .grid { display: none !important; }
+  .desktopToggleWrap { display: none; }
+
+  /* Show mobile plan card */
+  .mobilePlans {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .mobilePlans .card {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 12px;
+  }
+
+  /* Sticky control bar */
+  .stickyControls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: sticky;
+    top: 64px; /* sits just below the navbar */
+    z-index: 50;
+    background: rgba(8, 12, 15, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 0 10px;
+    margin: 0 -16px; /* bleed to edges */
+    padding-left: 16px;
+    padding-right: 16px;
+    box-sizing: border-box;
+  }
+
+  /* Toggle inside sticky bar — full width */
+  .stickyControls .toggle {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+  }
+
+  .stickyControls .toggleBtn {
+    flex: 1;
+    padding: 9px 8px;
+    justify-content: center;
+    font-size: 13px;
+  }
+
+  /* Header tighter on mobile */
+  .header { padding: 40px 0 24px; }
+  .title { font-size: clamp(22px, 5vw, 36px); }
+  .subtitle { font-size: 15px; }
+
+  .addOnSection { margin: 24px auto 0; }
+}
+
+@media (max-width: 600px) {
+  .header { padding: 32px 0 20px; }
+  .guarantee { padding: 32px 0 20px; font-size: 13px; }
+}

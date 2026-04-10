@@ -220,7 +220,7 @@ export default function PricingPage() {
   const [annual, setAnnual] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const [showAddOn, setShowAddOn] = useState(false)
-  const [activeTab, setActiveTab] = useState(0) // mobile tab index
+  const [activeTab, setActiveTab] = useState(0)
 
   const handleUpgrade = async (
     plan: string | null | undefined,
@@ -263,6 +263,7 @@ export default function PricingPage() {
         <div className={styles.gridBg} aria-hidden />
 
         <div className="container">
+
           {/* ── Hero ── */}
           <div className={styles.header}>
             <h1 className={styles.title}>
@@ -274,15 +275,15 @@ export default function PricingPage() {
               <span style={{ color: '#F5A623', fontWeight: 800 }}>
                 An exquisite tool. First of its kind.{' '}
               </span>
-              <span style={{ color: '#2DD4BF', fontWeight: 800 }}>
-                92¢ per day
-              </span>
+              <span style={{ color: '#2DD4BF', fontWeight: 800 }}>92¢ per day</span>
               <span style={{ color: '#2DD4BF', fontWeight: 800 }}>.</span>
               <sup style={{ fontSize: '0.55em', color: '#64748b', verticalAlign: 'super', lineHeight: 0 }}>*</sup>
             </p>
             <p className={styles.startFree}>Start Free.</p>
+          </div>
 
-            {/* Monthly / Annual toggle */}
+          {/* ── DESKTOP toggle (inside header area, not sticky) ── */}
+          <div className={styles.desktopToggleWrap}>
             <div className={styles.toggle}>
               <button
                 className={`${styles.toggleBtn} ${!annual ? styles.toggleActive : ''}`}
@@ -298,16 +299,23 @@ export default function PricingPage() {
             </div>
           </div>
 
-          {/* ── DESKTOP: 3-col grid (unchanged) ── */}
-          <div className={styles.grid} style={{ alignItems: 'stretch' }}>
-            {plans.map((plan) => (
-              <PlanCard key={plan.name} plan={plan} annual={annual} loading={loading} onUpgrade={handleUpgrade} />
-            ))}
-          </div>
-
-          {/* ── MOBILE: tab switcher ── */}
-          <div className={styles.mobilePlans}>
-            {/* Plan tabs */}
+          {/* ── MOBILE: sticky control bar (toggle + plan tabs combined) ── */}
+          <div className={styles.stickyControls}>
+            {/* Monthly / Annual row */}
+            <div className={styles.toggle} style={{ width: '100%' }}>
+              <button
+                className={`${styles.toggleBtn} ${!annual ? styles.toggleActive : ''}`}
+                onClick={() => setAnnual(false)}>
+                Monthly
+              </button>
+              <button
+                className={`${styles.toggleBtn} ${annual ? styles.toggleActive : ''}`}
+                onClick={() => setAnnual(true)}>
+                Annually
+                <span className={styles.saveBadge}>Save 20%</span>
+              </button>
+            </div>
+            {/* Plan tabs row */}
             <div className={styles.mobileTabs}>
               {plans.map((plan, i) => (
                 <button
@@ -319,8 +327,17 @@ export default function PricingPage() {
                 </button>
               ))}
             </div>
+          </div>
 
-            {/* Active plan card */}
+          {/* ── DESKTOP: 3-col grid ── */}
+          <div className={styles.grid} style={{ alignItems: 'stretch' }}>
+            {plans.map((plan) => (
+              <PlanCard key={plan.name} plan={plan} annual={annual} loading={loading} onUpgrade={handleUpgrade} />
+            ))}
+          </div>
+
+          {/* ── MOBILE: single active plan card ── */}
+          <div className={styles.mobilePlans}>
             <PlanCard
               plan={plans[activeTab]}
               annual={annual}
@@ -381,7 +398,6 @@ export default function PricingPage() {
             <Link href="/refund" className={styles.faqLink}>Refund Policy</Link>
           </p>
 
-          {/* ── Footnote ── */}
           <p className={styles.footnote}>
             * Based on the Complete Annual plan — $336/yr ÷ 365 days
           </p>
