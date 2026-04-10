@@ -496,7 +496,7 @@ export default function DashboardClient({ user }: Props) {
         </div>
 
         {/* Usage counter */}
-        {userPlan !== 'premium' && usageCount !== null && (() => {
+        {userPlan !== 'premium' && usageCount !== null && !isAtLimit && (() => {
           const limit = userPlan === 'complete' ? 8 : 2
           const remaining = Math.max(0, limit - usageCount)
           return (
@@ -508,10 +508,7 @@ export default function DashboardClient({ user }: Props) {
             }}>
               <span style={{ fontSize: '16px' }}>{isAtLimit ? '🔒' : '📊'}</span>
               <span style={{ fontSize: '13px', fontWeight: 600, color: isAtLimit ? '#f87171' : '#2dd4bf' }}>
-                {isAtLimit
-                  ? `You've reached your monthly analyses limit.`
-                  : `${remaining} of ${limit} ${userPlan === 'complete' ? 'Complete' : 'free'} anal${remaining === 1 ? 'ysis' : 'yses'} remaining this month.`
-                }
+                {`${remaining} of ${limit} ${userPlan === 'complete' ? 'Complete' : 'free'} anal${remaining === 1 ? 'ysis' : 'yses'} remaining this month.`}
               </span>
             </div>
           )
