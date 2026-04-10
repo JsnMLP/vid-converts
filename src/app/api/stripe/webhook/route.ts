@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
             .update({ tier: plan })
             .eq('user_id', userId)
 
+          // Reset analyses_count to 0 on upgrade so user starts fresh on new plan
           await supabaseAdmin
             .from('subscriptions')
             .upsert({
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
               stripe_subscription_id: session.subscription as string,
               plan,
               status: 'active',
+              analyses_count: 0,
               updated_at: new Date().toISOString(),
             }, { onConflict: 'user_id' })
 
