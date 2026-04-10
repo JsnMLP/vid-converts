@@ -392,3 +392,90 @@
   .addOnPrices { grid-template-columns: 1fr; }
 }
 
+
+/* ── New hero copy styles ─────────────────────────────────────────────────── */
+.startFree {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 32px;
+  margin-top: 6px;
+}
+
+.footnote {
+  text-align: center;
+  font-size: 12px;
+  color: #475569;
+  padding-bottom: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Mobile tab switcher ──────────────────────────────────────────────────── */
+.mobilePlans { display: none; }
+
+@media (max-width: 900px) {
+  .grid { display: none !important; }
+  .mobilePlans { display: block; }
+
+  .mobileTabs {
+    display: flex;
+    gap: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 16px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .mobileTab {
+    flex: 1;
+    padding: 10px 8px;
+    border-radius: 8px;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .mobileTabActive {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+
+  .mobilePlans .card {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .header { padding: 40px 0 32px; }
+  .title { font-size: clamp(22px, 5vw, 36px); }
+  .subtitle { font-size: 15px; }
+
+  .toggle {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .toggleBtn {
+    flex: 1;
+    padding: 10px 8px;
+    justify-content: center;
+    font-size: 13px;
+  }
+
+  .addOnSection { margin: 24px auto 0; }
+}
+
+@media (max-width: 600px) {
+  .header { padding: 32px 0 24px; }
+  .guarantee { padding: 32px 0 20px; font-size: 13px; }
+}

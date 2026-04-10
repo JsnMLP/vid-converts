@@ -11,7 +11,7 @@ const plans = [
     name: 'Free',
     monthlyPrice: 0,
     yearlyPrice: 0,
-    description: 'Try it before you commit',
+    description: 'Start free. Upgrade when clients start to matter.',
     cta: 'Start Free',
     ctaHref: '/',
     highlight: false,
@@ -44,7 +44,7 @@ const plans = [
     name: 'Complete',
     monthlyPrice: 35,
     yearlyPrice: 28,
-    description: 'Everything you need to improve',
+    description: 'Turn more viewers into paying clients.',
     cta: 'Start Complete',
     highlight: false,
     monthlyPriceId: process.env.NEXT_PUBLIC_STRIPE_COMPLETE_PRICE_ID,
@@ -75,7 +75,7 @@ const plans = [
     name: 'Premium',
     monthlyPrice: 65,
     yearlyPrice: 52,
-    description: 'Your complete conversion system',
+    description: 'Your secret leverage for a Premium client acquisition system.',
     cta: 'Start Premium',
     highlight: true,
     monthlyPriceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID,
@@ -117,12 +117,8 @@ const addOn = {
 }
 
 function PlanNameStyled({ name }: { name: string }) {
-  if (name === 'Complete') {
-    return <span style={{ color: '#7C5CFC' }}>{name}</span>
-  }
-  if (name === 'Premium') {
-    return <span style={{ color: '#F5A623' }}>{name}</span>
-  }
+  if (name === 'Complete') return <span style={{ color: '#7C5CFC' }}>{name}</span>
+  if (name === 'Premium') return <span style={{ color: '#F5A623' }}>{name}</span>
   return <>{name}</>
 }
 
@@ -131,15 +127,12 @@ function FeatureText({ text }: { text: string }) {
     return (
       <span>
         <span style={{
-          color: 'inherit',
           textDecoration: 'underline',
           textDecorationColor: '#F5A623',
           textDecorationThickness: '2px',
           textUnderlineOffset: '3px',
           fontWeight: 700,
-        }}>
-          Unlimited
-        </span>
+        }}>Unlimited</span>
         {' video analyses'}
       </span>
     )
@@ -147,10 +140,87 @@ function FeatureText({ text }: { text: string }) {
   return <span>{text}</span>
 }
 
+function DailyCost({ monthlyPrice, yearlyPrice, annual }: { monthlyPrice: number; yearlyPrice: number; annual: boolean }) {
+  if (monthlyPrice === 0) return null
+  const price = annual ? yearlyPrice : monthlyPrice
+  const daily = (price / 30).toFixed(2)
+  return (
+    <p style={{ fontSize: '12px', color: '#2DD4BF', marginTop: '4px', fontWeight: 600 }}>
+      Just ${daily}/day{annual ? ' (billed annually)' : ''}
+    </p>
+  )
+}
+
+function PlanCard({
+  plan,
+  annual,
+  loading,
+  onUpgrade,
+}: {
+  plan: typeof plans[0]
+  annual: boolean
+  loading: string | null
+  onUpgrade: (p: string | null | undefined, m: string | null | undefined, a: string | null | undefined, href?: string) => void
+}) {
+  const score = annual ? plan.yearlyPrice : plan.monthlyPrice
+  return (
+    <div
+      className={`${styles.card} ${plan.highlight ? styles.cardHighlight : ''}`}
+      style={{ display: 'flex', flexDirection: 'column' }}
+    >
+      {plan.badge && <div className={styles.popularBadge}>{plan.badge}</div>}
+
+      <div className={styles.cardHeader}>
+        <h2 className={styles.planName}><PlanNameStyled name={plan.name} /></h2>
+        <div className={styles.priceRow}>
+          <span className={styles.price}>${score}</span>
+          <span className={styles.period}>USD / month</span>
+          {annual && plan.monthlyPrice > 0 && (
+            <span style={{ color: '#2DD4BF', fontSize: '0.85rem', fontWeight: 600, marginLeft: '8px', alignSelf: 'center' }}>
+              Save ${(plan.monthlyPrice - plan.yearlyPrice) * 12}/yr
+            </span>
+          )}
+        </div>
+        <DailyCost monthlyPrice={plan.monthlyPrice} yearlyPrice={plan.yearlyPrice} annual={annual} />
+        {annual && plan.monthlyPrice > 0 && (
+          <p className={styles.billedAs}>Billed as ${plan.yearlyPrice * 12} USD/year</p>
+        )}
+        <p className={styles.planDesc}>{plan.description}</p>
+      </div>
+
+      <button
+        className={`${styles.cta} ${plan.highlight ? styles.ctaPrimary : styles.ctaSecondary}`}
+        onClick={() => onUpgrade(plan.plan, plan.monthlyPriceId, plan.annualPriceId, (plan as any).ctaHref)}
+        disabled={plan.plan !== null && loading === plan.plan}
+      >
+        {plan.plan !== null && loading === plan.plan
+          ? <span className={styles.spinner} />
+          : plan.cta}
+      </button>
+
+      <div className={styles.features} style={{ flex: 1 }}>
+        {plan.features.map((f) => (
+          <div key={f} className={styles.featureRow}>
+            <span className={styles.checkIcon}>✓</span>
+            <FeatureText text={f} />
+          </div>
+        ))}
+        {plan.locked.map((f) => (
+          <div key={f} className={`${styles.featureRow} ${styles.locked}`}>
+            <span className={styles.lockIcon}>—</span>
+            <span>{f}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function PricingPage() {
   const [annual, setAnnual] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const [showAddOn, setShowAddOn] = useState(false)
+  const [activeTab, setActiveTab] = useState(0) // mobile tab index
 
   const handleUpgrade = async (
     plan: string | null | undefined,
@@ -158,12 +228,10 @@ export default function PricingPage() {
     annualPriceId: string | null | undefined,
     ctaHref?: string
   ) => {
-    // Free plan — redirect immediately, never touch Stripe
     if (!plan || !monthlyPriceId) {
       window.location.href = ctaHref || '/'
       return
     }
-    // Use annual price ID if toggle is on and ID exists, otherwise monthly
     const priceId = annual && annualPriceId ? annualPriceId : monthlyPriceId
     setLoading(plan)
     try {
@@ -195,12 +263,26 @@ export default function PricingPage() {
         <div className={styles.gridBg} aria-hidden />
 
         <div className="container">
+          {/* ── Hero ── */}
           <div className={styles.header}>
-            <h1 className={styles.title}>Simple, honest pricing</h1>
+            <h1 className={styles.title}>
+              One improved video.<br />
+              One more paying customer.<br />
+              Full year&apos;s subscription paid for. 💥
+            </h1>
             <p className={styles.subtitle}>
-              Start free. Upgrade when you need more depth.
+              <span style={{ color: '#F5A623', fontWeight: 800 }}>
+                An exquisite tool. First of its kind.{' '}
+              </span>
+              <span style={{ color: '#2DD4BF', fontWeight: 800 }}>
+                92¢ per day
+              </span>
+              <span style={{ color: '#2DD4BF', fontWeight: 800 }}>.</span>
+              <sup style={{ fontSize: '0.55em', color: '#64748b', verticalAlign: 'super', lineHeight: 0 }}>*</sup>
             </p>
+            <p className={styles.startFree}>Start Free.</p>
 
+            {/* Monthly / Annual toggle */}
             <div className={styles.toggle}>
               <button
                 className={`${styles.toggleBtn} ${!annual ? styles.toggleActive : ''}`}
@@ -216,83 +298,40 @@ export default function PricingPage() {
             </div>
           </div>
 
-          <div className={`${styles.grid}`} style={{ alignItems: 'stretch' }}>
+          {/* ── DESKTOP: 3-col grid (unchanged) ── */}
+          <div className={styles.grid} style={{ alignItems: 'stretch' }}>
             {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={`${styles.card} ${plan.highlight ? styles.cardHighlight : ''}`}
-                style={{ display: 'flex', flexDirection: 'column' }}
-              >
-                {plan.badge && (
-                  <div className={styles.popularBadge}>{plan.badge}</div>
-                )}
-
-                <div className={styles.cardHeader}>
-                  <h2 className={styles.planName}>
-                    <PlanNameStyled name={plan.name} />
-                  </h2>
-                  <div className={styles.priceRow}>
-                    <span className={styles.price}>
-                      ${annual ? plan.yearlyPrice : plan.monthlyPrice}
-                    </span>
-                    <span className={styles.period}>
-                      USD / month
-                    </span>
-                    {annual && plan.monthlyPrice > 0 && (
-                      <span style={{
-                        color: '#2DD4BF',
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
-                        marginLeft: '8px',
-                        alignSelf: 'center',
-                      }}>
-                        Save ${(plan.monthlyPrice - plan.yearlyPrice) * 12}/yr
-                      </span>
-                    )}
-                  </div>
-                  {annual && plan.monthlyPrice > 0 && (
-                    <p className={styles.billedAs}>
-                      Billed as ${plan.yearlyPrice * 12} USD/year
-                    </p>
-                  )}
-                  <p className={styles.planDesc}>{plan.description}</p>
-                </div>
-
-                {/* plan.plan !== null prevents null===null collision that caused permanent spinner on Free */}
-                <button
-                  className={`${styles.cta} ${plan.highlight ? styles.ctaPrimary : styles.ctaSecondary}`}
-                  onClick={() => handleUpgrade(plan.plan, plan.monthlyPriceId, plan.annualPriceId, (plan as any).ctaHref)}
-                  disabled={plan.plan !== null && loading === plan.plan}>
-                  {plan.plan !== null && loading === plan.plan ? (
-                    <span className={styles.spinner} />
-                  ) : (
-                    plan.cta
-                  )}
-                </button>
-
-                <div className={styles.features} style={{ flex: 1 }}>
-                  {plan.features.map((f) => (
-                    <div key={f} className={styles.featureRow}>
-                      <span className={styles.checkIcon}>✓</span>
-                      <FeatureText text={f} />
-                    </div>
-                  ))}
-                  {plan.locked.map((f) => (
-                    <div key={f} className={`${styles.featureRow} ${styles.locked}`}>
-                      <span className={styles.lockIcon}>—</span>
-                      <span>{f}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <PlanCard key={plan.name} plan={plan} annual={annual} loading={loading} onUpgrade={handleUpgrade} />
             ))}
           </div>
 
-          {/* Social Media Video Add-on */}
+          {/* ── MOBILE: tab switcher ── */}
+          <div className={styles.mobilePlans}>
+            {/* Plan tabs */}
+            <div className={styles.mobileTabs}>
+              {plans.map((plan, i) => (
+                <button
+                  key={plan.name}
+                  className={`${styles.mobileTab} ${activeTab === i ? styles.mobileTabActive : ''}`}
+                  onClick={() => setActiveTab(i)}
+                >
+                  <PlanNameStyled name={plan.name} />
+                </button>
+              ))}
+            </div>
+
+            {/* Active plan card */}
+            <PlanCard
+              plan={plans[activeTab]}
+              annual={annual}
+              loading={loading}
+              onUpgrade={handleUpgrade}
+            />
+          </div>
+
+          {/* ── Social Media Video Add-on ── */}
           <div className={styles.addOnSection}>
-            <button
-              className={styles.addOnToggle}
-              onClick={() => setShowAddOn(!showAddOn)}>
+            <button className={styles.addOnToggle} onClick={() => setShowAddOn(!showAddOn)}>
               <span>🎬</span>
               <div>
                 <strong>{addOn.name}</strong>
@@ -306,26 +345,19 @@ export default function PricingPage() {
                 <div className={styles.addOnPrices}>
                   <div className={styles.addOnPrice}>
                     <strong>Complete plan members</strong>
-                    <span className={styles.addOnPriceAmount}>
-                      ${addOn.completePrice}<small>/video</small>
-                    </span>
-                    <span className={styles.addOnPriceSub}>
-                      Discounted rate · {addOn.turnaround}
-                    </span>
+                    <span className={styles.addOnPriceAmount}>${addOn.completePrice}<small>/video</small></span>
+                    <span className={styles.addOnPriceSub}>Discounted rate · {addOn.turnaround}</span>
                   </div>
                   <div className={`${styles.addOnPrice} ${styles.addOnPricePremium}`}>
                     <strong>Premium plan members</strong>
                     <span className={styles.addOnPriceAmount}>Included</span>
-                    <span className={styles.addOnPriceSub}>
-                      {addOn.premiumNote}
-                    </span>
+                    <span className={styles.addOnPriceSub}>{addOn.premiumNote}</span>
                   </div>
                 </div>
                 <div className={styles.addOnDetails}>
                   {addOn.details.map((d, i) => (
                     <div key={i} className={styles.addOnDetail}>
-                      <span>✓</span>
-                      <span>{d}</span>
+                      <span>✓</span><span>{d}</span>
                     </div>
                   ))}
                 </div>
@@ -337,6 +369,7 @@ export default function PricingPage() {
             )}
           </div>
 
+          {/* ── Footer links ── */}
           <p className={styles.guarantee}>
             Questions?{' '}
             <Link href="/faq" className={styles.faqLink}>See our FAQ →</Link>
@@ -344,6 +377,13 @@ export default function PricingPage() {
             <Link href="/terms" className={styles.faqLink}>Terms of Service</Link>
             {' · '}
             <Link href="/privacy" className={styles.faqLink}>Privacy Policy</Link>
+            {' · '}
+            <Link href="/refund" className={styles.faqLink}>Refund Policy</Link>
+          </p>
+
+          {/* ── Footnote ── */}
+          <p className={styles.footnote}>
+            * Based on the Complete Annual plan — $336/yr ÷ 365 days
           </p>
         </div>
       </main>
