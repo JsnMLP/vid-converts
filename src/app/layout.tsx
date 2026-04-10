@@ -3,6 +3,7 @@ import { Encode_Sans_Expanded, Mulish } from 'next/font/google'
 import './globals.css'
 import GlobalFooter from '@/components/GlobalFooter'
 import { Analytics } from '@vercel/analytics/react'
+import Script from 'next/script'
 
 const encodeSansExpanded = Encode_Sans_Expanded({
   subsets: ['latin'],
@@ -35,6 +36,18 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${encodeSansExpanded.variable} ${mulish.variable}`}>
       <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-1HSX2KBKS3"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-1HSX2KBKS3');
+          `}
+        </Script>
         {children}
         <GlobalFooter />
         <Analytics />
