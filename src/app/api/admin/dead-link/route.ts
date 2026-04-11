@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
     await resend.emails.send({
       from: 'Vid Converts System <reports@vidconverts.com>',
-      to: 'info@mylandscapingproject.ca',
+      to: 'support@vidconverts.com',
       subject: `Dead link detected — ${resourceId}`,
       html: `
         <div style="font-family: monospace; background: #0A0F1E; color: #E5E7EB; padding: 24px; border-radius: 8px;">
