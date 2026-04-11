@@ -60,6 +60,22 @@ export default function Home() {
               <div className={styles.uploadText}>
                 <strong>Drop your video here to get started</strong>
                 <span>MP4 or MOV up to 500MB · or paste a URL below</span>
+                <a
+                  href="https://www.freeconvert.com/video-compressor"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
+                  style={{
+                    fontSize: '12px',
+                    color: 'var(--teal)',
+                    textDecoration: 'none',
+                    marginTop: '4px',
+                    display: 'inline-block',
+                    opacity: 0.85,
+                  }}
+                >
+                  Video over 500MB? Compress it free →
+                </a>
               </div>
               <button
                 className={styles.uploadBtn}
@@ -120,7 +136,7 @@ export default function Home() {
             <div className={styles.trustGrid}>
               <div className={styles.trustItem}>
                 <strong>Real transcript</strong>
-                <span>Every word extracted via Whisper AI</span>
+                <span>Every spoken word extracted and analysed</span>
               </div>
               <div className={styles.trustDivider} />
               <div className={styles.trustItem}>
