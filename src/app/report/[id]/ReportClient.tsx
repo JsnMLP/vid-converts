@@ -1,5 +1,6 @@
 'use client'
 import BrandLogo from '@/components/BrandLogo'
+import Navbar from '@/components/Navbar'
 
 import styles from './report.module.css'
 import Link from 'next/link'
@@ -52,7 +53,6 @@ const FREE_BLOCKERS_LIMIT = 3
 const FREE_CHECKLIST_LIMIT = 3
 const FREE_MEASUREMENT_LIMIT = 3
 const FREE_TRANSCRIPT_LIMIT = 2
-const FREE_FRAMES_LIMIT = 2
 
 const PLAN_LIMITS: Record<string, number> = {
   free: 2,
@@ -69,10 +69,7 @@ const EVIDENCE_LABEL_MAP: Record<string, string> = {
 function formatFrameObservation(raw: string): string {
   if (EVIDENCE_LABEL_MAP[raw]) return EVIDENCE_LABEL_MAP[raw]
   if (/^[A-Z_]+$/.test(raw)) {
-    return raw
-      .split('_')
-      .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
-      .join(' ')
+    return raw.split('_').map((w) => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')
   }
   return raw
 }
@@ -90,13 +87,9 @@ function ScoreRing({ score, size = 80 }: { score: number; size?: number }) {
         strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
         transform={`rotate(-90 ${size/2} ${size/2})`} />
       <text x={size/2} y={size/2 + 1} textAnchor="middle" dominantBaseline="middle"
-        fill={color} fontSize={size * 0.22} fontFamily="var(--font-display)" fontWeight="800">
-        {score}
-      </text>
+        fill={color} fontSize={size * 0.22} fontFamily="var(--font-display)" fontWeight="800">{score}</text>
       <text x={size/2} y={size/2 + size * 0.18} textAnchor="middle" dominantBaseline="middle"
-        fill="var(--text-muted)" fontSize={size * 0.13} fontFamily="var(--font-body)">
-        /10
-      </text>
+        fill="var(--text-muted)" fontSize={size * 0.13} fontFamily="var(--font-body)">/10</text>
     </svg>
   )
 }
@@ -110,16 +103,11 @@ function OverallScoreRing({ score }: { score: number }) {
     <svg width="130" height="130" viewBox="0 0 130 130">
       <circle cx="65" cy="65" r={r} fill="none" stroke="var(--border)" strokeWidth="7" />
       <circle cx="65" cy="65" r={r} fill="none" stroke={color} strokeWidth="7"
-        strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
-        transform="rotate(-90 65 65)" />
+        strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" transform="rotate(-90 65 65)" />
       <text x="65" y="60" textAnchor="middle" dominantBaseline="middle"
-        fill={color} fontSize="28" fontFamily="var(--font-display)" fontWeight="800">
-        {score}
-      </text>
+        fill={color} fontSize="28" fontFamily="var(--font-display)" fontWeight="800">{score}</text>
       <text x="65" y="78" textAnchor="middle" dominantBaseline="middle"
-        fill="var(--text-muted)" fontSize="13" fontFamily="var(--font-body)">
-        / 100
-      </text>
+        fill="var(--text-muted)" fontSize="13" fontFamily="var(--font-body)">/ 100</text>
     </svg>
   )
 }
@@ -128,44 +116,22 @@ function Tooltip({ text }: { text: string }) {
   const [visible, setVisible] = useState(false)
   return (
     <span className={styles.tooltipWrap}
-      onMouseEnter={() => setVisible(true)}
-      onMouseLeave={() => setVisible(false)}
-      onFocus={() => setVisible(true)}
-      onBlur={() => setVisible(false)}
-      tabIndex={0}
-      role="button"
-      aria-label="More information">
+      onMouseEnter={() => setVisible(true)} onMouseLeave={() => setVisible(false)}
+      onFocus={() => setVisible(true)} onBlur={() => setVisible(false)}
+      tabIndex={0} role="button" aria-label="More information">
       <span className={styles.tooltipIcon}>?</span>
-      {visible && (
-        <span className={styles.tooltipBox} role="tooltip">{text}</span>
-      )}
+      {visible && <span className={styles.tooltipBox} role="tooltip">{text}</span>}
     </span>
   )
 }
 
 function TierBadge({ tier }: { tier: string }) {
-  if (tier === 'premium') {
-    return (
-      <span className={styles.premiumBadge} style={{
-        background: 'rgba(245, 166, 35, 0.15)',
-        color: '#F5A623',
-        border: '1px solid rgba(245, 166, 35, 0.4)',
-      }}>
-        ⭐ Premium
-      </span>
-    )
-  }
-  if (tier === 'complete') {
-    return (
-      <span className={styles.completeBadge} style={{
-        background: 'rgba(124, 92, 252, 0.15)',
-        color: '#7C5CFC',
-        border: '1px solid rgba(124, 92, 252, 0.4)',
-      }}>
-        ✦ Complete
-      </span>
-    )
-  }
+  if (tier === 'premium') return (
+    <span className={styles.premiumBadge} style={{ background: 'rgba(245,166,35,0.15)', color: '#F5A623', border: '1px solid rgba(245,166,35,0.4)' }}>⭐ Premium</span>
+  )
+  if (tier === 'complete') return (
+    <span className={styles.completeBadge} style={{ background: 'rgba(124,92,252,0.15)', color: '#7C5CFC', border: '1px solid rgba(124,92,252,0.4)' }}>✦ Complete</span>
+  )
   return <span className={styles.freeBadge}>Free report</span>
 }
 
@@ -184,6 +150,97 @@ function UpgradeBanner() {
   )
 }
 
+// ── Complete → Premium upsell block ──────────────────────────────────────────
+function PremiumUpsellBlock() {
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, rgba(245,166,35,0.08) 0%, rgba(124,92,252,0.08) 100%)',
+      border: '1px solid rgba(245,166,35,0.25)',
+      borderRadius: '16px',
+      padding: '28px',
+      margin: '32px 0 0 0',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+        <span style={{ fontSize: '20px' }}>⭐</span>
+        <h3 style={{ margin: 0, color: '#F5A623', fontSize: '16px', fontWeight: 800, letterSpacing: '0.02em' }}>
+          UNLOCK MORE WITH PREMIUM
+        </h3>
+      </div>
+      <p style={{ color: '#9CA3AF', fontSize: '14px', margin: '0 0 16px 0', lineHeight: 1.6 }}>
+        You&apos;re on the Complete plan. Here&apos;s what Premium would add to this exact report:
+      </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+        {[
+          '2 expert YouTube resources per rubric finding (vs. 1 now)',
+          '2 "How To" article links per finding (vs. 1 now)',
+          'Full AI script rewrite — hook, offer & CTA rewritten for you',
+          'A/B test variants — 2 alternate versions of your video script',
+          'Before/after comparison mode — see exactly what changed',
+          '1 × 60-second social media video included every month',
+        ].map((f, i) => (
+          <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+            <span style={{ color: '#F5A623', fontWeight: 700, marginTop: '1px', flexShrink: 0 }}>→</span>
+            <span style={{ color: '#E5E7EB', fontSize: '14px', lineHeight: 1.5 }}>{f}</span>
+          </div>
+        ))}
+      </div>
+      <Link href="/pricing" style={{
+        display: 'inline-block',
+        backgroundColor: '#F5A623',
+        color: '#0A0F1E',
+        padding: '12px 24px',
+        borderRadius: '8px',
+        fontSize: '14px',
+        fontWeight: 800,
+        textDecoration: 'none',
+      }}>
+        Upgrade to Premium — $65/mo →
+      </Link>
+    </div>
+  )
+}
+
+// ── Social media video add-on prompt ─────────────────────────────────────────
+function SocialVideoAddonBlock() {
+  return (
+    <div style={{
+      background: 'rgba(45,212,191,0.06)',
+      border: '1px solid rgba(45,212,191,0.2)',
+      borderRadius: '16px',
+      padding: '24px',
+      margin: '20px 0 0 0',
+      display: 'flex',
+      gap: '16px',
+      alignItems: 'flex-start',
+    }}>
+      <span style={{ fontSize: '28px', flexShrink: 0 }}>🎬</span>
+      <div style={{ flex: 1 }}>
+        <h3 style={{ margin: '0 0 6px 0', color: '#2DD4BF', fontSize: '15px', fontWeight: 800 }}>
+          Want us to edit this into a polished social media video?
+        </h3>
+        <p style={{ margin: '0 0 12px 0', color: '#9CA3AF', fontSize: '13px', lineHeight: 1.6 }}>
+          As a Complete member, you get our social media video add-on at a discounted rate of{' '}
+          <strong style={{ color: '#2DD4BF' }}>$47/video</strong> (regular $97).
+          We edit your raw footage into a 60-second platform-ready video — captions, cuts, colour grading included.
+        </p>
+        <Link href="/pricing#addon" style={{
+          display: 'inline-block',
+          backgroundColor: 'transparent',
+          color: '#2DD4BF',
+          border: '1px solid rgba(45,212,191,0.4)',
+          padding: '9px 18px',
+          borderRadius: '8px',
+          fontSize: '13px',
+          fontWeight: 700,
+          textDecoration: 'none',
+        }}>
+          Join the waitlist →
+        </Link>
+      </div>
+    </div>
+  )
+}
+
 function ResourceLinks({ category, tier }: { category: string; tier: string }) {
   const resources = RUBRIC_RESOURCES[category]
   if (!resources) return null
@@ -193,9 +250,7 @@ function ResourceLinks({ category, tier }: { category: string; tier: string }) {
 
   return (
     <div className={styles.resourceLinks}>
-      <span className={styles.resourceLabel}>
-        🧠 LEARN LIKE A PRO — CLICK BELOW
-      </span>
+      <span className={styles.resourceLabel}>🧠 LEARN LIKE A PRO — CLICK BELOW</span>
       <div className={styles.resourceList}>
         {youtubeLinks.map((link, i) => (
           <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className={styles.resourceLink}>
@@ -244,17 +299,8 @@ export default function ReportClient({ report }: Props) {
         import('html2canvas'),
       ])
       const reportEl = document.getElementById('report-content')
-      if (!reportEl) {
-        alert('Could not find report content. Please try again.')
-        setPdfLoading(false)
-        return
-      }
-      const canvas = await html2canvas(reportEl, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#0A0F1E',
-        logging: false,
-      })
+      if (!reportEl) { alert('Could not find report content. Please try again.'); setPdfLoading(false); return }
+      const canvas = await html2canvas(reportEl, { scale: 2, useCORS: true, backgroundColor: '#0A0F1E', logging: false })
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
       const pdfWidth = pdf.internal.pageSize.getWidth()
@@ -269,7 +315,7 @@ export default function ReportClient({ report }: Props) {
       pdf.save(`VidConverts-Report-${report.id.slice(0, 8)}.pdf`)
     } catch (err) {
       console.error('PDF error:', err)
-      alert('PDF download failed. Try right-clicking the page and selecting Print → Save as PDF, then open with Adobe Acrobat.')
+      alert('PDF download failed. Try right-clicking the page and selecting Print → Save as PDF.')
     }
     setPdfLoading(false)
   }
@@ -281,14 +327,14 @@ export default function ReportClient({ report }: Props) {
     ...report.report_data,
     missingEvidence: Array.isArray(report.report_data.missingEvidence)
       ? report.report_data.missingEvidence
-      : report.report_data.missingEvidence
-      ? [report.report_data.missingEvidence]
-      : []
+      : report.report_data.missingEvidence ? [report.report_data.missingEvidence] : []
   }
+
   const isPaid = report.tier === 'complete' || report.tier === 'premium'
-  const date = new Date(report.created_at).toLocaleDateString('en-US', {
-    month: 'long', day: 'numeric', year: 'numeric'
-  })
+  const isComplete = report.tier === 'complete'
+  const isPremium = report.tier === 'premium'
+
+  const date = new Date(report.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 
   const rubricToShow = isPaid ? data.rubricScores : data.rubricScores?.slice(0, FREE_RUBRIC_LIMIT) || []
   const hiddenRubric = isPaid ? [] : data.rubricScores?.slice(FREE_RUBRIC_LIMIT) || []
@@ -296,19 +342,21 @@ export default function ReportClient({ report }: Props) {
   const blockers = isPaid ? data.blockers : data.blockers?.slice(0, FREE_BLOCKERS_LIMIT) || []
   const checklist = isPaid ? data.actionChecklist : data.actionChecklist?.slice(0, FREE_CHECKLIST_LIMIT) || []
   const measurement = isPaid ? data.measurementGuidance : data.measurementGuidance?.slice(0, FREE_MEASUREMENT_LIMIT) || []
-  const transcriptHighlights = isPaid ? data.transcriptHighlights : data.transcriptHighlights?.slice(0, FREE_TRANSCRIPT_LIMIT) || []
+  const transcriptHighlights = isPaid ? data.transcriptHighlights : data.transcriptHighlights?.slice(0, 2) || []
 
   const scoreColor = (s: number) => s >= 7 ? '#2dd4bf' : s >= 4 ? '#f59e0b' : '#f87171'
   const scoreLabel = (s: number) => s >= 7 ? 'Strong' : s >= 4 ? 'Needs work' : 'Weak'
 
   return (
     <div className={styles.page}>
+
+      {/* ── Navbar with hamburger ── */}
+      <Navbar user={null} onSignIn={() => window.location.href = '/'} />
+
       {/* Floating CTA */}
       {isAtLimit ? (
         <Link href={`/pricing?limit=reached&plan=${userPlan}`} className={styles.floatingCta} style={{
-          background: 'rgba(245,166,35,0.15)',
-          border: '1px solid rgba(245,166,35,0.4)',
-          color: '#F5A623',
+          background: 'rgba(245,166,35,0.15)', border: '1px solid rgba(245,166,35,0.4)', color: '#F5A623',
         }}>
           <span className={styles.floatingCtaIcon}>🔒</span>
           Monthly limit reached — Upgrade Now
@@ -319,18 +367,6 @@ export default function ReportClient({ report }: Props) {
           Analyze Another Video
         </Link>
       )}
-
-      <nav className={styles.nav}>
-        <Link href="/dashboard" className={styles.logo}>
-          <BrandLogo />
-        </Link>
-        <div className={styles.navRight}>
-          <Link href="/dashboard" className={styles.backLink}>← Dashboard</Link>
-          {!isPaid && (
-            <Link href="/pricing" className={styles.upgradeNavBtn}>Upgrade for full report</Link>
-          )}
-        </div>
-      </nav>
 
       <main className={styles.main} id="report-content">
         {/* Header */}
@@ -378,9 +414,7 @@ export default function ReportClient({ report }: Props) {
           <h2 className={styles.sectionTitle}>
             Rubric scores
             {!isPaid && (
-              <span className={styles.sectionNote}>
-                Showing {rubricToShow.length} of {(data.rubricScores || []).length}
-              </span>
+              <span className={styles.sectionNote}>Showing {rubricToShow.length} of {(data.rubricScores || []).length}</span>
             )}
           </h2>
           <div className={styles.rubricGrid}>
@@ -391,23 +425,14 @@ export default function ReportClient({ report }: Props) {
                   <div className={styles.rubricMeta}>
                     <h3>
                       {item.category}
-                      {RUBRIC_TOOLTIPS[item.category] && (
-                        <Tooltip text={RUBRIC_TOOLTIPS[item.category]} />
-                      )}
+                      {RUBRIC_TOOLTIPS[item.category] && <Tooltip text={RUBRIC_TOOLTIPS[item.category]} />}
                     </h3>
-                    <span className={styles.scoreLabel} style={{ color: scoreColor(item.score) }}>
-                      {scoreLabel(item.score)}
-                    </span>
+                    <span className={styles.scoreLabel} style={{ color: scoreColor(item.score) }}>{scoreLabel(item.score)}</span>
                   </div>
                 </div>
-
                 {item.celebration && (
-                  <div className={styles.celebrationMini}>
-                    <span>✦</span>
-                    <p>{item.celebration}</p>
-                  </div>
+                  <div className={styles.celebrationMini}><span>✦</span><p>{item.celebration}</p></div>
                 )}
-
                 <div className={styles.rubricBody}>
                   {item.evidence && item.evidence !== 'INSUFFICIENT_EVIDENCE' && (
                     <div className={styles.evidence}>
@@ -430,13 +455,9 @@ export default function ReportClient({ report }: Props) {
                     </div>
                   )}
                 </div>
-
-                {isPaid && (
-                  <ResourceLinks category={item.category} tier={report.tier} />
-                )}
+                {isPaid && <ResourceLinks category={item.category} tier={report.tier} />}
               </div>
             ))}
-
             {hiddenRubric.map((item, i) => (
               <div key={`locked-${i}`} className={`${styles.rubricCard} ${styles.rubricCardLocked}`}>
                 <div className={styles.rubricTop}>
@@ -460,16 +481,13 @@ export default function ReportClient({ report }: Props) {
             <h2 className={styles.sectionTitle}>
               🏆 What you&apos;re doing GREAT!
               {!isPaid && data.strengths?.length > FREE_STRENGTHS_LIMIT && (
-                <span className={styles.sectionNote}>
-                  Showing {FREE_STRENGTHS_LIMIT} of {data.strengths.length}
-                </span>
+                <span className={styles.sectionNote}>Showing {FREE_STRENGTHS_LIMIT} of {data.strengths.length}</span>
               )}
             </h2>
             <div className={styles.itemList}>
               {strengths.map((s, i) => (
                 <div key={i} className={`${styles.listItem} ${styles.listItemGreen}`}>
-                  <span className={styles.listIcon}>✓</span>
-                  <p>{s}</p>
+                  <span className={styles.listIcon}>✓</span><p>{s}</p>
                 </div>
               ))}
             </div>
@@ -482,16 +500,13 @@ export default function ReportClient({ report }: Props) {
             <h2 className={styles.sectionTitle}>
               🚧 Conversion Blockers
               {!isPaid && data.blockers?.length > FREE_BLOCKERS_LIMIT && (
-                <span className={styles.sectionNote}>
-                  Showing {FREE_BLOCKERS_LIMIT} of {data.blockers.length}
-                </span>
+                <span className={styles.sectionNote}>Showing {FREE_BLOCKERS_LIMIT} of {data.blockers.length}</span>
               )}
             </h2>
             <div className={styles.itemList}>
               {blockers.map((b, i) => (
                 <div key={i} className={`${styles.listItem} ${styles.listItemRed}`}>
-                  <span className={styles.listIcon}>→</span>
-                  <p>{b}</p>
+                  <span className={styles.listIcon}>→</span><p>{b}</p>
                 </div>
               ))}
             </div>
@@ -504,16 +519,13 @@ export default function ReportClient({ report }: Props) {
             <h2 className={styles.sectionTitle}>
               🚀 Time to TAKE ACTION!
               {!isPaid && data.actionChecklist?.length > FREE_CHECKLIST_LIMIT && (
-                <span className={styles.sectionNote}>
-                  Showing {FREE_CHECKLIST_LIMIT} of {data.actionChecklist.length}
-                </span>
+                <span className={styles.sectionNote}>Showing {FREE_CHECKLIST_LIMIT} of {data.actionChecklist.length}</span>
               )}
             </h2>
             <div className={styles.itemList}>
               {checklist.map((item, i) => (
                 <div key={i} className={styles.listItem}>
-                  <span className={styles.checkNumber}>{i + 1}</span>
-                  <p>{item}</p>
+                  <span className={styles.checkNumber}>{i + 1}</span><p>{item}</p>
                 </div>
               ))}
             </div>
@@ -532,18 +544,25 @@ export default function ReportClient({ report }: Props) {
           </section>
         )}
 
-        {/* Tracking Guidance (formerly Measurement Guidance) */}
+        {/* Tracking Guidance */}
         {measurement.length > 0 && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>📊 Tracking Guidance</h2>
             <div className={styles.itemList}>
               {measurement.map((m, i) => (
                 <div key={i} className={styles.listItem}>
-                  <span className={styles.listIcon}>📈</span>
-                  <p>{m}</p>
+                  <span className={styles.listIcon}>📈</span><p>{m}</p>
                 </div>
               ))}
             </div>
+          </section>
+        )}
+
+        {/* Complete plan: Premium upsell + social video add-on */}
+        {isComplete && (
+          <section className={styles.section}>
+            <PremiumUpsellBlock />
+            <SocialVideoAddonBlock />
           </section>
         )}
 
@@ -555,11 +574,7 @@ export default function ReportClient({ report }: Props) {
               <strong>Download your report</strong>
               <span>Save a PDF copy of this full audit to share with your team or reference later.</span>
             </div>
-            <button
-              className={styles.pdfBtn}
-              onClick={handleDownloadPdf}
-              disabled={pdfLoading}
-            >
+            <button className={styles.pdfBtn} onClick={handleDownloadPdf} disabled={pdfLoading}>
               {pdfLoading ? 'Generating…' : 'Download PDF'}
             </button>
           </div>
@@ -575,9 +590,7 @@ export default function ReportClient({ report }: Props) {
               curated expert resources for each finding, and a downloadable PDF — everything
               you need to turn this audit into real results.
             </p>
-            <Link href="/pricing" className={styles.bigUpgradeBtn}>
-              See pricing →
-            </Link>
+            <Link href="/pricing" className={styles.bigUpgradeBtn}>See pricing →</Link>
             <p className={styles.bottomUpgradeNote}>Cancel anytime.</p>
           </div>
         )}
