@@ -63,7 +63,7 @@ const plans = [
       '1 expert YouTube resource per finding',
       '1 "How To" article link per finding',
       'Downloadable PDF report',
-      'Social media video add-on available (discounted)',
+      'Social media video add-on available (member rate)',
     ],
     locked: [
       '2 expert resources per finding',
@@ -105,8 +105,8 @@ const plans = [
 const addOn = {
   name: 'Social Media Video Add-on',
   description: 'We edit your footage into a polished 60-second social media video — ready to post.',
-  completePrice: 47,
-  standardPrice: 97,
+  completePrice: 100,
+  regularPriceRange: '$200–$500',
   turnaround: 'Up to 5 business days',
   premiumNote: '1 × 60-second social media video/month included in Premium',
   details: [
@@ -115,7 +115,7 @@ const addOn = {
     'Submit raw footage + your audit report',
     'Receive a download link when ready',
     'Available as many times as you need (pay per video)',
-    'Complete members: discounted rate of $47/video',
+    'Complete members: $100 USD/video (regularly $200–$500)',
   ],
 }
 
@@ -155,12 +155,7 @@ function DailyCost({ monthlyPrice, yearlyPrice, annual }: { monthlyPrice: number
 }
 
 function PlanCard({
-  plan,
-  annual,
-  loading,
-  topupLoading,
-  onUpgrade,
-  onTopup,
+  plan, annual, loading, topupLoading, onUpgrade, onTopup,
 }: {
   plan: typeof plans[0]
   annual: boolean
@@ -171,12 +166,8 @@ function PlanCard({
 }) {
   const score = annual ? plan.yearlyPrice : plan.monthlyPrice
   return (
-    <div
-      className={`${styles.card} ${plan.highlight ? styles.cardHighlight : ''}`}
-      style={{ display: 'flex', flexDirection: 'column' }}
-    >
+    <div className={`${styles.card} ${plan.highlight ? styles.cardHighlight : ''}`} style={{ display: 'flex', flexDirection: 'column' }}>
       {plan.badge && <div className={styles.popularBadge}>{plan.badge}</div>}
-
       <div className={styles.cardHeader} style={{ minHeight: '180px' }}>
         <h2 className={styles.planName}><PlanNameStyled name={plan.name} /></h2>
         <div className={styles.priceRow}>
@@ -200,9 +191,7 @@ function PlanCard({
         onClick={() => onUpgrade(plan.plan, plan.monthlyPriceId, plan.annualPriceId, (plan as any).ctaHref)}
         disabled={plan.plan !== null && loading === plan.plan}
       >
-        {plan.plan !== null && loading === plan.plan
-          ? <span className={styles.spinner} />
-          : plan.cta}
+        {plan.plan !== null && loading === plan.plan ? <span className={styles.spinner} /> : plan.cta}
       </button>
 
       <div className={styles.features} style={{ flex: 1 }}>
@@ -220,15 +209,10 @@ function PlanCard({
         ))}
       </div>
 
-      {/* Top-up button — Free and Complete only */}
       {plan.showTopup && (
         <div className={styles.topupWrap}>
           <div className={styles.topupDivider} />
-          <button
-            className={styles.topupBtn}
-            onClick={onTopup}
-            disabled={topupLoading}
-          >
+          <button className={styles.topupBtn} onClick={onTopup} disabled={topupLoading}>
             {topupLoading ? <span className={styles.spinner} /> : 'Buy 1 Complete Report — $5'}
           </button>
           <p className={styles.topupNote}>* Complete report — more detailed than a Free report.</p>
@@ -252,10 +236,7 @@ export default function PricingPage() {
     annualPriceId: string | null | undefined,
     ctaHref?: string
   ) => {
-    if (!plan || !monthlyPriceId) {
-      window.location.href = ctaHref || '/'
-      return
-    }
+    if (!plan || !monthlyPriceId) { window.location.href = ctaHref || '/'; return }
     const priceId = annual && annualPriceId ? annualPriceId : monthlyPriceId
     setLoading(plan)
     try {
@@ -265,51 +246,33 @@ export default function PricingPage() {
         body: JSON.stringify({ priceId, plan }),
       })
       const data = await response.json()
-      if (data.url) {
-        window.location.href = data.url
-      } else if (data.error === 'Unauthorized') {
-        window.location.href = '/?signin=true'
-      } else {
-        alert('Something went wrong. Please try again.')
-      }
-    } catch {
-      alert('Something went wrong. Please try again.')
-    } finally {
-      setLoading(null)
-    }
+      if (data.url) { window.location.href = data.url }
+      else if (data.error === 'Unauthorized') { window.location.href = '/?signin=true' }
+      else { alert('Something went wrong. Please try again.') }
+    } catch { alert('Something went wrong. Please try again.') }
+    finally { setLoading(null) }
   }
 
   const handleTopup = async () => {
     setTopupLoading(true)
     try {
-      const response = await fetch('/api/stripe/topup', {
-        method: 'POST',
-      })
+      const response = await fetch('/api/stripe/topup', { method: 'POST' })
       const data = await response.json()
-      if (data.url) {
-        window.location.href = data.url
-      } else if (data.error === 'Unauthorized') {
-        window.location.href = '/?signin=true'
-      } else {
-        alert('Something went wrong. Please try again.')
-      }
-    } catch {
-      alert('Something went wrong. Please try again.')
-    } finally {
-      setTopupLoading(false)
-    }
+      if (data.url) { window.location.href = data.url }
+      else if (data.error === 'Unauthorized') { window.location.href = '/?signin=true' }
+      else { alert('Something went wrong. Please try again.') }
+    } catch { alert('Something went wrong. Please try again.') }
+    finally { setTopupLoading(false) }
   }
 
   return (
     <>
       <Navbar user={null} onSignIn={() => window.location.href = '/'} />
-
       <main className={styles.main}>
         <div className={styles.gridBg} aria-hidden />
-
         <div className="container">
 
-          {/* ── Hero ── */}
+          {/* Hero */}
           <div className={styles.header}>
             <h1 className={styles.title}>
               One improved video.<br />
@@ -317,11 +280,8 @@ export default function PricingPage() {
               Full year&apos;s subscription paid for. 💥
             </h1>
             <p className={styles.subtitle}>
-              <span style={{ color: '#F5A623', fontWeight: 800 }}>
-                An exquisite tool. First of its kind.{' '}
-              </span>
-              <span style={{ color: '#2DD4BF', fontWeight: 800 }}>92¢ per day</span>
-              <span style={{ color: '#2DD4BF', fontWeight: 800 }}>.*</span>
+              <span style={{ color: '#F5A623', fontWeight: 800 }}>An exquisite tool. First of its kind. </span>
+              <span style={{ color: '#2DD4BF', fontWeight: 800 }}>92¢ per day.*</span>
             </p>
             <p style={{ fontSize: '11px', color: '#64748b', margin: '-8px 0 0 0', fontWeight: 400 }}>
               * Based on the Complete Annual plan — $336/yr ÷ 365 days
@@ -329,79 +289,46 @@ export default function PricingPage() {
             <p className={styles.startFree}>Start Free.</p>
           </div>
 
-          {/* ── DESKTOP toggle ── */}
+          {/* Desktop toggle */}
           <div className={styles.desktopToggleWrap}>
             <div className={styles.toggle}>
-              <button
-                className={`${styles.toggleBtn} ${!annual ? styles.toggleActive : ''}`}
-                onClick={() => setAnnual(false)}>
-                Monthly
-              </button>
-              <button
-                className={`${styles.toggleBtn} ${annual ? styles.toggleActive : ''}`}
-                onClick={() => setAnnual(true)}>
-                Annually
-                <span className={styles.saveBadge}>Save 20%</span>
+              <button className={`${styles.toggleBtn} ${!annual ? styles.toggleActive : ''}`} onClick={() => setAnnual(false)}>Monthly</button>
+              <button className={`${styles.toggleBtn} ${annual ? styles.toggleActive : ''}`} onClick={() => setAnnual(true)}>
+                Annually<span className={styles.saveBadge}>Save 20%</span>
               </button>
             </div>
           </div>
 
-          {/* ── MOBILE: sticky control bar ── */}
+          {/* Mobile sticky controls */}
           <div className={styles.stickyControls}>
             <div className={styles.toggle} style={{ width: '100%' }}>
-              <button
-                className={`${styles.toggleBtn} ${!annual ? styles.toggleActive : ''}`}
-                onClick={() => setAnnual(false)}>
-                Monthly
-              </button>
-              <button
-                className={`${styles.toggleBtn} ${annual ? styles.toggleActive : ''}`}
-                onClick={() => setAnnual(true)}>
-                Annually
-                <span className={styles.saveBadge}>Save 20%</span>
+              <button className={`${styles.toggleBtn} ${!annual ? styles.toggleActive : ''}`} onClick={() => setAnnual(false)}>Monthly</button>
+              <button className={`${styles.toggleBtn} ${annual ? styles.toggleActive : ''}`} onClick={() => setAnnual(true)}>
+                Annually<span className={styles.saveBadge}>Save 20%</span>
               </button>
             </div>
             <div className={styles.mobileTabs}>
               {plans.map((plan, i) => (
-                <button
-                  key={plan.name}
-                  className={`${styles.mobileTab} ${activeTab === i ? styles.mobileTabActive : ''}`}
-                  onClick={() => setActiveTab(i)}
-                >
+                <button key={plan.name} className={`${styles.mobileTab} ${activeTab === i ? styles.mobileTabActive : ''}`} onClick={() => setActiveTab(i)}>
                   <PlanNameStyled name={plan.name} />
                 </button>
               ))}
             </div>
           </div>
 
-          {/* ── DESKTOP: 3-col grid ── */}
+          {/* Desktop grid */}
           <div className={styles.grid} style={{ alignItems: 'stretch' }}>
             {plans.map((plan) => (
-              <PlanCard
-                key={plan.name}
-                plan={plan}
-                annual={annual}
-                loading={loading}
-                topupLoading={topupLoading}
-                onUpgrade={handleUpgrade}
-                onTopup={handleTopup}
-              />
+              <PlanCard key={plan.name} plan={plan} annual={annual} loading={loading} topupLoading={topupLoading} onUpgrade={handleUpgrade} onTopup={handleTopup} />
             ))}
           </div>
 
-          {/* ── MOBILE: single active plan card ── */}
+          {/* Mobile single card */}
           <div className={styles.mobilePlans}>
-            <PlanCard
-              plan={plans[activeTab]}
-              annual={annual}
-              loading={loading}
-              topupLoading={topupLoading}
-              onUpgrade={handleUpgrade}
-              onTopup={handleTopup}
-            />
+            <PlanCard plan={plans[activeTab]} annual={annual} loading={loading} topupLoading={topupLoading} onUpgrade={handleUpgrade} onTopup={handleTopup} />
           </div>
 
-          {/* ── Social Media Video Add-on ── */}
+          {/* Social Media Video Add-on */}
           <div className={styles.addOnSection}>
             <button className={styles.addOnToggle} onClick={() => setShowAddOn(!showAddOn)}>
               <span>🎬</span>
@@ -417,8 +344,8 @@ export default function PricingPage() {
                 <div className={styles.addOnPrices}>
                   <div className={styles.addOnPrice}>
                     <strong>Complete plan members</strong>
-                    <span className={styles.addOnPriceAmount}>${addOn.completePrice}<small>/video</small></span>
-                    <span className={styles.addOnPriceSub}>Discounted rate · {addOn.turnaround}</span>
+                    <span className={styles.addOnPriceAmount}>${addOn.completePrice} USD<small>/video</small></span>
+                    <span className={styles.addOnPriceSub}>Member rate · regularly {addOn.regularPriceRange} · {addOn.turnaround}</span>
                   </div>
                   <div className={`${styles.addOnPrice} ${styles.addOnPricePremium}`}>
                     <strong>Premium plan members</strong>
@@ -428,9 +355,7 @@ export default function PricingPage() {
                 </div>
                 <div className={styles.addOnDetails}>
                   {addOn.details.map((d, i) => (
-                    <div key={i} className={styles.addOnDetail}>
-                      <span>✓</span><span>{d}</span>
-                    </div>
+                    <div key={i} className={styles.addOnDetail}><span>✓</span><span>{d}</span></div>
                   ))}
                 </div>
                 <p className={styles.addOnNote}>
@@ -441,7 +366,7 @@ export default function PricingPage() {
             )}
           </div>
 
-          {/* ── Footer links ── */}
+          {/* Footer links */}
           <p className={styles.guarantee}>
             Questions?{' '}
             <Link href="/faq" className={styles.faqLink}>See our FAQ →</Link>
@@ -452,7 +377,6 @@ export default function PricingPage() {
             {' · '}
             <Link href="/refund" className={styles.faqLink}>Refund Policy</Link>
           </p>
-
         </div>
       </main>
 
@@ -460,9 +384,7 @@ export default function PricingPage() {
         <BrandLogo />
         <span className={styles.by}>
           by{' '}
-          <a href="https://digitalnuclei.com" target="_blank" rel="noopener noreferrer">
-            Digital Nuclei
-          </a>
+          <a href="https://digitalnuclei.com" target="_blank" rel="noopener noreferrer">Digital Nuclei</a>
         </span>
       </footer>
     </>

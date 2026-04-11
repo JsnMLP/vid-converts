@@ -52,7 +52,6 @@ const FREE_STRENGTHS_LIMIT = 2
 const FREE_BLOCKERS_LIMIT = 3
 const FREE_CHECKLIST_LIMIT = 3
 const FREE_MEASUREMENT_LIMIT = 3
-const FREE_TRANSCRIPT_LIMIT = 2
 
 const PLAN_LIMITS: Record<string, number> = {
   free: 2,
@@ -150,7 +149,6 @@ function UpgradeBanner() {
   )
 }
 
-// ── Complete → Premium upsell block ──────────────────────────────────────────
 function PremiumUpsellBlock() {
   return (
     <div style={{
@@ -158,7 +156,7 @@ function PremiumUpsellBlock() {
       border: '1px solid rgba(245,166,35,0.25)',
       borderRadius: '16px',
       padding: '28px',
-      margin: '32px 0 0 0',
+      margin: '20px 0 0 0',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
         <span style={{ fontSize: '20px' }}>⭐</span>
@@ -200,7 +198,6 @@ function PremiumUpsellBlock() {
   )
 }
 
-// ── Social media video add-on prompt ─────────────────────────────────────────
 function SocialVideoAddonBlock() {
   return (
     <div style={{
@@ -208,7 +205,7 @@ function SocialVideoAddonBlock() {
       border: '1px solid rgba(45,212,191,0.2)',
       borderRadius: '16px',
       padding: '24px',
-      margin: '20px 0 0 0',
+      margin: '16px 0 0 0',
       display: 'flex',
       gap: '16px',
       alignItems: 'flex-start',
@@ -219,11 +216,12 @@ function SocialVideoAddonBlock() {
           Want us to edit this into a polished social media video?
         </h3>
         <p style={{ margin: '0 0 12px 0', color: '#9CA3AF', fontSize: '13px', lineHeight: 1.6 }}>
-          As a Complete member, you get our social media video add-on at a discounted rate of{' '}
-          <strong style={{ color: '#2DD4BF' }}>$47/video</strong> (regular $97).
+          As a Complete member, you get our social media video add-on at{' '}
+          <strong style={{ color: '#2DD4BF' }}>$100 USD/video</strong>{' '}
+          — a service that regularly runs <strong style={{ color: '#9CA3AF' }}>$200–$500</strong> elsewhere.
           We edit your raw footage into a 60-second platform-ready video — captions, cuts, colour grading included.
         </p>
-        <Link href="/pricing#addon" style={{
+        <Link href="/pricing" style={{
           display: 'inline-block',
           backgroundColor: 'transparent',
           color: '#2DD4BF',
@@ -332,7 +330,6 @@ export default function ReportClient({ report }: Props) {
 
   const isPaid = report.tier === 'complete' || report.tier === 'premium'
   const isComplete = report.tier === 'complete'
-  const isPremium = report.tier === 'premium'
 
   const date = new Date(report.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 
@@ -349,27 +346,21 @@ export default function ReportClient({ report }: Props) {
 
   return (
     <div className={styles.page}>
-
-      {/* ── Navbar with hamburger ── */}
       <Navbar user={null} onSignIn={() => window.location.href = '/'} />
 
-      {/* Floating CTA */}
       {isAtLimit ? (
         <Link href={`/pricing?limit=reached&plan=${userPlan}`} className={styles.floatingCta} style={{
           background: 'rgba(245,166,35,0.15)', border: '1px solid rgba(245,166,35,0.4)', color: '#F5A623',
         }}>
-          <span className={styles.floatingCtaIcon}>🔒</span>
-          Monthly limit reached — Upgrade Now
+          <span className={styles.floatingCtaIcon}>🔒</span>Monthly limit reached — Upgrade Now
         </Link>
       ) : (
         <Link href="/dashboard" className={styles.floatingCta}>
-          <span className={styles.floatingCtaIcon}>＋</span>
-          Analyze Another Video
+          <span className={styles.floatingCtaIcon}>＋</span>Analyze Another Video
         </Link>
       )}
 
       <main className={styles.main} id="report-content">
-        {/* Header */}
         <div className={styles.header}>
           <div className={styles.headerMeta}>
             <span className={styles.metaTag}>
@@ -390,7 +381,6 @@ export default function ReportClient({ report }: Props) {
           </div>
         </div>
 
-        {/* Opening celebration */}
         {data.openingCelebration && (
           <div className={styles.celebrationCard}>
             <span className={styles.celebrationIcon}>🎯</span>
@@ -398,7 +388,6 @@ export default function ReportClient({ report }: Props) {
           </div>
         )}
 
-        {/* Overall score */}
         <div className={styles.scoreCard}>
           <div className={styles.scoreLeft}>
             <OverallScoreRing score={data.overallScore || 0} />
@@ -409,13 +398,10 @@ export default function ReportClient({ report }: Props) {
           </div>
         </div>
 
-        {/* Rubric scores */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>
             Rubric scores
-            {!isPaid && (
-              <span className={styles.sectionNote}>Showing {rubricToShow.length} of {(data.rubricScores || []).length}</span>
-            )}
+            {!isPaid && <span className={styles.sectionNote}>Showing {rubricToShow.length} of {(data.rubricScores || []).length}</span>}
           </h2>
           <div className={styles.rubricGrid}>
             {rubricToShow.map((item, i) => (
@@ -423,37 +409,18 @@ export default function ReportClient({ report }: Props) {
                 <div className={styles.rubricTop}>
                   <ScoreRing score={item.score} size={72} />
                   <div className={styles.rubricMeta}>
-                    <h3>
-                      {item.category}
-                      {RUBRIC_TOOLTIPS[item.category] && <Tooltip text={RUBRIC_TOOLTIPS[item.category]} />}
-                    </h3>
+                    <h3>{item.category}{RUBRIC_TOOLTIPS[item.category] && <Tooltip text={RUBRIC_TOOLTIPS[item.category]} />}</h3>
                     <span className={styles.scoreLabel} style={{ color: scoreColor(item.score) }}>{scoreLabel(item.score)}</span>
                   </div>
                 </div>
-                {item.celebration && (
-                  <div className={styles.celebrationMini}><span>✦</span><p>{item.celebration}</p></div>
-                )}
+                {item.celebration && <div className={styles.celebrationMini}><span>✦</span><p>{item.celebration}</p></div>}
                 <div className={styles.rubricBody}>
                   {item.evidence && item.evidence !== 'INSUFFICIENT_EVIDENCE' && (
-                    <div className={styles.evidence}>
-                      <span className={styles.evidenceLabel}>Evidence</span>
-                      <p>"{item.evidence}"</p>
-                    </div>
+                    <div className={styles.evidence}><span className={styles.evidenceLabel}>Evidence</span><p>"{item.evidence}"</p></div>
                   )}
-                  <div className={styles.finding}>
-                    <span className={styles.findingLabel}>Finding</span>
-                    <p>{item.finding}</p>
-                  </div>
-                  <div className={styles.recommendation}>
-                    <span className={styles.recLabel}>→ Recommendation</span>
-                    <p>{item.recommendation}</p>
-                  </div>
-                  {item.pleasureAngle && (
-                    <div className={styles.pleasureAngle}>
-                      <span className={styles.pleasureLabel}>✨ The opportunity</span>
-                      <p>{item.pleasureAngle}</p>
-                    </div>
-                  )}
+                  <div className={styles.finding}><span className={styles.findingLabel}>Finding</span><p>{item.finding}</p></div>
+                  <div className={styles.recommendation}><span className={styles.recLabel}>→ Recommendation</span><p>{item.recommendation}</p></div>
+                  {item.pleasureAngle && <div className={styles.pleasureAngle}><span className={styles.pleasureLabel}>✨ The opportunity</span><p>{item.pleasureAngle}</p></div>}
                 </div>
                 {isPaid && <ResourceLinks category={item.category} tier={report.tier} />}
               </div>
@@ -462,10 +429,7 @@ export default function ReportClient({ report }: Props) {
               <div key={`locked-${i}`} className={`${styles.rubricCard} ${styles.rubricCardLocked}`}>
                 <div className={styles.rubricTop}>
                   <div className={styles.lockedScore}>?</div>
-                  <div className={styles.rubricMeta}>
-                    <h3>{item.category}</h3>
-                    <span className={styles.lockedLabel}>Locked</span>
-                  </div>
+                  <div className={styles.rubricMeta}><h3>{item.category}</h3><span className={styles.lockedLabel}>Locked</span></div>
                 </div>
                 <div className={styles.lockOverlay}>🔒 Upgrade to unlock</div>
               </div>
@@ -475,98 +439,61 @@ export default function ReportClient({ report }: Props) {
 
         {!isPaid && <UpgradeBanner />}
 
-        {/* Strengths */}
         {strengths.length > 0 && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
               🏆 What you&apos;re doing GREAT!
-              {!isPaid && data.strengths?.length > FREE_STRENGTHS_LIMIT && (
-                <span className={styles.sectionNote}>Showing {FREE_STRENGTHS_LIMIT} of {data.strengths.length}</span>
-              )}
+              {!isPaid && data.strengths?.length > FREE_STRENGTHS_LIMIT && <span className={styles.sectionNote}>Showing {FREE_STRENGTHS_LIMIT} of {data.strengths.length}</span>}
             </h2>
             <div className={styles.itemList}>
-              {strengths.map((s, i) => (
-                <div key={i} className={`${styles.listItem} ${styles.listItemGreen}`}>
-                  <span className={styles.listIcon}>✓</span><p>{s}</p>
-                </div>
-              ))}
+              {strengths.map((s, i) => <div key={i} className={`${styles.listItem} ${styles.listItemGreen}`}><span className={styles.listIcon}>✓</span><p>{s}</p></div>)}
             </div>
           </section>
         )}
 
-        {/* Blockers */}
         {blockers.length > 0 && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
               🚧 Conversion Blockers
-              {!isPaid && data.blockers?.length > FREE_BLOCKERS_LIMIT && (
-                <span className={styles.sectionNote}>Showing {FREE_BLOCKERS_LIMIT} of {data.blockers.length}</span>
-              )}
+              {!isPaid && data.blockers?.length > FREE_BLOCKERS_LIMIT && <span className={styles.sectionNote}>Showing {FREE_BLOCKERS_LIMIT} of {data.blockers.length}</span>}
             </h2>
             <div className={styles.itemList}>
-              {blockers.map((b, i) => (
-                <div key={i} className={`${styles.listItem} ${styles.listItemRed}`}>
-                  <span className={styles.listIcon}>→</span><p>{b}</p>
-                </div>
-              ))}
+              {blockers.map((b, i) => <div key={i} className={`${styles.listItem} ${styles.listItemRed}`}><span className={styles.listIcon}>→</span><p>{b}</p></div>)}
             </div>
           </section>
         )}
 
-        {/* Action checklist */}
         {checklist.length > 0 && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
               🚀 Time to TAKE ACTION!
-              {!isPaid && data.actionChecklist?.length > FREE_CHECKLIST_LIMIT && (
-                <span className={styles.sectionNote}>Showing {FREE_CHECKLIST_LIMIT} of {data.actionChecklist.length}</span>
-              )}
+              {!isPaid && data.actionChecklist?.length > FREE_CHECKLIST_LIMIT && <span className={styles.sectionNote}>Showing {FREE_CHECKLIST_LIMIT} of {data.actionChecklist.length}</span>}
             </h2>
             <div className={styles.itemList}>
-              {checklist.map((item, i) => (
-                <div key={i} className={styles.listItem}>
-                  <span className={styles.checkNumber}>{i + 1}</span><p>{item}</p>
-                </div>
-              ))}
+              {checklist.map((item, i) => <div key={i} className={styles.listItem}><span className={styles.checkNumber}>{i + 1}</span><p>{item}</p></div>)}
             </div>
           </section>
         )}
 
-        {/* Transcript highlights */}
         {transcriptHighlights.length > 0 && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>💬 Transcript Highlights</h2>
             <div className={styles.quoteList}>
-              {transcriptHighlights.map((q, i) => (
-                <blockquote key={i} className={styles.quote}>"{q}"</blockquote>
-              ))}
+              {transcriptHighlights.map((q, i) => <blockquote key={i} className={styles.quote}>"{q}"</blockquote>)}
             </div>
           </section>
         )}
 
-        {/* Tracking Guidance */}
         {measurement.length > 0 && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>📊 Tracking Guidance</h2>
             <div className={styles.itemList}>
-              {measurement.map((m, i) => (
-                <div key={i} className={styles.listItem}>
-                  <span className={styles.listIcon}>📈</span><p>{m}</p>
-                </div>
-              ))}
+              {measurement.map((m, i) => <div key={i} className={styles.listItem}><span className={styles.listIcon}>📈</span><p>{m}</p></div>)}
             </div>
           </section>
         )}
 
-        {/* Complete plan: Premium upsell + social video add-on */}
-        {isComplete && (
-          <section className={styles.section}>
-            <PremiumUpsellBlock />
-            <SocialVideoAddonBlock />
-          </section>
-        )}
-
-        {/* PDF download for paid plans */}
+        {/* PDF download — first */}
         {isPaid && (
           <div className={styles.pdfBanner}>
             <span>📄</span>
@@ -580,16 +507,19 @@ export default function ReportClient({ report }: Props) {
           </div>
         )}
 
-        {/* Bottom upgrade CTA for free users */}
+        {/* Complete upsell blocks — below PDF */}
+        {isComplete && (
+          <section className={styles.section} style={{ paddingTop: 0 }}>
+            <PremiumUpsellBlock />
+            <SocialVideoAddonBlock />
+          </section>
+        )}
+
         {!isPaid && (
           <div className={styles.bottomUpgrade}>
             <div className={styles.bottomUpgradeGlow} />
             <h2>You&apos;ve seen the surface. Here&apos;s what&apos;s underneath.</h2>
-            <p>
-              Unlock all 8 rubric scores, every strength and blocker, your full action plan,
-              curated expert resources for each finding, and a downloadable PDF — everything
-              you need to turn this audit into real results.
-            </p>
+            <p>Unlock all 8 rubric scores, every strength and blocker, your full action plan, curated expert resources for each finding, and a downloadable PDF — everything you need to turn this audit into real results.</p>
             <Link href="/pricing" className={styles.bigUpgradeBtn}>See pricing →</Link>
             <p className={styles.bottomUpgradeNote}>Cancel anytime.</p>
           </div>
