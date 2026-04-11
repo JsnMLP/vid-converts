@@ -458,7 +458,7 @@ export default function ReportClient({ report }: Props) {
         {strengths.length > 0 && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
-              🏆 What you're doing GREAT!
+              🏆 What you&apos;re doing GREAT!
               {!isPaid && data.strengths?.length > FREE_STRENGTHS_LIMIT && (
                 <span className={styles.sectionNote}>
                   Showing {FREE_STRENGTHS_LIMIT} of {data.strengths.length}
@@ -480,7 +480,7 @@ export default function ReportClient({ report }: Props) {
         {blockers.length > 0 && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
-              Conversion blockers
+              🚧 Conversion Blockers
               {!isPaid && data.blockers?.length > FREE_BLOCKERS_LIMIT && (
                 <span className={styles.sectionNote}>
                   Showing {FREE_BLOCKERS_LIMIT} of {data.blockers.length}
@@ -523,7 +523,7 @@ export default function ReportClient({ report }: Props) {
         {/* Transcript highlights */}
         {transcriptHighlights.length > 0 && (
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Transcript highlights</h2>
+            <h2 className={styles.sectionTitle}>💬 Transcript Highlights</h2>
             <div className={styles.quoteList}>
               {transcriptHighlights.map((q, i) => (
                 <blockquote key={i} className={styles.quote}>"{q}"</blockquote>
@@ -532,10 +532,10 @@ export default function ReportClient({ report }: Props) {
           </section>
         )}
 
-        {/* Measurement guidance */}
+        {/* Tracking Guidance (formerly Measurement Guidance) */}
         {measurement.length > 0 && (
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Measurement guidance</h2>
+            <h2 className={styles.sectionTitle}>📊 Tracking Guidance</h2>
             <div className={styles.itemList}>
               {measurement.map((m, i) => (
                 <div key={i} className={styles.listItem}>
@@ -569,7 +569,7 @@ export default function ReportClient({ report }: Props) {
         {!isPaid && (
           <div className={styles.bottomUpgrade}>
             <div className={styles.bottomUpgradeGlow} />
-            <h2>You've seen the surface. Here's what's underneath.</h2>
+            <h2>You&apos;ve seen the surface. Here&apos;s what&apos;s underneath.</h2>
             <p>
               Unlock all 8 rubric scores, every strength and blocker, your full action plan,
               curated expert resources for each finding, and a downloadable PDF — everything

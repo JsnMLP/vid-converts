@@ -231,10 +231,8 @@ function PlanCard({
           >
             {topupLoading ? <span className={styles.spinner} /> : 'Buy 1 Complete Report — $5'}
           </button>
-          <p className={styles.topupNote}>
-            Available once you reach your monthly limit.<br />
-            <span>* Complete report — more detailed than a Free report.</span>
-          </p>
+          <p className={styles.topupNote}>* Complete report — more detailed than a Free report.</p>
+          <p className={styles.topupNote} style={{ marginTop: '2px', opacity: 0.6 }}>Available once you reach your monthly limit.</p>
         </div>
       )}
     </div>
@@ -323,8 +321,10 @@ export default function PricingPage() {
                 An exquisite tool. First of its kind.{' '}
               </span>
               <span style={{ color: '#2DD4BF', fontWeight: 800 }}>92¢ per day</span>
-              <span style={{ color: '#2DD4BF', fontWeight: 800 }}>.</span>
-              <sup style={{ fontSize: '0.55em', color: '#64748b', verticalAlign: 'super', lineHeight: 0 }}>*</sup>
+              <span style={{ color: '#2DD4BF', fontWeight: 800 }}>.*</span>
+            </p>
+            <p style={{ fontSize: '11px', color: '#64748b', margin: '-8px 0 0 0', fontWeight: 400 }}>
+              * Based on the Complete Annual plan — $336/yr ÷ 365 days
             </p>
             <p className={styles.startFree}>Start Free.</p>
           </div>
@@ -453,9 +453,6 @@ export default function PricingPage() {
             <Link href="/refund" className={styles.faqLink}>Refund Policy</Link>
           </p>
 
-          <p className={styles.footnote}>
-            * Based on the Complete Annual plan — $336/yr ÷ 365 days
-          </p>
         </div>
       </main>
 
