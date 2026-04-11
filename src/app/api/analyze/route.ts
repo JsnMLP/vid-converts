@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   // ── 1. Get or create subscription row ────────────────────────────────────────
   let { data: sub } = await supabase
     .from('subscriptions')
-    .select('plan, status, analyses_count, analyses_reset_date')
+    .select('plan, status, analyses_count, analyses_reset_date, topup_credits')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -37,9 +37,10 @@ export async function POST(request: NextRequest) {
         plan: 'free',
         status: 'inactive',
         analyses_count: 0,
+        topup_credits: 0,
         analyses_reset_date: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
       }, { onConflict: 'user_id' })
-      .select('plan, status, analyses_count, analyses_reset_date')
+      .select('plan, status, analyses_count, analyses_reset_date, topup_credits')
       .maybeSingle()
     sub = newSub
   }
@@ -60,6 +61,7 @@ export async function POST(request: NextRequest) {
     now.getMonth() > resetDate.getMonth()
 
   let currentCount = sub.analyses_count ?? 0
+  const topupCredits = sub.topup_credits ?? 0
 
   if (isNewMonth) {
     currentCount = 0
@@ -72,10 +74,14 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
   }
 
-  // ── 4. Enforce limit ──────────────────────────────────────────────────────────
-  if (limit !== Infinity && currentCount >= limit) {
+  // ── 4. Enforce limit — but allow topup credits to cover overages ──────────────
+  const withinPlanLimit = limit === Infinity || currentCount < limit
+  const hasTopupCredit = topupCredits > 0
+  const usingTopup = !withinPlanLimit && hasTopupCredit
+
+  if (!withinPlanLimit && !hasTopupCredit) {
     return NextResponse.json({
-      error: `You've used all ${limit} analyses included in your ${effectivePlan} plan this month. Upgrade to keep going.`,
+      error: `You've reached your monthly analyses limit. Buy a one-time report for $5 or upgrade your plan.`,
       code: 'LIMIT_REACHED',
       plan: effectivePlan,
       limit,
@@ -99,7 +105,7 @@ export async function POST(request: NextRequest) {
       forwardFormData.set('user_name', user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'there')
     } else {
       const body = await request.json()
-      const { videoUrl, niche, audience, goal, sourceType, fileName } = body
+      const { videoUrl, niche, audience, goal, platform, sourceType, fileName } = body
 
       if (!videoUrl) {
         return NextResponse.json({ error: 'No video URL provided.' }, { status: 400 })
@@ -110,6 +116,7 @@ export async function POST(request: NextRequest) {
       forwardFormData.append('niche', niche ?? '')
       forwardFormData.append('audience', audience ?? '')
       forwardFormData.append('goal', goal ?? '')
+      forwardFormData.append('platform', platform ?? '')
       forwardFormData.append('sourceType', sourceType ?? 'url')
       if (fileName) forwardFormData.append('fileName', fileName)
       forwardFormData.append('user_id', user.id)
@@ -128,11 +135,43 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(result, { status: response.status })
     }
 
-    // ── 6. Increment counter on success ────────────────────────────────────────
-    await supabase
-      .from('subscriptions')
-      .update({ analyses_count: currentCount + 1 })
-      .eq('user_id', user.id)
+    // ── 6. Increment counter or consume topup credit on success ────────────────
+    if (usingTopup) {
+      await supabase
+        .from('subscriptions')
+        .update({ topup_credits: topupCredits - 1 })
+        .eq('user_id', user.id)
+      console.log(`[TopUp] Used 1 credit for user ${user.id}. Remaining: ${topupCredits - 1}`)
+    } else {
+      await supabase
+        .from('subscriptions')
+        .update({ analyses_count: currentCount + 1 })
+        .eq('user_id', user.id)
+    }
+
+    // ── 7. Send report complete email ─────────────────────────────────────────
+    try {
+      const { Resend } = await import('resend')
+      const { default: ReportCompleteEmail } = await import('@/lib/email/templates/ReportCompleteEmail')
+      const resend = new Resend(process.env.RESEND_API_KEY)
+
+      const firstName = user.user_metadata?.full_name?.split(' ')[0]
+        ?? user.email?.split('@')[0]
+        ?? 'there'
+      const reportId = result.reportId ?? ''
+      const overallScore = result.overallScore ?? result.report?.overallScore ?? 0
+      const reportUrl = `https://www.vidconverts.com/report/${reportId}`
+
+      await resend.emails.send({
+        from: 'Vid Converts <reports@vidconverts.com>',
+        to: user.email!,
+        subject: `Your conversion audit is ready — ${overallScore}/100`,
+        react: ReportCompleteEmail({ firstName, reportId, overallScore, reportUrl }),
+      })
+    } catch (emailErr) {
+      // Non-fatal — never fail the route over an email error
+      console.error('[Report email] Failed to send:', emailErr)
+    }
 
     return NextResponse.json(result)
 

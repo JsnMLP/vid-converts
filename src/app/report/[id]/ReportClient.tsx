@@ -193,7 +193,9 @@ function ResourceLinks({ category, tier }: { category: string; tier: string }) {
 
   return (
     <div className={styles.resourceLinks}>
-      <span className={styles.resourceLabel}>📚 Learn more</span>
+      <span className={styles.resourceLabel}>
+        🧠 LEARN LIKE A PRO — CLICK BELOW
+      </span>
       <div className={styles.resourceList}>
         {youtubeLinks.map((link, i) => (
           <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className={styles.resourceLink}>
@@ -217,6 +219,7 @@ function ResourceLinks({ category, tier }: { category: string; tier: string }) {
 export default function ReportClient({ report }: Props) {
   const [usageCount, setUsageCount] = useState<number | null>(null)
   const [userPlan, setUserPlan] = useState<string>('free')
+  const [pdfLoading, setPdfLoading] = useState(false)
 
   useEffect(() => {
     const fetchUsage = async () => {
@@ -232,6 +235,44 @@ export default function ReportClient({ report }: Props) {
     }
     fetchUsage()
   }, [])
+
+  const handleDownloadPdf = async () => {
+    setPdfLoading(true)
+    try {
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas'),
+      ])
+      const reportEl = document.getElementById('report-content')
+      if (!reportEl) {
+        alert('Could not find report content. Please try again.')
+        setPdfLoading(false)
+        return
+      }
+      const canvas = await html2canvas(reportEl, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#0A0F1E',
+        logging: false,
+      })
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+      const pdfWidth = pdf.internal.pageSize.getWidth()
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+      const pageHeight = pdf.internal.pageSize.getHeight()
+      let yPos = 0
+      while (yPos < pdfHeight) {
+        if (yPos > 0) pdf.addPage()
+        pdf.addImage(imgData, 'PNG', 0, -yPos, pdfWidth, pdfHeight)
+        yPos += pageHeight
+      }
+      pdf.save(`VidConverts-Report-${report.id.slice(0, 8)}.pdf`)
+    } catch (err) {
+      console.error('PDF error:', err)
+      alert('PDF download failed. Try right-clicking the page and selecting Print → Save as PDF, then open with Adobe Acrobat.')
+    }
+    setPdfLoading(false)
+  }
 
   const limit = PLAN_LIMITS[userPlan] ?? 2
   const isAtLimit = limit !== Infinity && usageCount !== null && usageCount >= limit
@@ -256,14 +297,13 @@ export default function ReportClient({ report }: Props) {
   const checklist = isPaid ? data.actionChecklist : data.actionChecklist?.slice(0, FREE_CHECKLIST_LIMIT) || []
   const measurement = isPaid ? data.measurementGuidance : data.measurementGuidance?.slice(0, FREE_MEASUREMENT_LIMIT) || []
   const transcriptHighlights = isPaid ? data.transcriptHighlights : data.transcriptHighlights?.slice(0, FREE_TRANSCRIPT_LIMIT) || []
-  const frameObs = isPaid ? data.frameObservations : data.frameObservations?.slice(0, FREE_FRAMES_LIMIT) || []
 
   const scoreColor = (s: number) => s >= 7 ? '#2dd4bf' : s >= 4 ? '#f59e0b' : '#f87171'
   const scoreLabel = (s: number) => s >= 7 ? 'Strong' : s >= 4 ? 'Needs work' : 'Weak'
 
   return (
     <div className={styles.page}>
-      {/* Floating CTA — changes when at limit */}
+      {/* Floating CTA */}
       {isAtLimit ? (
         <Link href={`/pricing?limit=reached&plan=${userPlan}`} className={styles.floatingCta} style={{
           background: 'rgba(245,166,35,0.15)',
@@ -292,7 +332,7 @@ export default function ReportClient({ report }: Props) {
         </div>
       </nav>
 
-      <main className={styles.main}>
+      <main className={styles.main} id="report-content">
         {/* Header */}
         <div className={styles.header}>
           <div className={styles.headerMeta}>
@@ -418,7 +458,7 @@ export default function ReportClient({ report }: Props) {
         {strengths.length > 0 && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
-              What you're doing well
+              🏆 What you're doing GREAT!
               {!isPaid && data.strengths?.length > FREE_STRENGTHS_LIMIT && (
                 <span className={styles.sectionNote}>
                   Showing {FREE_STRENGTHS_LIMIT} of {data.strengths.length}
@@ -462,7 +502,7 @@ export default function ReportClient({ report }: Props) {
         {checklist.length > 0 && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
-              Your action plan
+              🚀 Time to TAKE ACTION!
               {!isPaid && data.actionChecklist?.length > FREE_CHECKLIST_LIMIT && (
                 <span className={styles.sectionNote}>
                   Showing {FREE_CHECKLIST_LIMIT} of {data.actionChecklist.length}
@@ -492,21 +532,6 @@ export default function ReportClient({ report }: Props) {
           </section>
         )}
 
-        {/* Frame observations */}
-        {frameObs.length > 0 && (
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Frame observations</h2>
-            <div className={styles.itemList}>
-              {frameObs.map((f, i) => (
-                <div key={i} className={styles.listItem}>
-                  <span className={styles.frameIcon}>🎞</span>
-                  <p>{formatFrameObservation(f)}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
         {/* Measurement guidance */}
         {measurement.length > 0 && (
           <section className={styles.section}>
@@ -522,21 +547,6 @@ export default function ReportClient({ report }: Props) {
           </section>
         )}
 
-        {/* Missing evidence */}
-        {data.missingEvidence?.length > 0 && (
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>What we could not assess</h2>
-            <div className={styles.missingList}>
-              {data.missingEvidence.map((m, i) => (
-                <div key={i} className={styles.missingItem}>
-                  <span>⚠</span>
-                  <p>{formatFrameObservation(m)}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
         {/* PDF download for paid plans */}
         {isPaid && (
           <div className={styles.pdfBanner}>
@@ -545,8 +555,12 @@ export default function ReportClient({ report }: Props) {
               <strong>Download your report</strong>
               <span>Save a PDF copy of this full audit to share with your team or reference later.</span>
             </div>
-            <button className={styles.pdfBtn} onClick={() => window.print()}>
-              Download PDF
+            <button
+              className={styles.pdfBtn}
+              onClick={handleDownloadPdf}
+              disabled={pdfLoading}
+            >
+              {pdfLoading ? 'Generating…' : 'Download PDF'}
             </button>
           </div>
         )}

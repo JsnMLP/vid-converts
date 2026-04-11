@@ -19,7 +19,7 @@ const ACCEPTED_TYPES = ['video/mp4', 'video/quicktime']
 const PROCESSING_STEPS = [
   'Uploading video…',
   'Extracting audio…',
-  'Transcribing speech via Whisper AI…',
+  'Transcribing speech…',
   'Sampling frames…',
   'Scoring against conversion rubric…',
   'Generating evidence-based report…',
@@ -43,6 +43,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
   const [niche, setNiche] = useState('')
   const [audience, setAudience] = useState('')
   const [goal, setGoal] = useState('')
+  const [platform, setPlatform] = useState('')
   const [contextErrors, setContextErrors] = useState<Record<string, string>>({})
 
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -159,6 +160,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
     if (!niche.trim()) errors.niche = 'Please describe your industry or niche.'
     if (!audience.trim()) errors.audience = 'Please describe your target customer.'
     if (!goal.trim()) errors.goal = 'Please describe the goal of this video.'
+    if (!platform.trim()) errors.platform = 'Please select the platform for this video.'
     setContextErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -175,56 +177,22 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
         clearInterval(stepInterval)
         return prev
       })
-    }, 8000)
+    }, 18000)
 
     try {
       let response: Response
 
-      if (selectedFile) {
-        // ── File upload: check limit first (lightweight), then go direct to Railway ──
-        // Vercel has a 4.5MB body limit — cannot send 500MB files through it.
-        // Solution: check limit via /api/check-limit, then send file straight to Railway.
-        const limitCheck = await fetch('/api/check-limit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({}),
-        })
-        const limitData = await limitCheck.json()
-
-        if (limitCheck.status === 403 && limitData.code === 'LIMIT_REACHED') {
-          clearInterval(stepInterval)
-          setIsLimitError(true)
-          setLimitPlan(limitData.plan || 'free')
-          setErrorMessage(limitData.error)
-          setStep('error')
-          return
-        }
-
-        if (!limitCheck.ok) {
-          clearInterval(stepInterval)
-          setErrorMessage(limitData.error || 'Could not verify your account. Please try again.')
-          setStep('error')
-          return
-        }
-
-        // Limit cleared — send file directly to Railway (bypasses Vercel body limit)
+      if (mode === 'file' && selectedFile) {
         const formData = new FormData()
         formData.append('file', selectedFile)
         formData.append('niche', niche)
         formData.append('audience', audience)
         formData.append('goal', goal)
-        formData.append('sourceType', 'upload')
+        formData.append('platform', platform)
+        formData.append('sourceType', 'file')
         formData.append('fileName', selectedFile.name)
-        formData.append('user_id', limitData.userId)
-        formData.append('user_email', limitData.userEmail)
-        formData.append('user_name', limitData.userName)
-
-        response = await fetch('https://vid-converts-production.up.railway.app/analyze', {
-          method: 'POST',
-          body: formData,
-        })
+        response = await fetch('/api/analyze', { method: 'POST', body: formData })
       } else {
-        // ── URL: send JSON through /api/analyze ────────────────────────────────
         response = await fetch('/api/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -233,54 +201,54 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
             niche,
             audience,
             goal,
+            platform,
             sourceType: 'url',
           }),
         })
       }
 
       clearInterval(stepInterval)
-      const data = await response.json()
-
-      // ── Limit reached ──────────────────────────────────────────────────────
-      if (response.status === 403 && data.code === 'LIMIT_REACHED') {
-        setIsLimitError(true)
-        setLimitPlan(data.plan || 'free')
-        setErrorMessage(data.error)
-        setStep('error')
-        return
-      }
+      const result = await response.json()
 
       if (!response.ok) {
-        setErrorMessage(data.error || 'Something went wrong during analysis.')
+        if (result.code === 'LIMIT_REACHED') {
+          setIsLimitError(true)
+          setLimitPlan(result.plan ?? 'free')
+          setErrorMessage(result.error ?? 'Monthly limit reached.')
+        } else {
+          setErrorMessage(result.error ?? 'Something went wrong. Please try again.')
+        }
         setStep('error')
         return
       }
 
-      if (data.reportId) {
-        // If file upload went direct to Railway, increment counter now
-        if (selectedFile) {
-          await fetch('/api/increment-usage', { method: 'POST' }).catch(() => {})
-        }
-        router.push(`/report/${data.reportId}`)
+      if (result.reportId) {
+        router.push(`/report/${result.reportId}`)
       } else {
-        setErrorMessage('Report was generated but could not be saved. Please try again.')
+        setErrorMessage('Report was created but we lost the ID. Please check your dashboard.')
         setStep('error')
       }
-
     } catch (err) {
       clearInterval(stepInterval)
-      setErrorMessage('A network error occurred. Please check your connection and try again.')
+      setErrorMessage('Network error. Please check your connection and try again.')
       setStep('error')
     }
   }
 
   const handleReset = () => {
-    setStep('upload'); setSelectedFile(null); setVideoUrl('')
-    setFileError(''); setUrlError(''); setUrlWarning('')
-    setNiche(''); setAudience(''); setGoal('')
-    setContextErrors({}); setErrorMessage(''); setProcessingStep(0)
+    setStep('upload')
+    setSelectedFile(null)
+    setVideoUrl('')
+    setUrlError('')
+    setFileError('')
+    setErrorMessage('')
     setIsLimitError(false)
-    if (fileInputRef.current) fileInputRef.current.value = ''
+    setProcessingStep(0)
+    setNiche('')
+    setAudience('')
+    setGoal('')
+    setPlatform('')
+    setContextErrors({})
   }
 
   if (step === 'upload') return (
@@ -289,7 +257,9 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
         <button className={`${styles.tab} ${mode === 'file' ? styles.tabActive : ''}`}
           onClick={() => { setMode('file'); setFileError(''); setUrlError('') }}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M8 2v8M5 5l3-3 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+            <path d="M9 2v4h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M8 7v5M5.5 9.5L8 7l2.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M2 11v1a2 2 0 002 2h8a2 2 0 002-2v-1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
           </svg>
           Upload file
@@ -321,6 +291,22 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
               </div>
               <p className={styles.dropTitle}>{isDragging ? 'Drop it here' : 'Drag your video here'}</p>
               <p className={styles.dropSub}>or click to browse — MP4 or MOV, up to 500MB</p>
+              <a
+                href="https://www.freeconvert.com/video-compressor"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                style={{
+                  fontSize: '12px',
+                  color: 'var(--teal)',
+                  textDecoration: 'none',
+                  marginTop: '8px',
+                  display: 'inline-block',
+                  opacity: 0.8,
+                }}
+              >
+                Video over 500MB? Compress it free →
+              </a>
             </>
           ) : (
             <div className={styles.fileSelected}>
@@ -375,7 +361,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
         <button className={styles.backBtn} onClick={() => setStep('upload')}>← Back</button>
         <div className={styles.contextTitle}>
           <h2>Tell us about your video</h2>
-          <p>These three fields are required. They make your report specific to your business — without them, the analysis would be generic.</p>
+          <p>These four fields are required. They make your report specific to your business — without them, the analysis would be generic.</p>
         </div>
       </div>
       <div className={styles.fields}>
@@ -402,6 +388,26 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
             placeholder="What should viewers do after watching?" value={goal}
             onChange={e => { setGoal(e.target.value); setContextErrors(p => ({ ...p, goal: '' })) }} maxLength={200} />
           {contextErrors.goal && <p className={styles.fieldError}>{contextErrors.goal}</p>}
+        </div>
+        <div className={styles.field}>
+          <label className={styles.label}>Where is this video posted? <span className={styles.required}>*</span></label>
+          <p className={styles.fieldHint}>This helps us assess aspect ratio, pacing, captions, and platform-specific best practices.</p>
+          <select
+            className={`${styles.input} ${contextErrors.platform ? styles.inputError : ''}`}
+            value={platform}
+            onChange={e => { setPlatform(e.target.value); setContextErrors(p => ({ ...p, platform: '' })) }}
+            style={{ cursor: 'pointer' }}
+          >
+            <option value="">Select a platform...</option>
+            <option value="YouTube (landscape 16:9)">YouTube (landscape 16:9)</option>
+            <option value="Instagram Reels (vertical 9:16)">Instagram Reels (vertical 9:16)</option>
+            <option value="TikTok (vertical 9:16)">TikTok (vertical 9:16)</option>
+            <option value="Facebook (landscape or square)">Facebook (landscape or square)</option>
+            <option value="LinkedIn (landscape 16:9)">LinkedIn (landscape 16:9)</option>
+            <option value="Website / landing page">Website / landing page</option>
+            <option value="Not sure yet">Not sure yet</option>
+          </select>
+          {contextErrors.platform && <p className={styles.fieldError}>{contextErrors.platform}</p>}
         </div>
       </div>
       <div className={styles.uploadSummary}>

@@ -34,12 +34,39 @@ export async function POST(request: NextRequest) {
   try {
     switch (event.type) {
 
-      // ─── NEW SUBSCRIPTION / UPGRADE ───────────────────────────────────────
+      // ─── NEW SUBSCRIPTION / UPGRADE / TOP-UP ──────────────────────────────
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
         const userId = session.metadata?.user_id
-        const plan = session.metadata?.plan
+        const type = session.metadata?.type
 
+        // ── ONE-TIME TOP-UP ──────────────────────────────────────────────────
+        if (type === 'topup' && userId) {
+          console.log(`[TopUp] Granting +1 report credit to user ${userId}`)
+
+          // Get current analyses_count
+          const { data: sub } = await supabaseAdmin
+            .from('subscriptions')
+            .select('analyses_count, topup_credits')
+            .eq('user_id', userId)
+            .maybeSingle()
+
+          const currentCredits = sub?.topup_credits ?? 0
+
+          await supabaseAdmin
+            .from('subscriptions')
+            .update({
+              topup_credits: currentCredits + 1,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('user_id', userId)
+
+          console.log(`[TopUp] User ${userId} now has ${currentCredits + 1} top-up credits`)
+          break
+        }
+
+        // ── SUBSCRIPTION UPGRADE ─────────────────────────────────────────────
+        const plan = session.metadata?.plan
         if (userId && plan) {
           await supabaseAdmin
             .from('reports')
