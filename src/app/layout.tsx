@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   },
   metadataBase: new URL('https://www.vidconverts.com'),
   openGraph: {
-    title: 'Is your video actually converting?',
+    title: 'Free AI video audit — Vid Converts',
     description: 'Upload any marketing video. Get an AI-powered audit across 8 conversion factors — hook, offer, CTA, trust signals & more. Free to start.',
     url: 'https://www.vidconverts.com',
     siteName: 'Vid Converts',
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Is your video actually converting?',
+    title: 'Free AI video audit — Vid Converts',
     description: 'Upload any marketing video. Get an AI-powered audit across 8 conversion factors — free.',
     images: ['/og-image.png'],
   },
