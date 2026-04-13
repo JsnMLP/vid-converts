@@ -183,6 +183,33 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
       let response: Response
 
       if (mode === 'file' && selectedFile) {
+        // ── File upload: check limit first via lightweight call, then send
+        // directly to Railway — Vercel has a 4.5MB body limit so we CANNOT
+        // send the file through /api/analyze. Railway accepts up to 500MB.
+        const limitCheck = await fetch('/api/check-limit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        })
+        const limitData = await limitCheck.json()
+
+        if (limitCheck.status === 403 && limitData.code === 'LIMIT_REACHED') {
+          clearInterval(stepInterval)
+          setIsLimitError(true)
+          setLimitPlan(limitData.plan ?? 'free')
+          setErrorMessage(limitData.error ?? 'Monthly limit reached.')
+          setStep('error')
+          return
+        }
+
+        if (!limitCheck.ok) {
+          clearInterval(stepInterval)
+          setErrorMessage(limitData.error ?? 'Could not verify your account. Please try again.')
+          setStep('error')
+          return
+        }
+
+        // Limit cleared — send file directly to Railway (bypasses Vercel body limit)
         const formData = new FormData()
         formData.append('file', selectedFile)
         formData.append('niche', niche)
@@ -191,7 +218,13 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
         formData.append('platform', platform)
         formData.append('sourceType', 'file')
         formData.append('fileName', selectedFile.name)
-        response = await fetch('/api/analyze', { method: 'POST', body: formData })
+        formData.append('user_id', limitData.userId)
+        formData.append('user_email', limitData.userEmail ?? '')
+        formData.append('user_name', limitData.userName ?? '')
+        response = await fetch('https://vid-converts-production.up.railway.app/analyze', {
+          method: 'POST',
+          body: formData,
+        })
       } else {
         response = await fetch('/api/analyze', {
           method: 'POST',
