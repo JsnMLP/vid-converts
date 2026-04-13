@@ -273,10 +273,14 @@ export default function ReportClient({ report }: Props) {
   const [usageCount, setUsageCount] = useState<number | null>(null)
   const [userPlan, setUserPlan] = useState<string>('free')
   const [pdfLoading, setPdfLoading] = useState(false)
+  const [navUser, setNavUser] = useState<{ email?: string } | null>(null)
 
   useEffect(() => {
     const fetchUsage = async () => {
       const supabase = createClient()
+      // Fetch actual logged-in user for Navbar
+      const { data: { user } } = await supabase.auth.getUser()
+      setNavUser(user)
       const { data } = await supabase
         .from('subscriptions')
         .select('analyses_count, plan, status')
@@ -346,7 +350,7 @@ export default function ReportClient({ report }: Props) {
 
   return (
     <div className={styles.page}>
-      <Navbar user={null} onSignIn={() => window.location.href = '/'} />
+      <Navbar user={navUser} onSignIn={() => window.location.href = '/'} />
 
       {isAtLimit ? (
         <Link href={`/pricing?limit=reached&plan=${userPlan}`} className={styles.floatingCta} style={{
@@ -360,7 +364,7 @@ export default function ReportClient({ report }: Props) {
         </Link>
       )}
 
-      <main className={styles.main} id="report-content">
+      <main className={styles.main} id="report-content" style={{ paddingTop: '72px' }}>
         <div className={styles.header}>
           <div className={styles.headerMeta}>
             <span className={styles.metaTag}>
