@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { RUBRIC_TOOLTIPS, RUBRIC_RESOURCES } from '@/utils/analyze'
 import { createClient } from '@/utils/supabase/client'
+import type { User } from '@supabase/supabase-js'
 
 interface RubricScore {
   category: string
@@ -273,12 +274,11 @@ export default function ReportClient({ report }: Props) {
   const [usageCount, setUsageCount] = useState<number | null>(null)
   const [userPlan, setUserPlan] = useState<string>('free')
   const [pdfLoading, setPdfLoading] = useState(false)
-  const [navUser, setNavUser] = useState<{ email?: string } | null>(null)
+  const [navUser, setNavUser] = useState<User | null>(null)
 
   useEffect(() => {
     const fetchUsage = async () => {
       const supabase = createClient()
-      // Fetch actual logged-in user for Navbar
       const { data: { user } } = await supabase.auth.getUser()
       setNavUser(user)
       const { data } = await supabase
