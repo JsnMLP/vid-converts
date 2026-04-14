@@ -249,8 +249,7 @@ export default function Home() {
             {/* Foundation Zone */}
             <div className={styles.foundationZone}>
               <div className={styles.foundationLabel}>
-                <div className={styles.nodeSm} />
-                Foundation &middot; Free to Read
+                Foundation &middot; Free to Read <span className={styles.foundationCount}>1</span>
               </div>
               <a href="/blog/no-video-no-market-share" className={styles.blogFeatured}>
                 <div className={styles.blogFeaturedVisual}>
@@ -277,37 +276,8 @@ export default function Home() {
               </a>
             </div>
 
-            {/* Rubric divider */}
-            <div className={styles.rubricDivider}>
-              <span className={styles.rubricDividerLabel}>Deep Dives by Rubric Category</span>
-            </div>
-
-            {/* Featured card */}
-            <a href="/blog/faceless-video-lie" className={styles.blogFeatured}>
-              <div className={styles.blogFeaturedVisual}>
-                <div className={styles.blogFeatTag}>
-                  <div className={styles.nodeSm} />
-                  Free to Read
-                </div>
-                <div className={styles.blogFeatEyebrow}>Psychology &amp; Neuroscience &middot; Trust &amp; Proof</div>
-                <div className={styles.blogFeatTitle}>
-                  The Faceless Video Lie:<br />
-                  <em>Why Hiding Your Face Is<br />Quietly Killing Your Sales</em>
-                </div>
-                <div className={styles.blogFeatBigText}>01</div>
-              </div>
-              <div className={styles.blogFeatBody}>
-                <p className={styles.blogFeatExcerpt}>
-                  You&apos;ve been told great content is enough. The neuroscience says otherwise — and your conversion rate is paying the price. This is what your viewer&apos;s brain decides before you say a single word.
-                </p>
-                <div className={styles.blogFeatFooter}>
-                  <span className={styles.blogFeatMeta}>4 min read &middot; April 2026</span>
-                  <span className={styles.blogFeatBtn}>Read now &rarr;</span>
-                </div>
-              </div>
-            </a>
-
             {/* Category tabs */}
+            <div className={styles.blogTabsNavWrap}>
             <div className={styles.blogTabsNav}>
               {tabs.map(tab => (
                 <button
@@ -321,6 +291,7 @@ export default function Home() {
                   </span>
                 </button>
               ))}
+            </div>
             </div>
 
             {/* Tab cards */}
