@@ -184,50 +184,65 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
       hasTranscript = !!transcript && transcript.trim().length > 10
       console.log('YouTube transcript:', hasTranscript ? `${transcript.split(' ').length} words` : 'not available')
 
-      // Get thumbnail frames from YouTube image CDN (free, no auth, no download)
-      const thumbnailUrls = [
-        `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-        `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-        `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
-        `https://img.youtube.com/vi/${videoId}/sddefault.jpg`,
-      ]
-
-      // Fetch and describe thumbnails in parallel using Claude Vision
-      const thumbResults = await Promise.all(thumbnailUrls.slice(0, 3).map(async (thumbUrl, i) => {
+      // If no captions (common for Shorts), fall back to yt-dlp download + Whisper
+      if (!hasTranscript) {
+        console.log('No captions found — falling back to yt-dlp download + Whisper for', videoUrl)
         try {
-          const thumbRes = await fetch(thumbUrl)
-          if (!thumbRes.ok) return null
-          const thumbBuffer = Buffer.from(await thumbRes.arrayBuffer())
-          // Skip if it's a tiny placeholder (YouTube returns 120x90 default for missing thumbs)
-          if (thumbBuffer.length < 5000) return null
-          const base64 = thumbBuffer.toString('base64')
-          const response = await anthropic.messages.create({
-            model: CLAUDE_MODEL,
-            max_tokens: 150,
-            messages: [{
-              role: 'user',
-              content: [
-                { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
-                { type: 'text', text: 'Describe this YouTube video thumbnail in 1-2 sentences focusing on: what is visible, any text on screen, the setting, and anything relevant to video marketing effectiveness.' }
-              ]
-            }]
-          })
-          const desc = response.content?.[0]?.text?.trim()
-          if (desc) {
-            console.log(`YouTube thumbnail ${i + 1} described successfully`)
-            return `Thumbnail ${i + 1}: ${desc}`
-          }
-          return null
-        } catch (err) {
-          console.warn(`YouTube thumbnail ${i + 1} failed:`, err.message)
-          return null
+          const dlResult = await downloadWithYtDlp(videoUrl, tempDir)
+          videoPath = dlResult.videoPath
+          if (!videoTitle || videoTitle === 'your video') videoTitle = dlResult.title
+          console.log('yt-dlp fallback succeeded, videoPath:', videoPath)
+          // videoPath is now set — the ffmpeg/Whisper block below will handle audio + frames
+        } catch (dlErr) {
+          console.warn('yt-dlp fallback also failed:', dlErr.message)
+          // Continue with thumbnails only
         }
-      }))
+      }
 
-      frameDescriptions = thumbResults.filter(Boolean)
-      hasFrames = frameDescriptions.length > 0
-      console.log(`YouTube thumbnails: ${frameDescriptions.length}/3 described`)
-      // videoPath stays null — no video file needed for YouTube
+      // Only fetch thumbnails if yt-dlp fallback did NOT set videoPath
+      // If videoPath is set, ffmpeg will extract real frames below — much better than thumbnails
+      if (!videoPath) {
+        console.log('No yt-dlp fallback — using YouTube thumbnails for visual analysis')
+        const thumbnailUrls = [
+          `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+          `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+          `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+        ]
+        const thumbResults = await Promise.all(thumbnailUrls.map(async (thumbUrl, i) => {
+          try {
+            const thumbRes = await fetch(thumbUrl)
+            if (!thumbRes.ok) return null
+            const thumbBuffer = Buffer.from(await thumbRes.arrayBuffer())
+            if (thumbBuffer.length < 5000) return null
+            const base64 = thumbBuffer.toString('base64')
+            const response = await anthropic.messages.create({
+              model: CLAUDE_MODEL,
+              max_tokens: 150,
+              messages: [{
+                role: 'user',
+                content: [
+                  { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
+                  { type: 'text', text: 'Describe this YouTube video thumbnail in 1-2 sentences focusing on: what is visible, any text on screen, the setting, and anything relevant to video marketing effectiveness.' }
+                ]
+              }]
+            })
+            const desc = response.content?.[0]?.text?.trim()
+            if (desc) {
+              console.log(`YouTube thumbnail ${i + 1} described successfully`)
+              return `Thumbnail ${i + 1}: ${desc}`
+            }
+            return null
+          } catch (err) {
+            console.warn(`YouTube thumbnail ${i + 1} failed:`, err.message)
+            return null
+          }
+        }))
+        frameDescriptions = thumbResults.filter(Boolean)
+        hasFrames = frameDescriptions.length > 0
+        console.log(`YouTube thumbnails: ${frameDescriptions.length}/3 described`)
+      } else {
+        console.log('yt-dlp fallback active — real frames will be extracted below by ffmpeg')
+      }
 
     } else if (isFacebookUrl(videoUrl)) {
       console.log('Facebook URL detected — downloading via yt-dlp')
