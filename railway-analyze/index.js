@@ -11,7 +11,8 @@ const Anthropic = require('@anthropic-ai/sdk')
 const { createClient } = require('@supabase/supabase-js')
 const { Resend } = require('resend')
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
-const ffprobePath = require('@ffprobe-installer/ffprobe')?.path || 'ffprobe'
+const ffprobeInstaller = require('@ffprobe-installer/ffprobe')
+const ffprobePath = ffprobeInstaller.path || ffprobeInstaller?.default?.path || 'ffprobe'
 
 const app = express()
 app.use(cors())
@@ -223,8 +224,33 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
       try {
         frameDescriptions = await extractFrameDescriptions(videoPath, tempDir)
         hasFrames = frameDescriptions.length > 0
+        if (!hasFrames) {
+          console.error('Frame extraction returned 0 frames — Visual Communication will score 0')
+          // Alert Jason via email
+          try {
+            await resend.emails.send({
+              from: EMAIL_FROM,
+              to: 'support@vidconverts.com',
+              subject: 'ALERT: Frame extraction returned 0 frames',
+              html: `<p>Frame extraction failed silently for a video analysis.</p><p>User: ${user_email || user_id || 'unknown'}</p><p>File: ${fileName || videoUrl || 'unknown'}</p><p>Visual Communication will score 0 on this report.</p>`,
+            })
+          } catch (alertErr) {
+            console.warn('Alert email failed:', alertErr.message)
+          }
+        }
       } catch (err) {
-        console.warn('Frame extraction failed (continuing without):', err.message)
+        console.error('Frame extraction threw an error:', err.message)
+        // Alert Jason via email
+        try {
+          await resend.emails.send({
+            from: EMAIL_FROM,
+            to: 'support@vidconverts.com',
+            subject: 'ALERT: Frame extraction crashed',
+            html: `<p>Frame extraction threw an error during video analysis.</p><p>User: ${user_email || user_id || 'unknown'}</p><p>File: ${fileName || videoUrl || 'unknown'}</p><p>Error: ${err.message}</p>`,
+          })
+        } catch (alertErr) {
+          console.warn('Alert email failed:', alertErr.message)
+        }
       }
     }
 
@@ -402,38 +428,62 @@ async function extractFrameDescriptions(videoPath, tempDir) {
   await mkdir(frameDir, { recursive: true })
 
   const duration = await getVideoDuration(videoPath)
+  console.log(`Video duration: ${duration}s — extracting 4 frames in parallel`)
   const timestamps = [0.1, 0.3, 0.6, 0.85].map(p => Math.floor(duration * p))
 
-  const descriptions = []
-  for (let i = 0; i < timestamps.length; i++) {
+  // Extract all frames in parallel (faster, avoids Railway timeout)
+  const results = await Promise.all(timestamps.map(async (ts, i) => {
     const framePath = path.join(frameDir, `frame${i}.jpg`)
-    await extractFrame(videoPath, timestamps[i], framePath)
+    try {
+      await extractFrame(videoPath, ts, framePath)
+      console.log(`Frame ${i + 1} extracted at ${ts}s`)
+    } catch (err) {
+      console.error(`Frame ${i + 1} extraction failed at ${ts}s:`, err.message)
+      return null
+    }
 
-    const frameBuffer = await readFile(framePath)
-    const base64 = frameBuffer.toString('base64')
+    let base64
+    try {
+      const frameBuffer = await readFile(framePath)
+      base64 = frameBuffer.toString('base64')
+      console.log(`Frame ${i + 1} read, size: ${frameBuffer.length} bytes`)
+    } catch (err) {
+      console.error(`Frame ${i + 1} read failed:`, err.message)
+      return null
+    }
 
-    const response = await anthropic.messages.create({
-      model: CLAUDE_MODEL,
-      max_tokens: 150,
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'image',
-            source: { type: 'base64', media_type: 'image/jpeg', data: base64 }
-          },
-          {
-            type: 'text',
-            text: `Describe this video frame in 1-2 sentences focusing on: what is visible, any text/captions on screen, the setting, and anything relevant to video marketing effectiveness.`
-          }
-        ]
-      }]
-    })
+    try {
+      const response = await anthropic.messages.create({
+        model: CLAUDE_MODEL,
+        max_tokens: 150,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: 'image/jpeg', data: base64 }
+            },
+            {
+              type: 'text',
+              text: `Describe this video frame in 1-2 sentences focusing on: what is visible, any text/captions on screen, the setting, and anything relevant to video marketing effectiveness.`
+            }
+          ]
+        }]
+      })
+      const desc = response.content?.[0]?.text?.trim()
+      if (desc) {
+        console.log(`Frame ${i + 1} described successfully`)
+        return `Frame ${i + 1} (~${Math.round(ts)}s): ${desc}`
+      }
+      return null
+    } catch (err) {
+      console.error(`Frame ${i + 1} Vision API call failed:`, err.message)
+      return null
+    }
+  }))
 
-    const desc = response.content?.[0]?.text?.trim()
-    if (desc) descriptions.push(`Frame ${i + 1} (~${Math.round(timestamps[i])}s): ${desc}`)
-  }
-
+  const descriptions = results.filter(Boolean)
+  console.log(`Frame extraction complete: ${descriptions.length}/4 frames described`)
   return descriptions
 }
 
