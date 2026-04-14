@@ -23,7 +23,7 @@ export default function Home() {
   }, [])
 
   const tabs = [
-    { id: 'hook', label: 'Hook', count: 1 },
+    { id: 'hook', label: 'Hook', count: 2 },
     { id: 'problem_clarity', label: 'Problem Clarity', count: 1 },
     { id: 'offer_clarity', label: 'Offer Clarity', count: 1 },
     { id: 'trust_proof', label: 'Trust & Proof', count: 2 },
