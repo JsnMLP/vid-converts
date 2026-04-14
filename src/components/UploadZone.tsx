@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import styles from './UploadZone.module.css'
 import { useRouter } from 'next/navigation'
 
@@ -48,20 +48,6 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Prevent browser from navigating to dropped file if user misses the dropzone
-  useEffect(() => {
-    const prevent = (e: DragEvent) => { e.preventDefault(); e.stopPropagation() }
-    window.addEventListener('dragover', prevent)
-    window.addEventListener('drop', prevent)
-    return () => {
-      window.removeEventListener('dragover', prevent)
-      window.removeEventListener('drop', prevent)
-    }
-  }, [])
-
-  const handleDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault(); setIsDragging(true)
-  }, [])
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault(); setIsDragging(true)
   }, [])
@@ -69,7 +55,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
     e.preventDefault(); setIsDragging(false)
   }, [])
   const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault(); e.stopPropagation(); setIsDragging(false)
+    e.preventDefault(); setIsDragging(false)
     const file = e.dataTransfer.files[0]
     if (file) validateAndSetFile(file)
   }, [])
@@ -197,32 +183,6 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
       let response: Response
 
       if (mode === 'file' && selectedFile) {
-        // ── File upload: check limit first (lightweight), then send directly to
-        // Railway. Vercel has a 4.5MB body limit — cannot send large files through it.
-        const limitCheck = await fetch('/api/check-limit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({}),
-        })
-        const limitData = await limitCheck.json()
-
-        if (limitCheck.status === 403 && limitData.code === 'LIMIT_REACHED') {
-          clearInterval(stepInterval)
-          setIsLimitError(true)
-          setLimitPlan(limitData.plan ?? 'free')
-          setErrorMessage(limitData.error ?? 'Monthly limit reached.')
-          setStep('error')
-          return
-        }
-
-        if (!limitCheck.ok) {
-          clearInterval(stepInterval)
-          setErrorMessage(limitData.error ?? 'Could not verify your account. Please try again.')
-          setStep('error')
-          return
-        }
-
-        // Limit cleared — send file directly to Railway (bypasses Vercel 4.5MB limit)
         const formData = new FormData()
         formData.append('file', selectedFile)
         formData.append('niche', niche)
@@ -231,13 +191,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
         formData.append('platform', platform)
         formData.append('sourceType', 'file')
         formData.append('fileName', selectedFile.name)
-        formData.append('user_id', limitData.userId)
-        formData.append('user_email', limitData.userEmail ?? '')
-        formData.append('user_name', limitData.userName ?? '')
-        response = await fetch('https://vid-converts-production.up.railway.app/analyze', {
-          method: 'POST',
-          body: formData,
-        })
+        response = await fetch('/api/analyze', { method: 'POST', body: formData })
       } else {
         response = await fetch('/api/analyze', {
           method: 'POST',
@@ -322,7 +276,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
 
       {mode === 'file' && (
         <div className={`${styles.dropzone} ${isDragging ? styles.dropzoneDragging : ''} ${selectedFile ? styles.dropzoneSelected : ''}`}
-          onDragOver={handleDragOver} onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDrop={handleDrop}
+          onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
           onClick={() => !selectedFile && fileInputRef.current?.click()}>
           <input ref={fileInputRef} type="file" accept=".mp4,.mov,video/mp4,video/quicktime"
             onChange={e => { const f = e.target.files?.[0]; if (f) validateAndSetFile(f) }}
@@ -446,6 +400,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
           >
             <option value="">Select a platform...</option>
             <option value="YouTube (landscape 16:9)">YouTube (landscape 16:9)</option>
+            <option value="YouTube Shorts (vertical 9:16)">YouTube Shorts (vertical 9:16)</option>
             <option value="Instagram Reels (vertical 9:16)">Instagram Reels (vertical 9:16)</option>
             <option value="TikTok (vertical 9:16)">TikTok (vertical 9:16)</option>
             <option value="Facebook (landscape or square)">Facebook (landscape or square)</option>
