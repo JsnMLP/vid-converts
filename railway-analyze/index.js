@@ -11,8 +11,7 @@ const Anthropic = require('@anthropic-ai/sdk')
 const { createClient } = require('@supabase/supabase-js')
 const { Resend } = require('resend')
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
-const ffprobeInstaller = require('@ffprobe-installer/ffprobe')
-const ffprobePath = ffprobeInstaller.path || ffprobeInstaller?.default?.path || 'ffprobe'
+const ffprobePath = require('@ffprobe-installer/ffprobe')?.path || 'ffprobe'
 
 const app = express()
 app.use(cors())
@@ -140,6 +139,11 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
     // ── 1. Get video file ───────────────────────────────────────────────────
     let videoPath
     let videoTitle = 'your video'
+    // Declare here so YouTube path can set these before the ffmpeg block
+    let transcript = null
+    let hasTranscript = false
+    let frameDescriptions = []
+    let hasFrames = false
 
     if (req.file) {
       // Legacy: file sent directly as multipart (kept for safety)
@@ -162,10 +166,64 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
       await writeFile(videoPath, buffer)
 
     } else if (isYouTubeUrl(videoUrl)) {
-      console.log('YouTube URL detected — downloading via proxy')
-      const dlResult = await downloadWithYtDlp(videoUrl, tempDir)
-      videoPath = dlResult.videoPath
-      videoTitle = dlResult.title
+      // YouTube: use transcript API + thumbnails — no yt-dlp, no bot detection
+      console.log('YouTube URL detected — using transcript API + thumbnails (no download)')
+      const videoId = extractYouTubeId(videoUrl)
+      if (!videoId) throw new Error('Could not extract YouTube video ID from URL.')
+
+      // Get title
+      videoTitle = await getYouTubeTitle(videoId)
+      console.log('YouTube title:', videoTitle)
+
+      // Get transcript directly (scrapes captions — no API key needed)
+      transcript = await getYouTubeTranscript(videoId)
+      hasTranscript = !!transcript && transcript.trim().length > 10
+      console.log('YouTube transcript:', hasTranscript ? `${transcript.split(' ').length} words` : 'not available')
+
+      // Get thumbnail frames from YouTube image CDN (free, no auth, no download)
+      const thumbnailUrls = [
+        `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+        `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+        `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+        `https://img.youtube.com/vi/${videoId}/sddefault.jpg`,
+      ]
+
+      // Fetch and describe thumbnails in parallel using Claude Vision
+      const thumbResults = await Promise.all(thumbnailUrls.slice(0, 3).map(async (thumbUrl, i) => {
+        try {
+          const thumbRes = await fetch(thumbUrl)
+          if (!thumbRes.ok) return null
+          const thumbBuffer = Buffer.from(await thumbRes.arrayBuffer())
+          // Skip if it's a tiny placeholder (YouTube returns 120x90 default for missing thumbs)
+          if (thumbBuffer.length < 5000) return null
+          const base64 = thumbBuffer.toString('base64')
+          const response = await anthropic.messages.create({
+            model: CLAUDE_MODEL,
+            max_tokens: 150,
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
+                { type: 'text', text: 'Describe this YouTube video thumbnail in 1-2 sentences focusing on: what is visible, any text on screen, the setting, and anything relevant to video marketing effectiveness.' }
+              ]
+            }]
+          })
+          const desc = response.content?.[0]?.text?.trim()
+          if (desc) {
+            console.log(`YouTube thumbnail ${i + 1} described successfully`)
+            return `Thumbnail ${i + 1}: ${desc}`
+          }
+          return null
+        } catch (err) {
+          console.warn(`YouTube thumbnail ${i + 1} failed:`, err.message)
+          return null
+        }
+      }))
+
+      frameDescriptions = thumbResults.filter(Boolean)
+      hasFrames = frameDescriptions.length > 0
+      console.log(`YouTube thumbnails: ${frameDescriptions.length}/3 described`)
+      // videoPath stays null — no video file needed for YouTube
 
     } else if (isFacebookUrl(videoUrl)) {
       console.log('Facebook URL detected — downloading via yt-dlp')
@@ -193,11 +251,8 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
     }
 
     // ── 2. Extract audio + 3. Whisper + 4. Frames (only if we have a video file) ──
-    let transcript = null
-    let hasTranscript = false
-    let frameDescriptions = []
-    let hasFrames = false
-
+    // YouTube already set transcript + frameDescriptions above (no videoPath needed)
+    // For all other sources, videoPath is set and we run ffmpeg/Whisper below
     if (videoPath) {
       // Extract audio
       const audioPath = path.join(tempDir, 'audio.mp3')
@@ -224,33 +279,8 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
       try {
         frameDescriptions = await extractFrameDescriptions(videoPath, tempDir)
         hasFrames = frameDescriptions.length > 0
-        if (!hasFrames) {
-          console.error('Frame extraction returned 0 frames — Visual Communication will score 0')
-          // Alert Jason via email
-          try {
-            await resend.emails.send({
-              from: EMAIL_FROM,
-              to: 'support@vidconverts.com',
-              subject: 'ALERT: Frame extraction returned 0 frames',
-              html: `<p>Frame extraction failed silently for a video analysis.</p><p>User: ${user_email || user_id || 'unknown'}</p><p>File: ${fileName || videoUrl || 'unknown'}</p><p>Visual Communication will score 0 on this report.</p>`,
-            })
-          } catch (alertErr) {
-            console.warn('Alert email failed:', alertErr.message)
-          }
-        }
       } catch (err) {
-        console.error('Frame extraction threw an error:', err.message)
-        // Alert Jason via email
-        try {
-          await resend.emails.send({
-            from: EMAIL_FROM,
-            to: 'support@vidconverts.com',
-            subject: 'ALERT: Frame extraction crashed',
-            html: `<p>Frame extraction threw an error during video analysis.</p><p>User: ${user_email || user_id || 'unknown'}</p><p>File: ${fileName || videoUrl || 'unknown'}</p><p>Error: ${err.message}</p>`,
-          })
-        } catch (alertErr) {
-          console.warn('Alert email failed:', alertErr.message)
-        }
+        console.warn('Frame extraction failed (continuing without):', err.message)
       }
     }
 
@@ -392,9 +422,13 @@ function downloadWithYtDlp(url, tempDir) {
       '--format', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4/bestvideo+bestaudio/best',
       '--output', outputTemplate,
       '--no-check-certificates',
+      '--no-warnings',
+      '--retries', '3',
+      '--fragment-retries', '3',
+      '--socket-timeout', '30',
       ...(proxyUrl ? ['--proxy', proxyUrl] : []),
       url
-    ], { timeout: 180000 }, (err, stdout, stderr) => {
+    ], { timeout: 300000 }, (err, stdout, stderr) => {
       if (err) return reject(new Error('yt-dlp failed: ' + (stderr || err.message)))
       const files = require('fs').readdirSync(tempDir)
       const videoFile = files.find(f => f.startsWith('video.'))
@@ -428,62 +462,38 @@ async function extractFrameDescriptions(videoPath, tempDir) {
   await mkdir(frameDir, { recursive: true })
 
   const duration = await getVideoDuration(videoPath)
-  console.log(`Video duration: ${duration}s — extracting 4 frames in parallel`)
   const timestamps = [0.1, 0.3, 0.6, 0.85].map(p => Math.floor(duration * p))
 
-  // Extract all frames in parallel (faster, avoids Railway timeout)
-  const results = await Promise.all(timestamps.map(async (ts, i) => {
+  const descriptions = []
+  for (let i = 0; i < timestamps.length; i++) {
     const framePath = path.join(frameDir, `frame${i}.jpg`)
-    try {
-      await extractFrame(videoPath, ts, framePath)
-      console.log(`Frame ${i + 1} extracted at ${ts}s`)
-    } catch (err) {
-      console.error(`Frame ${i + 1} extraction failed at ${ts}s:`, err.message)
-      return null
-    }
+    await extractFrame(videoPath, timestamps[i], framePath)
 
-    let base64
-    try {
-      const frameBuffer = await readFile(framePath)
-      base64 = frameBuffer.toString('base64')
-      console.log(`Frame ${i + 1} read, size: ${frameBuffer.length} bytes`)
-    } catch (err) {
-      console.error(`Frame ${i + 1} read failed:`, err.message)
-      return null
-    }
+    const frameBuffer = await readFile(framePath)
+    const base64 = frameBuffer.toString('base64')
 
-    try {
-      const response = await anthropic.messages.create({
-        model: CLAUDE_MODEL,
-        max_tokens: 150,
-        messages: [{
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              source: { type: 'base64', media_type: 'image/jpeg', data: base64 }
-            },
-            {
-              type: 'text',
-              text: `Describe this video frame in 1-2 sentences focusing on: what is visible, any text/captions on screen, the setting, and anything relevant to video marketing effectiveness.`
-            }
-          ]
-        }]
-      })
-      const desc = response.content?.[0]?.text?.trim()
-      if (desc) {
-        console.log(`Frame ${i + 1} described successfully`)
-        return `Frame ${i + 1} (~${Math.round(ts)}s): ${desc}`
-      }
-      return null
-    } catch (err) {
-      console.error(`Frame ${i + 1} Vision API call failed:`, err.message)
-      return null
-    }
-  }))
+    const response = await anthropic.messages.create({
+      model: CLAUDE_MODEL,
+      max_tokens: 150,
+      messages: [{
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: { type: 'base64', media_type: 'image/jpeg', data: base64 }
+          },
+          {
+            type: 'text',
+            text: `Describe this video frame in 1-2 sentences focusing on: what is visible, any text/captions on screen, the setting, and anything relevant to video marketing effectiveness.`
+          }
+        ]
+      }]
+    })
 
-  const descriptions = results.filter(Boolean)
-  console.log(`Frame extraction complete: ${descriptions.length}/4 frames described`)
+    const desc = response.content?.[0]?.text?.trim()
+    if (desc) descriptions.push(`Frame ${i + 1} (~${Math.round(timestamps[i])}s): ${desc}`)
+  }
+
   return descriptions
 }
 
