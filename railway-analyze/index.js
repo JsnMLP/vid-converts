@@ -64,7 +64,11 @@ function isLinkedInUrl(url) {
 function extractYouTubeId(url) {
   try {
     const parsed = new URL(url)
+    // youtu.be/VIDEOID
     if (parsed.hostname === 'youtu.be') return parsed.pathname.slice(1).split('?')[0]
+    // youtube.com/shorts/VIDEOID
+    if (parsed.pathname.startsWith('/shorts/')) return parsed.pathname.split('/shorts/')[1].split('?')[0]
+    // youtube.com/watch?v=VIDEOID
     return parsed.searchParams.get('v')
   } catch { return null }
 }
