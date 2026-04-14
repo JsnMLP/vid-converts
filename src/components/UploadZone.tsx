@@ -460,9 +460,29 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
             </svg>
           </a>
         ) : (
-          <button className={styles.continueBtn} onClick={handleReset} style={{ marginTop: '8px' }}>
-            Try again
-          </button>
+          <>
+            <div style={{
+              background: 'rgba(45,212,191,0.06)',
+              border: '1px solid rgba(45,212,191,0.2)',
+              borderRadius: '10px',
+              padding: '14px 18px',
+              fontSize: '13px',
+              color: '#9CA3AF',
+              lineHeight: 1.6,
+              textAlign: 'left',
+              marginTop: '4px',
+            }}>
+              <strong style={{ color: '#2DD4BF', display: 'block', marginBottom: '4px' }}>
+                Your report may still be on its way
+              </strong>
+              Video analysis can take 2-3 minutes. If you submitted a video, check your{' '}
+              <a href="/dashboard" style={{ color: '#2DD4BF', textDecoration: 'underline' }}>dashboard</a>
+              {' '}and your email - your report may have completed successfully in the background.
+            </div>
+            <button className={styles.continueBtn} onClick={handleReset} style={{ marginTop: '8px' }}>
+              Try again
+            </button>
+          </>
         )}
       </div>
     </div>
