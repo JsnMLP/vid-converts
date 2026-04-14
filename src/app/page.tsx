@@ -237,11 +237,11 @@ export default function Home() {
                 <h2 className={styles.blogTitle}>
                   From the <span className={styles.blogTitleTeal}>Lab.</span>
                 </h2>
-              </div>
-              <div className={styles.blogHeaderRight}>
                 <p className={styles.blogDesc}>
                   The psychology, neuroscience, and strategy behind video that actually converts.
                 </p>
+              </div>
+              <div className={styles.blogHeaderRight}>
                 <a href="/library" className={styles.blogAllLink}>Browse the full library &rarr;</a>
               </div>
             </div>
@@ -249,7 +249,7 @@ export default function Home() {
             {/* Foundation Zone */}
             <div className={styles.foundationZone}>
               <div className={styles.foundationLabel}>
-                Foundation &middot; Free to Read <span className={styles.foundationCount}>1</span>
+                Foundation <span className={styles.foundationCount}>1</span>
               </div>
               <a href="/blog/no-video-no-market-share" className={styles.blogFeatured}>
                 <div className={styles.blogFeaturedVisual}>
