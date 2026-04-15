@@ -502,9 +502,9 @@ function downloadWithYtDlp(url, tempDir) {
       '--output', outputTemplate,
       '--no-check-certificates',
       '--no-warnings',
-      '--retries', '3',
-      '--fragment-retries', '3',
-      '--socket-timeout', '30',
+      '--retries', '1',
+      '--fragment-retries', '1',
+      '--socket-timeout', '10',
       ...(proxyUrl ? ['--proxy', proxyUrl] : []),
       url
     ], { timeout: 45000 }, (err, stdout, stderr) => {
