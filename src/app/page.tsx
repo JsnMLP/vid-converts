@@ -6,7 +6,6 @@ import styles from './page.module.css'
 import AuthModal from '@/components/AuthModal'
 import Navbar from '@/components/Navbar'
 import BrandLogo from '@/components/BrandLogo'
-import FloatingFounderVideo from '@/components/FloatingFounderVideo'
 import { User } from '@supabase/supabase-js'
 
 export default function Home() {
@@ -382,8 +381,6 @@ export default function Home() {
           }}
         />
       )}
-
-      <FloatingFounderVideo />
     </>
   )
 }
