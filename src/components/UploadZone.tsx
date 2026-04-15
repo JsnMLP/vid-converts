@@ -65,7 +65,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
         if (job.status === 'complete') {
           stopPolling()
           if (job.report_id) {
-            router.push(`/report/${job.report_id}`)
+            router.push(`/reports/${job.report_id}`)
           } else {
             setErrorMessage('Report was created but we lost the ID. Please check your dashboard.')
             setStep('error')
@@ -280,7 +280,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
         // Fallback: old synchronous response with reportId (safety net)
         stopPolling()
         if (result.reportId) {
-          router.push(`/report/${result.reportId}`)
+          router.push(`/reports/${result.reportId}`)
         } else {
           setErrorMessage('Report was created but we lost the ID. Please check your dashboard.')
           setStep('error')
