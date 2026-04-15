@@ -688,7 +688,7 @@ Respond ONLY with a valid JSON object matching this structure exactly:
 
   const response = await anthropic.messages.create({
     model: CLAUDE_MODEL,
-    max_tokens: 8000,
+    max_tokens: 16000,
     messages: [{ role: 'user', content: prompt }],
   })
 
