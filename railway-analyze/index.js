@@ -32,6 +32,42 @@ const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-4-5'
 // ── Constants ─────────────────────────────────────────────────────────────────
 const COOKIES_PATH = path.join(os.tmpdir(), 'yt-cookies.txt')
 
+// ── Job helpers ───────────────────────────────────────────────────────────────
+async function markJobComplete(jobId, reportId) {
+  if (!jobId) return
+  const { error } = await supabase
+    .from('jobs')
+    .update({ status: 'complete', report_id: reportId })
+    .eq('id', jobId)
+  if (error) console.error('[Jobs] Failed to mark complete:', error)
+  else console.log(`[Jobs] Job ${jobId} marked complete, report ${reportId}`)
+}
+
+async function markJobFailed(jobId, errorMessage) {
+  if (!jobId) return
+  const { error } = await supabase
+    .from('jobs')
+    .update({ status: 'failed', error: errorMessage })
+    .eq('id', jobId)
+  if (error) console.error('[Jobs] Failed to mark failed:', error)
+  else console.log(`[Jobs] Job ${jobId} marked failed: ${errorMessage}`)
+}
+
+async function incrementUsage(user_id, usingTopup, currentCount, topupCredits) {
+  if (usingTopup) {
+    await supabase
+      .from('subscriptions')
+      .update({ topup_credits: topupCredits - 1 })
+      .eq('user_id', user_id)
+    console.log(`[TopUp] Used 1 credit for user ${user_id}. Remaining: ${topupCredits - 1}`)
+  } else {
+    await supabase
+      .from('subscriptions')
+      .update({ analyses_count: currentCount + 1 })
+      .eq('user_id', user_id)
+  }
+}
+
 // ── YouTube helpers ──────────────────────────────────────────────────────────
 function isYouTubeUrl(url) {
   try {
@@ -127,14 +163,29 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }))
 
 // ── Main route ────────────────────────────────────────────────────────────────
 app.post('/analyze', upload.single('file'), async (req, res) => {
-  const { videoUrl, niche, audience, goal, user_id, user_email, user_name, sourceType, fileName } = req.body
+  const {
+    videoUrl, niche, audience, goal, user_id, user_email, user_name,
+    sourceType, fileName, job_id,
+    using_topup, current_count, topup_credits
+  } = req.body
+
+  // Parse usage fields passed from Vercel
+  const usingTopup = using_topup === 'true'
+  const currentCount = parseInt(current_count || '0', 10)
+  const topupCredits = parseInt(topup_credits || '0', 10)
 
   if (!niche || !audience || !goal) {
+    await markJobFailed(job_id, 'Missing required context fields.')
     return res.status(400).json({ error: 'Missing required context fields.' })
   }
   if (!req.file && !videoUrl) {
+    await markJobFailed(job_id, 'No video provided.')
     return res.status(400).json({ error: 'No video provided.' })
   }
+
+  // Respond immediately — Railway will keep processing async
+  // (Vercel already returned jobId; Railway doesn't need to respond to Vercel)
+  res.json({ received: true, job_id })
 
   const tempDir = path.join(os.tmpdir(), `vidconverts-${Date.now()}`)
   await mkdir(tempDir, { recursive: true })
@@ -143,20 +194,17 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
     // ── 1. Get video file ───────────────────────────────────────────────────
     let videoPath
     let videoTitle = 'your video'
-    // Declare here so YouTube path can set these before the ffmpeg block
     let transcript = null
     let hasTranscript = false
     let frameDescriptions = []
     let hasFrames = false
 
     if (req.file) {
-      // Legacy: file sent directly as multipart (kept for safety)
       videoPath = path.join(tempDir, 'input.mp4')
       await writeFile(videoPath, req.file.buffer)
       videoTitle = decodeURIComponent(req.file.originalname.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ').trim()) || 'your video'
 
     } else if (sourceType === 'upload' && videoUrl) {
-      // New: file was uploaded to Supabase Storage — download it from the public URL
       console.log('Downloading uploaded file from Supabase Storage:', videoUrl)
       const ext = (fileName || 'input.mp4').split('.').pop() || 'mp4'
       videoPath = path.join(tempDir, `input.${ext}`)
@@ -170,21 +218,17 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
       await writeFile(videoPath, buffer)
 
     } else if (isYouTubeUrl(videoUrl)) {
-      // YouTube: use transcript API + thumbnails — no yt-dlp, no bot detection
       console.log('YouTube URL detected — using transcript API + thumbnails (no download)')
       const videoId = extractYouTubeId(videoUrl)
       if (!videoId) throw new Error('Could not extract YouTube video ID from URL.')
 
-      // Get title
       videoTitle = await getYouTubeTitle(videoId)
       console.log('YouTube title:', videoTitle)
 
-      // Get transcript directly (scrapes captions — no API key needed)
       transcript = await getYouTubeTranscript(videoId)
       hasTranscript = !!transcript && transcript.trim().length > 10
       console.log('YouTube transcript:', hasTranscript ? `${transcript.split(' ').length} words` : 'not available')
 
-      // If no captions (common for Shorts), fall back to yt-dlp download + Whisper
       if (!hasTranscript) {
         console.log('No captions found — falling back to yt-dlp download + Whisper for', videoUrl)
         try {
@@ -192,15 +236,11 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
           videoPath = dlResult.videoPath
           if (!videoTitle || videoTitle === 'your video') videoTitle = dlResult.title
           console.log('yt-dlp fallback succeeded, videoPath:', videoPath)
-          // videoPath is now set — the ffmpeg/Whisper block below will handle audio + frames
         } catch (dlErr) {
           console.warn('yt-dlp fallback also failed:', dlErr.message)
-          // Continue with thumbnails only
         }
       }
 
-      // Only fetch thumbnails if yt-dlp fallback did NOT set videoPath
-      // If videoPath is set, ffmpeg will extract real frames below — much better than thumbnails
       if (!videoPath) {
         console.log('No yt-dlp fallback — using YouTube thumbnails for visual analysis')
         const thumbnailUrls = [
@@ -263,17 +303,13 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
       videoTitle = dlResult.title
 
     } else {
-      // Vimeo, Instagram, and anything else yt-dlp supports
       const dlResult = await downloadWithYtDlp(videoUrl, tempDir)
       videoPath = dlResult.videoPath
       videoTitle = dlResult.title
     }
 
-    // ── 2. Extract audio + 3. Whisper + 4. Frames (only if we have a video file) ──
-    // YouTube already set transcript + frameDescriptions above (no videoPath needed)
-    // For all other sources, videoPath is set and we run ffmpeg/Whisper below
+    // ── 2. Extract audio + 3. Whisper + 4. Frames ──────────────────────────
     if (videoPath) {
-      // Extract audio
       const audioPath = path.join(tempDir, 'audio.mp3')
       try {
         await extractAudio(videoPath, audioPath)
@@ -281,7 +317,6 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
         console.warn('Audio extraction failed:', err.message)
       }
 
-      // Whisper transcription
       try {
         const audioBuffer = await readFile(audioPath)
         const audioFile = new File([audioBuffer], 'audio.mp3', { type: 'audio/mp3' })
@@ -294,7 +329,6 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
         console.warn('Whisper transcription failed (continuing without):', err.message)
       }
 
-      // Frame descriptions
       try {
         frameDescriptions = await extractFrameDescriptions(videoPath, tempDir)
         hasFrames = frameDescriptions.length > 0
@@ -303,7 +337,7 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
       }
     }
 
-    // ── 5. OpenAI analysis ──────────────────────────────────────────────────
+    // ── 5. AI analysis ──────────────────────────────────────────────────────
     const report = await analyzeVideo({
       transcript,
       frameDescriptions,
@@ -319,7 +353,6 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
     let isPaid = false
 
     if (user_id) {
-      // Check subscriptions table for active paid plan (more reliable than profiles)
       const { data: subscription } = await supabase
         .from('subscriptions')
         .select('plan, status')
@@ -351,9 +384,17 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
       } else {
         reportId = saved?.id
       }
+
+      // ── 7. Increment usage counter ────────────────────────────────────────
+      if (reportId) {
+        await incrementUsage(user_id, usingTopup, currentCount, topupCredits)
+      }
     }
 
-    // ── 7. Send email ───────────────────────────────────────────────────────
+    // ── 8. Mark job complete in Supabase ────────────────────────────────────
+    await markJobComplete(job_id, reportId)
+
+    // ── 9. Send email ───────────────────────────────────────────────────────
     if (user_email && reportId) {
       const reportUrl = `${APP_URL}/reports/${reportId}`
       const topFinding = report.rubricScores?.[0]?.finding || report.evidenceSummary || ''
@@ -376,17 +417,9 @@ app.post('/analyze', upload.single('file'), async (req, res) => {
       }
     }
 
-    // ── 8. Respond ──────────────────────────────────────────────────────────
-    return res.json({
-      success: true,
-      reportId,
-      videoTitle,
-      report,
-    })
-
   } catch (err) {
     console.error('Analyze error:', err)
-    return res.status(500).json({ error: err.message || 'Analysis failed' })
+    await markJobFailed(job_id, err.message || 'Analysis failed')
   } finally {
     try { await rm(tempDir, { recursive: true, force: true }) } catch {}
   }
@@ -417,7 +450,6 @@ function getYtDlpTitle(url, proxyUrl) {
 
 function downloadWithYtDlp(url, tempDir) {
   return new Promise(async (resolve, reject) => {
-    // Build proxy URL from Railway env vars (IPRoyal residential proxy)
     const proxyHost = process.env.IPROYAL_HOST
     const proxyPort = process.env.IPROYAL_PORT
     const proxyUser = process.env.IPROYAL_USER
@@ -633,10 +665,8 @@ Respond ONLY with a valid JSON object matching this structure exactly:
   })
 
   let raw = response.content?.[0]?.text || '{}'
-  // Strip markdown code fences if present
   raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim()
 
-  // Extract JSON object robustly — find first { and last }
   const jsonStart = raw.indexOf('{')
   const jsonEnd = raw.lastIndexOf('}')
   if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
