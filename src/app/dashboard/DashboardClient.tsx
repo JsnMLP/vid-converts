@@ -604,7 +604,7 @@ export default function DashboardClient({ user }: Props) {
                 return (
                   <div key={report.id}>
                     <div className={`${styles.reportCardWrap} ${isDeleting ? styles.reportCardDeleting : ''}`}>
-                      <Link href={`/report/${report.id}`} className={styles.reportCard}>
+                      <Link href={`/reports/${report.id}`} className={styles.reportCard}>
                         <div className={styles.reportScore} style={{ color: getScoreColor(score) }}>
                           {score}<span>/100</span>
                         </div>
