@@ -17,15 +17,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // ── Get subscription row — maybeSingle returns null instead of erroring ───────
+  // ── 1. Get or create subscription row ────────────────────────────────────────
   let { data: sub } = await supabase
     .from('subscriptions')
-    .select('plan, status, analyses_count, analyses_reset_date')
+    .select('plan, status, analyses_count, analyses_reset_date, topup_credits')
     .eq('user_id', user.id)
     .maybeSingle()
 
   if (!sub) {
-    // No row yet — create one for this new user
     const { data: newSub } = await supabase
       .from('subscriptions')
       .upsert({
@@ -33,22 +32,23 @@ export async function POST(request: NextRequest) {
         plan: 'free',
         status: 'inactive',
         analyses_count: 0,
+        topup_credits: 0,
         analyses_reset_date: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
       }, { onConflict: 'user_id' })
-      .select('plan, status, analyses_count, analyses_reset_date')
+      .select('plan, status, analyses_count, analyses_reset_date, topup_credits')
       .maybeSingle()
     sub = newSub
   }
 
   if (!sub) {
-    return NextResponse.json({ error: 'Could not load your account.' }, { status: 500 })
+    return NextResponse.json({ error: 'Could not load your account. Please try again.' }, { status: 500 })
   }
 
-  // ── Determine effective plan ──────────────────────────────────────────────────
+  // ── 2. Determine effective plan ───────────────────────────────────────────────
   const effectivePlan = (sub.status === 'active' && sub.plan !== 'free') ? sub.plan : 'free'
   const limit = PLAN_LIMITS[effectivePlan] ?? 2
 
-  // ── Reset counter if new month ────────────────────────────────────────────────
+  // ── 3. Reset counter if new month ────────────────────────────────────────────
   const now = new Date()
   const resetDate = new Date(sub.analyses_reset_date)
   const isNewMonth =
@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
     now.getMonth() > resetDate.getMonth()
 
   let currentCount = sub.analyses_count ?? 0
+  const topupCredits = sub.topup_credits ?? 0
 
   if (isNewMonth) {
     currentCount = 0
@@ -68,10 +69,14 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
   }
 
-  // ── Check limit ───────────────────────────────────────────────────────────────
-  if (limit !== Infinity && currentCount >= limit) {
+  // ── 4. Enforce limit ──────────────────────────────────────────────────────────
+  const withinPlanLimit = limit === Infinity || currentCount < limit
+  const hasTopupCredit = topupCredits > 0
+  const usingTopup = !withinPlanLimit && hasTopupCredit
+
+  if (!withinPlanLimit && !hasTopupCredit) {
     return NextResponse.json({
-      error: `You've used all ${limit} analyses included in your ${effectivePlan} plan this month. Upgrade to keep going.`,
+      error: `You've reached your monthly analyses limit. Buy a one-time report for $5 or upgrade your plan.`,
       code: 'LIMIT_REACHED',
       plan: effectivePlan,
       limit,
@@ -79,14 +84,26 @@ export async function POST(request: NextRequest) {
     }, { status: 403 })
   }
 
-  // ── Return approval with user identity for Railway ────────────────────────────
+  // ── 5. Create job record ──────────────────────────────────────────────────────
+  const { data: job, error: jobError } = await supabase
+    .from('jobs')
+    .insert({ user_id: user.id, status: 'pending' })
+    .select('id')
+    .single()
+
+  if (jobError || !job) {
+    console.error('[Jobs] Failed to create job:', jobError)
+    return NextResponse.json({ error: 'Failed to start job. Please try again.' }, { status: 500 })
+  }
+
+  // ── 6. Return everything the browser needs to upload direct to Railway ────────
   return NextResponse.json({
-    allowed: true,
-    plan: effectivePlan,
-    used: currentCount,
-    limit: limit === Infinity ? null : limit,
+    jobId: job.id,
     userId: user.id,
     userEmail: user.email ?? '',
     userName: user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'there',
+    usingTopup,
+    currentCount,
+    topupCredits,
   })
 }

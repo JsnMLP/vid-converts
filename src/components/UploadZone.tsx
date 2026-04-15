@@ -233,15 +233,55 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
       let response: Response
 
       if (mode === 'file' && selectedFile) {
+        // ── File upload: check limit via Vercel, then send file direct to Railway ──
+        // Step 1: Check limit + create job via Vercel (no file, just metadata)
+        const checkRes = await fetch('/api/check-limit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileName: selectedFile.name }),
+        })
+        const checkResult = await checkRes.json()
+
+        if (!checkRes.ok) {
+          stopPolling()
+          if (checkResult.code === 'LIMIT_REACHED') {
+            setIsLimitError(true)
+            setLimitPlan(checkResult.plan ?? 'free')
+            setErrorMessage(checkResult.error ?? 'Monthly limit reached.')
+          } else {
+            setErrorMessage(checkResult.error ?? 'Something went wrong. Please try again.')
+          }
+          setStep('error')
+          return
+        }
+
+        // Step 2: Send file + jobId direct to Railway (bypasses Vercel 4.5MB limit)
+        const railwayUrl = process.env.NEXT_PUBLIC_RAILWAY_URL || 'https://vid-converts-production.up.railway.app'
         const formData = new FormData()
         formData.append('file', selectedFile)
         formData.append('niche', niche)
         formData.append('audience', audience)
         formData.append('goal', goal)
         formData.append('platform', platform)
-        formData.append('sourceType', 'file')
+        formData.append('sourceType', 'upload')
         formData.append('fileName', selectedFile.name)
-        response = await fetch('/api/analyze', { method: 'POST', body: formData })
+        formData.append('user_id', checkResult.userId)
+        formData.append('user_email', checkResult.userEmail)
+        formData.append('user_name', checkResult.userName)
+        formData.append('job_id', checkResult.jobId)
+        formData.append('using_topup', checkResult.usingTopup ? 'true' : 'false')
+        formData.append('current_count', String(checkResult.currentCount))
+        formData.append('topup_credits', String(checkResult.topupCredits))
+
+        // Fire direct to Railway and get jobId back
+        response = new Response(JSON.stringify({ jobId: checkResult.jobId }), { status: 200 })
+
+        // Fire Railway async — don't await
+        fetch(`${railwayUrl}/analyze`, {
+          method: 'POST',
+          body: formData,
+        }).catch(console.error)
+
       } else {
         response = await fetch('/api/analyze', {
           method: 'POST',
