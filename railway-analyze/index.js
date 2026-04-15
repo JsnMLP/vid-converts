@@ -10,8 +10,8 @@ const OpenAI = require('openai').default
 const Anthropic = require('@anthropic-ai/sdk')
 const { createClient } = require('@supabase/supabase-js')
 const { Resend } = require('resend')
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
-const ffprobePath = require('@ffprobe-installer/ffprobe')?.path || 'ffprobe'
+const ffmpegPath = 'ffmpeg'
+const ffprobePath = 'ffprobe'
 
 const app = express()
 app.use(cors())
