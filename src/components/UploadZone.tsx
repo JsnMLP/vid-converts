@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import styles from './UploadZone.module.css'
 import { useRouter } from 'next/navigation'
 
@@ -39,6 +39,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
   const [errorMessage, setErrorMessage] = useState('')
   const [isLimitError, setIsLimitError] = useState(false)
   const [limitPlan, setLimitPlan] = useState<string>('free')
+  const [jobId, setJobId] = useState<string | null>(null)
 
   const [niche, setNiche] = useState('')
   const [audience, setAudience] = useState('')
@@ -47,7 +48,54 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
   const [contextErrors, setContextErrors] = useState<Record<string, string>>({})
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const stepIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
+  // ── Poll job status ───────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!jobId || step !== 'processing') return
+
+    pollingRef.current = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/jobs/${jobId}`)
+        if (!res.ok) return // keep polling — transient error
+
+        const job = await res.json()
+
+        if (job.status === 'complete') {
+          stopPolling()
+          if (job.report_id) {
+            router.push(`/report/${job.report_id}`)
+          } else {
+            setErrorMessage('Report was created but we lost the ID. Please check your dashboard.')
+            setStep('error')
+          }
+        } else if (job.status === 'failed') {
+          stopPolling()
+          setErrorMessage(job.error || 'Analysis failed. Please try again.')
+          setStep('error')
+        }
+        // status === 'pending' → keep polling
+      } catch {
+        // network hiccup — keep polling
+      }
+    }, 3000)
+
+    return () => stopPolling()
+  }, [jobId, step])
+
+  const stopPolling = () => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current)
+      pollingRef.current = null
+    }
+    if (stepIntervalRef.current) {
+      clearInterval(stepIntervalRef.current)
+      stepIntervalRef.current = null
+    }
+  }
+
+  // ── Drag handlers ─────────────────────────────────────────────────────────
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault(); setIsDragging(true)
   }, [])
@@ -170,11 +218,13 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
     setStep('processing')
     setProcessingStep(0)
     setIsLimitError(false)
+    setJobId(null)
 
-    const stepInterval = setInterval(() => {
+    // Animate processing steps — cosmetic only, real status comes from polling
+    stepIntervalRef.current = setInterval(() => {
       setProcessingStep(prev => {
         if (prev < PROCESSING_STEPS.length - 1) return prev + 1
-        clearInterval(stepInterval)
+        clearInterval(stepIntervalRef.current!)
         return prev
       })
     }, 18000)
@@ -207,10 +257,10 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
         })
       }
 
-      clearInterval(stepInterval)
       const result = await response.json()
 
       if (!response.ok) {
+        stopPolling()
         if (result.code === 'LIMIT_REACHED') {
           setIsLimitError(true)
           setLimitPlan(result.plan ?? 'free')
@@ -222,20 +272,29 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
         return
       }
 
-      if (result.reportId) {
-        router.push(`/report/${result.reportId}`)
+      // New async flow: Vercel returns jobId instantly
+      if (result.jobId) {
+        setJobId(result.jobId)
+        // Polling kicks off via the useEffect watching jobId
       } else {
-        setErrorMessage('Report was created but we lost the ID. Please check your dashboard.')
-        setStep('error')
+        // Fallback: old synchronous response with reportId (safety net)
+        stopPolling()
+        if (result.reportId) {
+          router.push(`/report/${result.reportId}`)
+        } else {
+          setErrorMessage('Report was created but we lost the ID. Please check your dashboard.')
+          setStep('error')
+        }
       }
-    } catch (err) {
-      clearInterval(stepInterval)
+    } catch {
+      stopPolling()
       setErrorMessage('Network error. Please check your connection and try again.')
       setStep('error')
     }
   }
 
   const handleReset = () => {
+    stopPolling()
     setStep('upload')
     setSelectedFile(null)
     setVideoUrl('')
@@ -244,6 +303,7 @@ export default function UploadZone({ userId, userEmail, userName }: Props) {
     setErrorMessage('')
     setIsLimitError(false)
     setProcessingStep(0)
+    setJobId(null)
     setNiche('')
     setAudience('')
     setGoal('')
