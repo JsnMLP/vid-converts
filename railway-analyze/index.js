@@ -121,7 +121,7 @@ async function getYouTubeTitle(videoId) {
   } catch { return 'your video' }
 }
 
-// Fetch YouTube transcript directly — no package, no cookies, never expires
+// Fetch YouTube transcript — tries manual captions first, then auto-generated (asr)
 async function getYouTubeTranscript(videoId) {
   try {
     const pageRes = await fetch('https://www.youtube.com/watch?v=' + videoId, {
@@ -131,12 +131,40 @@ async function getYouTubeTranscript(videoId) {
       }
     })
     const html = await pageRes.text()
-    const captionMatch = html.match(/"captionTracks":\s*\[.*?"baseUrl":\s*"([^"]+)"/)
-    if (!captionMatch) {
+
+    // Extract the full captionTracks array from the page JSON
+    const captionTracksMatch = html.match(/"captionTracks":\s*(\[.*?\])/)
+    if (!captionTracksMatch) {
       console.warn('No caption tracks found for video:', videoId)
       return null
     }
-    const captionUrl = captionMatch[1].replace(/\u0026/g, '&')
+
+    let captionTracks = []
+    try {
+      captionTracks = JSON.parse(captionTracksMatch[1])
+    } catch {
+      // If JSON parse fails, fall back to grabbing first URL like before
+      const firstUrlMatch = html.match(/"captionTracks":\s*\[.*?"baseUrl":\s*"([^"]+)"/)
+      if (!firstUrlMatch) return null
+      captionTracks = [{ baseUrl: firstUrlMatch[1], kind: 'unknown' }]
+    }
+
+    if (!captionTracks.length) return null
+
+    // Priority 1: manual English captions (no "kind" field or kind !== "asr")
+    // Priority 2: auto-generated English (kind === "asr")
+    // Priority 3: any track at all
+    const manual = captionTracks.find(t => t.languageCode === 'en' && t.kind !== 'asr')
+    const asr = captionTracks.find(t => t.kind === 'asr' && t.languageCode === 'en')
+    const anyEn = captionTracks.find(t => t.languageCode === 'en')
+    const anyTrack = captionTracks[0]
+
+    const chosen = manual || asr || anyEn || anyTrack
+    if (!chosen?.baseUrl) return null
+
+    const captionUrl = chosen.baseUrl.replace(/\\u0026/g, '&').replace(/\u0026/g, '&')
+    console.log(`YouTube captions: using ${chosen.kind === 'asr' ? 'auto-generated' : 'manual'} track (${chosen.languageCode || 'unknown lang'})`)
+
     const captionRes = await fetch(captionUrl)
     const captionXml = await captionRes.text()
     const transcript = captionXml
