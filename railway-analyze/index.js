@@ -479,7 +479,7 @@ function downloadWithYtDlp(url, tempDir) {
       '--socket-timeout', '30',
       ...(proxyUrl ? ['--proxy', proxyUrl] : []),
       url
-    ], { timeout: 300000 }, (err, stdout, stderr) => {
+    ], { timeout: 45000 }, (err, stdout, stderr) => {
       if (err) return reject(new Error('yt-dlp failed: ' + (stderr || err.message)))
       const files = require('fs').readdirSync(tempDir)
       const videoFile = files.find(f => f.startsWith('video.'))
