@@ -10,7 +10,7 @@ export default async function ReportPage({ params }: Props) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/')
+  if (!user) redirect(`/login?next=/reports/${params.id}`)
 
   const { data: report, error } = await supabase
     .from('reports')
