@@ -377,7 +377,7 @@
   flex-direction: column;
   align-items: center;
   gap: 20px;
-  padding: 16px 0;
+  padding: 40px 0;
   text-align: center;
 }
 
@@ -403,7 +403,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 100%;
+  width: 260px;
   text-align: left;
 }
 
@@ -483,4 +483,5 @@
   .tabs { width: 100%; }
   .tab { font-size: 12px; padding: 9px 10px; }
   .dropzone { padding: 24px 16px; }
+  .processingSteps { width: 100%; }
 }
