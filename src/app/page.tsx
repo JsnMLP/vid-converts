@@ -236,13 +236,78 @@ export default function Home() {
                   The Conversion Blog
                 </div>
                 <h2 className={styles.blogTitle}>
-                  From the <span className={styles.blogTitleTeal}>Lab.</span>
+                  Grow Your <span className={styles.blogTitleTeal}>Brain Power.</span>
                 </h2>
                 <p className={styles.blogDesc}>
                   The psychology, neuroscience, and strategy behind video that actually converts.
                 </p>
               </div>
               <div className={styles.blogHeaderRight}>
+                {/* Circuit Brain SVG */}
+                <div className={styles.brainWrap}>
+                  <svg viewBox="0 0 180 148" xmlns="http://www.w3.org/2000/svg" className={styles.brainSvg}>
+                    <defs>
+                      <linearGradient id="brainEg" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#00e5c0"/>
+                        <stop offset="45%" stopColor="#00aaff"/>
+                        <stop offset="100%" stopColor="#a050ff"/>
+                      </linearGradient>
+                      <filter id="brainGlow">
+                        <feGaussianBlur stdDeviation="2.5" result="b"/>
+                        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                      </filter>
+                      <filter id="brainGlowS">
+                        <feGaussianBlur stdDeviation="4" result="b"/>
+                        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                      </filter>
+                    </defs>
+                    <path d="M 72 128 C 66 128, 58 124, 54 118 C 46 106, 48 92, 44 82 C 40 70, 32 60, 36 46 C 40 33, 54 24, 68 22 C 76 20, 82 24, 88 20 C 96 15, 108 12, 118 16 C 130 20, 138 32, 140 44 C 142 54, 136 62, 138 72 C 140 82, 148 88, 146 100 C 144 112, 134 120, 124 122 C 118 124, 114 120, 110 122 C 106 124, 104 130, 98 132 C 92 134, 86 134, 80 132 C 76 131, 72 128, 72 128 Z" fill="none" stroke="url(#brainEg)" strokeWidth="1.8" opacity="0.7" filter="url(#brainGlow)"/>
+                    <path d="M 110 122 C 114 118, 122 114, 130 114 C 138 114, 146 118, 148 126 C 150 132, 144 138, 136 138 C 128 138, 120 134, 114 130 C 112 128, 110 125, 110 122 Z" fill="none" stroke="url(#brainEg)" strokeWidth="1.5" opacity="0.55" filter="url(#brainGlow)"/>
+                    <path d="M 88 130 C 88 136, 90 142, 92 146 C 94 142, 96 136, 96 130" fill="none" stroke="#00e5c0" strokeWidth="1.4" opacity="0.5" filter="url(#brainGlow)"/>
+                    <path d="M 90 22 C 86 36, 84 52, 88 66" fill="none" stroke="#00aaff" strokeWidth="1" opacity="0.4" strokeDasharray="3 3"/>
+                    <path d="M 54 80 C 68 74, 84 72, 100 74 C 114 76, 124 80, 132 86" fill="none" stroke="#00e5c0" strokeWidth="1" opacity="0.4" strokeDasharray="3 3"/>
+                    <path d="M 126 44 C 132 54, 134 64, 130 76" fill="none" stroke="#a050ff" strokeWidth="1" opacity="0.35" strokeDasharray="3 3"/>
+                    <g stroke="url(#brainEg)" strokeWidth="0.85" opacity="0.5" fill="none" filter="url(#brainGlow)">
+                      <line x1="68" y1="32" x2="82" y2="44"/><line x1="82" y1="44" x2="72" y2="58"/><line x1="72" y1="58" x2="56" y2="66"/><line x1="82" y1="44" x2="94" y2="52"/>
+                      <line x1="94" y1="52" x2="108" y2="44"/><line x1="108" y1="44" x2="120" y2="52"/><line x1="94" y1="52" x2="90" y2="68"/><line x1="108" y1="44" x2="110" y2="62"/><line x1="120" y1="52" x2="128" y2="64"/>
+                      <line x1="56" y1="66" x2="68" y2="80"/><line x1="68" y1="80" x2="84" y2="84"/><line x1="84" y1="84" x2="100" y2="80"/><line x1="100" y1="80" x2="114" y2="84"/><line x1="114" y1="84" x2="128" y2="78"/><line x1="128" y1="78" x2="128" y2="64"/>
+                      <line x1="90" y1="68" x2="84" y2="84"/><line x1="110" y1="62" x2="100" y2="80"/><line x1="128" y1="64" x2="114" y2="84"/>
+                      <line x1="84" y1="84" x2="80" y2="100"/><line x1="100" y1="80" x2="100" y2="98"/><line x1="114" y1="84" x2="116" y2="100"/>
+                      <line x1="80" y1="100" x2="92" y2="110"/><line x1="92" y1="110" x2="100" y2="98"/><line x1="100" y1="98" x2="108" y2="110"/><line x1="108" y1="110" x2="116" y2="100"/>
+                      <line x1="116" y1="100" x2="126" y2="108"/><line x1="126" y1="108" x2="136" y2="104"/><line x1="126" y1="108" x2="130" y2="120"/>
+                      <line x1="92" y1="110" x2="90" y2="126"/><line x1="100" y1="98" x2="92" y2="126"/>
+                    </g>
+                    <g fill="none" filter="url(#brainGlow)">
+                      <line x1="68" y1="32" x2="120" y2="52" stroke="#00e5c0" strokeWidth="1.2" opacity="0.7" strokeDasharray="8 7" className={styles.brainEdgeFlow}/>
+                      <line x1="56" y1="66" x2="128" y2="78" stroke="#00aaff" strokeWidth="1.1" opacity="0.6" strokeDasharray="8 7" className={styles.brainEdgeFlow} style={{animationDelay:'0.7s'}}/>
+                      <line x1="80" y1="100" x2="116" y2="100" stroke="#a050ff" strokeWidth="1" opacity="0.55" strokeDasharray="8 7" className={styles.brainEdgeFlow} style={{animationDelay:'1.3s'}}/>
+                      <line x1="92" y1="110" x2="136" y2="104" stroke="#00e5c0" strokeWidth="1" opacity="0.5" strokeDasharray="8 7" className={styles.brainEdgeFlow} style={{animationDelay:'0.4s'}}/>
+                    </g>
+                    <g filter="url(#brainGlowS)">
+                      <circle cx="94" cy="52" r="3.5" fill="#00e5c0" className={styles.brainNodeMain}/>
+                      <circle cx="110" cy="62" r="3" fill="#00e5c0" className={styles.brainNodeMain} style={{animationDelay:'0.4s'}}/>
+                      <circle cx="100" cy="80" r="3.5" fill="#00e5c0" className={styles.brainNodeMain} style={{animationDelay:'0.8s'}}/>
+                      <circle cx="100" cy="98" r="3" fill="#00e5c0" className={styles.brainNodeMain} style={{animationDelay:'1.2s'}}/>
+                      <circle cx="68" cy="32" r="2.5" fill="#00aaff" className={styles.brainNodeSec} style={{animationDelay:'0.2s'}}/>
+                      <circle cx="82" cy="44" r="2" fill="#00ccee" className={styles.brainNodeSec} style={{animationDelay:'0.6s'}}/>
+                      <circle cx="108" cy="44" r="2.5" fill="#00aaff" className={styles.brainNodeSec} style={{animationDelay:'1s'}}/>
+                      <circle cx="120" cy="52" r="2" fill="#00ccee" className={styles.brainNodeSec} style={{animationDelay:'0.3s'}}/>
+                      <circle cx="128" cy="64" r="2" fill="#00aaff" className={styles.brainNodeSec} style={{animationDelay:'0.9s'}}/>
+                      <circle cx="56" cy="66" r="2" fill="#5090ff" className={styles.brainNodeSec} style={{animationDelay:'1.4s'}}/>
+                      <circle cx="72" cy="58" r="2" fill="#5090ff" className={styles.brainNodeSec} style={{animationDelay:'0.5s'}}/>
+                      <circle cx="68" cy="80" r="2" fill="#00aaff" className={styles.brainNodeSec} style={{animationDelay:'1.1s'}}/>
+                      <circle cx="84" cy="84" r="2.5" fill="#00aaff" className={styles.brainNodeSec} style={{animationDelay:'0.7s'}}/>
+                      <circle cx="114" cy="84" r="2.5" fill="#00aaff" className={styles.brainNodeSec} style={{animationDelay:'1.5s'}}/>
+                      <circle cx="128" cy="78" r="2" fill="#00ccee" className={styles.brainNodeSec} style={{animationDelay:'0.2s'}}/>
+                      <circle cx="80" cy="100" r="2.5" fill="#a050ff" className={styles.brainNodeSec} style={{animationDelay:'0.6s'}}/>
+                      <circle cx="116" cy="100" r="2.5" fill="#a050ff" className={styles.brainNodeSec} style={{animationDelay:'1s'}}/>
+                      <circle cx="92" cy="110" r="2" fill="#a050ff" className={styles.brainNodeSec} style={{animationDelay:'1.6s'}}/>
+                      <circle cx="108" cy="110" r="2" fill="#a050ff" className={styles.brainNodeSec} style={{animationDelay:'0.4s'}}/>
+                      <circle cx="126" cy="108" r="2" fill="#00aaff" className={styles.brainNodeSec} style={{animationDelay:'1.8s'}}/>
+                      <circle cx="136" cy="104" r="2" fill="#00aaff" className={styles.brainNodeSec} style={{animationDelay:'0.8s'}}/>
+                    </g>
+                  </svg>
+                </div>
                 <a href="/library" className={styles.blogAllLink}>Browse the full library &rarr;</a>
               </div>
             </div>

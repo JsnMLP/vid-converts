@@ -1065,3 +1065,47 @@
   color: rgba(255,255,255,0.2);
   white-space: nowrap;
 }
+
+/* ── Circuit Brain ── */
+.brainWrap {
+  width: 180px;
+  height: 148px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.brainSvg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter:
+    drop-shadow(0 0 12px rgba(0,229,192,0.5))
+    drop-shadow(0 0 28px rgba(0,170,255,0.25));
+}
+
+@keyframes brainNodeMain {
+  0%, 100% { opacity: 0.8; r: 3; }
+  50%       { opacity: 1;   r: 5; }
+}
+
+@keyframes brainNodeSec {
+  0%, 100% { opacity: 0.6; r: 2; }
+  50%       { opacity: 1;   r: 3.5; }
+}
+
+@keyframes brainEdgeFlow {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -50; }
+}
+
+.brainNodeMain {
+  animation: brainNodeMain 2.4s ease-in-out infinite;
+}
+
+.brainNodeSec {
+  animation: brainNodeSec 3s ease-in-out infinite;
+}
+
+.brainEdgeFlow {
+  animation: brainEdgeFlow 2s linear infinite;
+}
