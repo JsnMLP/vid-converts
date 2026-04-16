@@ -233,7 +233,7 @@ export default function Home() {
                     <div className={styles.vcLogoInner} />
                     <div className={styles.vcLogoPlay} />
                   </div>
-                  The Conversion Blog
+                  The Conversion Library
                 </div>
                 <h2 className={styles.blogTitle}>
                   Grow Your <span className={styles.blogTitleTeal}>Brain Power.</span>
