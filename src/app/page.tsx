@@ -24,7 +24,7 @@ export default function Home() {
   }, [])
 
   const tabs = [
-    { id: 'hook', label: 'Hook', count: 2 },
+    { id: 'hook', label: 'Hook', count: 1 },
     { id: 'problem_clarity', label: 'Problem Clarity', count: 1 },
     { id: 'offer_clarity', label: 'Offer Clarity', count: 1 },
     { id: 'trust_proof', label: 'Trust & Proof', count: 2 },
@@ -378,7 +378,7 @@ export default function Home() {
                 ) : (
                   <div key={i} className={styles.blogCard + ' ' + styles.blogCardLocked}>
                     <div className={styles.blogCardTop}>
-                      <span className={styles.blogCardExclusive}>Complete + Premium</span>
+                      <span className={styles.blogCardExclusive}>Complete + Premium Plans</span>
                       <span className={styles.blogCardLock}>🔒</span>
                     </div>
                     <div className={styles.blogCardTitle}>{card.title}</div>
