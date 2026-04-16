@@ -29,7 +29,7 @@ export default function Home() {
     { id: 'offer_clarity', label: 'Offer Clarity', count: 3 },
     { id: 'trust_proof', label: 'Trust & Proof', count: 3 },
     { id: 'cta', label: 'CTA', count: 3 },
-    { id: 'visual_communication', label: 'Visual Comm.', count: 3 },
+    { id: 'visual_communication', label: 'Visual', count: 3 },
     { id: 'platform_fit', label: 'Platform Fit', count: 3 },
     { id: 'measurement_readiness', label: 'Measurement', count: 3 },
   ]
