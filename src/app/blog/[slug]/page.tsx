@@ -31,16 +31,46 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const supabase = createClient()
   const { data } = await supabase
     .from('articles')
-    .select('title, subtitle, excerpt')
+    .select('title, subtitle, excerpt, published_at, rubric_category')
     .eq('slug', params.slug)
     .eq('status', 'published')
     .single()
 
   if (!data) return { title: 'Article Not Found · Vid Converts™' }
 
+  const url = `https://www.vidconverts.com/blog/${params.slug}`
+  const description = data.excerpt ?? data.subtitle ?? 'Psychology, neuroscience, and strategy behind video that actually converts.'
+
   return {
     title: `${data.title} · Vid Converts™`,
-    description: data.excerpt ?? data.subtitle ?? undefined,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title: data.title,
+      description,
+      url,
+      siteName: 'Vid Converts',
+      type: 'article',
+      publishedTime: data.published_at ?? undefined,
+      authors: ['Digital Nuclei'],
+      tags: ['video marketing', 'conversion optimization', data.rubric_category],
+      images: [
+        {
+          url: '/og-image.png',
+          width: 1200,
+          height: 630,
+          alt: data.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: data.title,
+      description,
+      images: ['/og-image.png'],
+    },
   }
 }
 
@@ -296,6 +326,30 @@ export default async function BlogArticlePage({ params }: PageProps) {
           .sources-section { padding-left:20px; padding-right:20px; }
         }
       `}</style>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Article',
+            headline: article.title,
+            description: article.excerpt ?? article.subtitle ?? '',
+            author: { '@type': 'Organization', name: 'Digital Nuclei', url: 'https://digitalnuclei.com' },
+            publisher: {
+              '@type': 'Organization',
+              name: 'Vid Converts',
+              url: 'https://www.vidconverts.com',
+              logo: { '@type': 'ImageObject', url: 'https://www.vidconverts.com/og-image.png' },
+            },
+            datePublished: article.published_at ?? new Date().toISOString(),
+            dateModified: article.published_at ?? new Date().toISOString(),
+            url: `https://www.vidconverts.com/blog/${article.slug}`,
+            mainEntityOfPage: { '@type': 'WebPage', '@id': `https://www.vidconverts.com/blog/${article.slug}` },
+            image: 'https://www.vidconverts.com/og-image.png',
+          }),
+        }}
+      />
 
       {/* TOP BAR */}
       <div className="topbar">
