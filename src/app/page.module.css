@@ -788,8 +788,8 @@
   align-items: center;
   justify-content: center;
   gap: 1px;
-  padding: 0 10px 0 32px;
-  background: linear-gradient(to right, transparent, #0d1117 45%);
+  padding: 0 8px 0 20px;
+  background: linear-gradient(to right, transparent, #0d1117 55%);
   pointer-events: none;
 }
 
@@ -841,11 +841,11 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 15px 20px;
+  padding: 15px 14px;
   font-family: var(--font-display);
   font-weight: 900;
   font-size: 11px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(255,255,255,0.25);
   background: none;
@@ -1032,6 +1032,7 @@
 .blogNudgeBtn:hover { background: #1fa898; }
 
 @media (max-width: 960px) {
+  .blogTabsScrollHint { display: none; }
   .blogInner { padding: 0 24px; }
   .blogFeatured { grid-template-columns: 1fr; }
   .blogFeatBody { border-left: none; border-top: 1px solid rgba(255,255,255,0.06); }
