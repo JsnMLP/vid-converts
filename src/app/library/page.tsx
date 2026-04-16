@@ -86,6 +86,14 @@ export default async function LibraryPage() {
   for (const article of allArticles) {
     if (byCategory[article.rubric_category]) byCategory[article.rubric_category].push(article)
   }
+  // Sort free articles first within each category
+  for (const cat of CATEGORIES) {
+    byCategory[cat.id].sort((a, b) => {
+      if (a.tier === 'free' && b.tier !== 'free') return -1
+      if (a.tier !== 'free' && b.tier === 'free') return 1
+      return 0
+    })
+  }
 
   const totalFree = allArticles.filter(a => a.tier === 'free').length
   const totalMember = allArticles.filter(a => a.tier === 'member').length
@@ -116,7 +124,7 @@ export default async function LibraryPage() {
         .topbar-link:hover { color:#2ec4b0; }
 
         .plan-pill { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:100px; font-size:10px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; }
-        .plan-pill.premium { background:rgba(46,196,176,0.12); border:1px solid rgba(46,196,176,0.25); color:#2ec4b0; }
+        .plan-pill.premium { background:rgba(245,197,66,0.15); border:1px solid rgba(245,197,66,0.35); color:#f5c542; }
         .plan-pill.free { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.3); }
 
         .page-wrap { max-width:1200px; margin:0 auto; padding:0 48px; }
@@ -124,8 +132,11 @@ export default async function LibraryPage() {
         .gate-banner { background:rgba(46,196,176,0.05); border-bottom:1px solid rgba(46,196,176,0.1); padding:14px 0; }
         .gate-banner-inner { max-width:1200px; margin:0 auto; padding:0 48px; display:flex; align-items:center; justify-content:space-between; gap:24px; }
         .gate-banner-text { font-size:13px; font-weight:700; color:rgba(255,255,255,0.35); }
-        .gate-banner-text strong { color:#2ec4b0; }
+        .gate-banner-text strong { color:#f5c542; }
         .gate-banner-btn { background:#2ec4b0; color:#0a0e1a; font-family:'Encode Sans Expanded',sans-serif; font-weight:900; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; padding:9px 18px; border-radius:6px; text-decoration:none; white-space:nowrap; flex-shrink:0; }
+
+        .card-excerpt { font-size:11px; font-weight:600; color:rgba(255,255,255,0.22); line-height:1.6; margin:0; }
+        .card-excerpt.blurred { filter:blur(3px); user-select:none; pointer-events:none; }
 
         .hero { padding:52px 0 44px; border-bottom:1px solid rgba(255,255,255,0.05); }
         .hero-inner { max-width:1200px; margin:0 auto; padding:0 48px; display:grid; grid-template-columns:1fr auto; align-items:center; gap:48px; }
@@ -151,6 +162,14 @@ export default async function LibraryPage() {
         .bnp { animation:brainNP 2.4s ease-in-out infinite; }
         .bns { animation:brainNS 3.1s ease-in-out infinite; }
         .bef { stroke-dasharray:9 8; animation:brainEF 2s linear infinite; }
+
+        .card-lock { font-size:18px; opacity:0.75; }
+        .badge.member { background:rgba(245,197,66,0.1); color:#f5c542; border:1px solid rgba(245,197,66,0.25); }
+
+        .cat-more { display:inline-flex; align-items:center; gap:2px; margin-top:10px; font-size:9px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:#2ec4b0; opacity:0.6; }
+        .cat-more-chevron:first-child { animation:chevPulse 1.2s ease-in-out infinite; }
+        .cat-more-chevron:last-child  { animation:chevPulse 1.2s ease-in-out infinite 0.25s; }
+        @keyframes chevPulse { 0%,100%{opacity:.3;transform:translateX(0)} 50%{opacity:1;transform:translateX(3px)} }
 
         .lib-layout { max-width:1200px; margin:0 auto; padding:0 48px; display:grid; grid-template-columns:200px 1fr; }
 
@@ -179,14 +198,9 @@ export default async function LibraryPage() {
         .card-top { display:flex; align-items:center; justify-content:space-between; }
         .badge { font-size:9px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; padding:2px 8px; border-radius:100px; }
         .badge.free { background:rgba(46,196,176,0.1); color:#2ec4b0; border:1px solid rgba(46,196,176,0.18); }
-        .badge.member { background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.07); }
-        .card-lock { font-size:11px; opacity:0.18; }
 
         .card-title { font-family:'Encode Sans Expanded',sans-serif; font-weight:900; font-size:12px; color:#fff; line-height:1.4; flex:1; }
         .article-card.locked .card-title { color:rgba(255,255,255,0.2); }
-
-        .card-excerpt { font-size:11px; font-weight:600; color:rgba(255,255,255,0.22); line-height:1.6; margin:0; }
-        .article-card.locked .card-excerpt { filter:blur(3px); user-select:none; pointer-events:none; }
 
         .card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:10px; border-top:1px solid rgba(255,255,255,0.04); }
         .card-meta { font-size:9px; font-weight:700; color:rgba(255,255,255,0.1); letter-spacing:0.04em; }
@@ -207,7 +221,7 @@ export default async function LibraryPage() {
         @media (max-width:960px) {
           .gate-banner-inner, .hero-inner, .lib-layout { padding-left:24px; padding-right:24px; }
           .hero-inner { grid-template-columns:1fr; }
-          .hero-brain { display:none; }
+          .hero-brain { width:180px; height:148px; margin:0 auto; }
           .lib-layout { grid-template-columns:1fr; }
           .sidebar { display:none; }
           .lib-main { padding:28px 0 60px; }
@@ -366,39 +380,48 @@ export default async function LibraryPage() {
                 {catArticles.length === 0 ? (
                   <p className="cat-empty">Articles coming soon.</p>
                 ) : (
-                  <div className="article-grid">
-                    {catArticles.map(article => {
-                      const isAccessible = article.tier === 'free' || isPremium
-                      const publishDate = article.published_at
-                        ? new Date(article.published_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-                        : ''
-                      const meta = [article.read_minutes ? `${article.read_minutes} min` : '', publishDate].filter(Boolean).join(' · ')
+                  <>
+                    <div className="article-grid">
+                      {catArticles.map(article => {
+                        const isAccessible = article.tier === 'free' || isPremium
+                        const publishDate = article.published_at
+                          ? new Date(article.published_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                          : ''
+                        const meta = [article.read_minutes ? `${article.read_minutes} min` : '', publishDate].filter(Boolean).join(' · ')
 
-                      return isAccessible ? (
-                        <a key={article.id} href={`/blog/${article.slug}`} className="article-card">
-                          <div className="card-top">
-                            <span className={`badge ${article.tier}`}>{article.tier === 'free' ? 'Free' : 'Premium'}</span>
+                        return isAccessible ? (
+                          <a key={article.id} href={`/blog/${article.slug}`} className="article-card">
+                            <div className="card-top">
+                              <span className={`badge ${article.tier}`}>{article.tier === 'free' ? 'Free' : 'Premium'}</span>
+                            </div>
+                            <div className="card-title">{article.title}</div>
+                            {article.excerpt && <p className="card-excerpt">{article.excerpt}</p>}
+                            <div className="card-footer">
+                              <span className="card-meta">{meta}</span>
+                              <span className="card-arrow">&rarr;</span>
+                            </div>
+                          </a>
+                        ) : (
+                          <div key={article.id} className="article-card locked">
+                            <div className="card-top">
+                              <span className="badge member">⭐ Premium</span>
+                              <span className="card-lock">🔒</span>
+                            </div>
+                            <div className="card-title">{article.title}</div>
+                            {article.excerpt && <p className="card-excerpt blurred">{article.excerpt}</p>}
+                            <div className="card-footer"><span className="card-meta">{meta}</span></div>
                           </div>
-                          <div className="card-title">{article.title}</div>
-                          {article.excerpt && <p className="card-excerpt">{article.excerpt}</p>}
-                          <div className="card-footer">
-                            <span className="card-meta">{meta}</span>
-                            <span className="card-arrow">&rarr;</span>
-                          </div>
-                        </a>
-                      ) : (
-                        <div key={article.id} className="article-card locked">
-                          <div className="card-top">
-                            <span className="badge member">Premium</span>
-                            <span className="card-lock">🔒</span>
-                          </div>
-                          <div className="card-title">{article.title}</div>
-                          {article.excerpt && <p className="card-excerpt">{article.excerpt}</p>}
-                          <div className="card-footer"><span className="card-meta">{meta}</span></div>
-                        </div>
-                      )
-                    })}
-                  </div>
+                        )
+                      })}
+                    </div>
+                    {catArticles.length >= 3 && (
+                      <div className="cat-more">
+                        more
+                        <span className="cat-more-chevron">›</span>
+                        <span className="cat-more-chevron">›</span>
+                      </div>
+                    )}
+                  </>
                 )}
               </section>
             )
