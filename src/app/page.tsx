@@ -24,14 +24,14 @@ export default function Home() {
   }, [])
 
   const tabs = [
-    { id: 'hook', label: 'Hook', count: 1 },
-    { id: 'problem_clarity', label: 'Problem Clarity', count: 1 },
-    { id: 'offer_clarity', label: 'Offer Clarity', count: 1 },
-    { id: 'trust_proof', label: 'Trust & Proof', count: 2 },
-    { id: 'cta', label: 'CTA', count: 1 },
-    { id: 'visual_communication', label: 'Visual Comm.', count: 2 },
-    { id: 'platform_fit', label: 'Platform Fit', count: 1 },
-    { id: 'measurement_readiness', label: 'Measurement', count: 1 },
+    { id: 'hook', label: 'Hook', count: 3 },
+    { id: 'problem_clarity', label: 'Problem Clarity', count: 3 },
+    { id: 'offer_clarity', label: 'Offer Clarity', count: 3 },
+    { id: 'trust_proof', label: 'Trust & Proof', count: 3 },
+    { id: 'cta', label: 'CTA', count: 3 },
+    { id: 'visual_communication', label: 'Visual Comm.', count: 3 },
+    { id: 'platform_fit', label: 'Platform Fit', count: 3 },
+    { id: 'measurement_readiness', label: 'Measurement', count: 3 },
   ]
 
   type TabCard = {
@@ -45,8 +45,21 @@ export default function Home() {
   const tabCards: Record<string, TabCard[]> = {
     hook: [
       {
+        slug: "hook-3-seconds",
+        title: "Your Hook Has 3 Seconds. Here's How to Use All of Them.",
+        excerpt: "The algorithm doesn't kill your videos. Your opening does. Here's the neuroscience of why — and how to fix it.",
+        meta: "7 min · April 2026",
+        free: true,
+      },
+      {
         title: "The 3-Second Decision: What Neuroscience Says About Hooks That Stop the Scroll",
         excerpt: "Your viewer's brain makes a stay-or-leave decision in under 400ms. Here's what it's scanning for.",
+        meta: "Coming soon",
+        free: false,
+      },
+      {
+        title: "Pattern Interrupt: The One Hook Structure That Works on Every Platform",
+        excerpt: "Why the brain ignores predictable openings — and the exact disruption pattern that forces attention.",
         meta: "Coming soon",
         free: false,
       },
@@ -56,6 +69,18 @@ export default function Home() {
         title: "The Pain Precision Framework: How to Name Your Viewer's Problem So Clearly They Feel Seen",
         excerpt: "Vague pain statements get ignored. Specific ones stop the scroll. Here's how to articulate your viewer's problem better than they can.",
         meta: "Coming soon",
+        free: true,
+      },
+      {
+        title: "Before & After States: The Psychological Bridge That Makes Viewers Trust Your Solution",
+        excerpt: "The brain doesn't buy solutions. It buys distance from pain. Here's how to map that distance on video.",
+        meta: "Coming soon",
+        free: false,
+      },
+      {
+        title: "The Specificity Ladder: How to Diagnose the Exact Depth of Problem Your Viewer Has",
+        excerpt: "Surface problems get surface engagement. Specific problems get conversions. Here's how to go deeper.",
+        meta: "Coming soon",
         free: false,
       },
     ],
@@ -63,6 +88,18 @@ export default function Home() {
       {
         title: "Why Your Offer Lands Flat on Video — And the One Reframe That Fixes It",
         excerpt: "The problem is not your offer. It is the sequence your brain presents it in. One structural shift changes everything.",
+        meta: "Coming soon",
+        free: true,
+      },
+      {
+        title: "The Outcome Stack: How to Layer Benefits So Each One Builds Desire for the Next",
+        excerpt: "One benefit isn't enough. Here's the stacking sequence that makes viewers feel like they'd be foolish not to act.",
+        meta: "Coming soon",
+        free: false,
+      },
+      {
+        title: "Price Anchoring on Video: Why What You Say Before the Price Matters More Than the Price",
+        excerpt: "The brain doesn't process numbers in isolation. Context determines value. Here's how to set it correctly.",
         meta: "Coming soon",
         free: false,
       },
@@ -81,11 +118,29 @@ export default function Home() {
         meta: "Coming soon",
         free: false,
       },
+      {
+        title: "The Authority Signal: How to Establish Credibility in the First 10 Seconds Without Bragging",
+        excerpt: "Viewers decide if you're worth listening to before you've made your first point. Here's how to pass that test.",
+        meta: "Coming soon",
+        free: false,
+      },
     ],
     cta: [
       {
         title: "The CTA Science: Why Most Calls to Action Fail and How to Write One That Converts",
         excerpt: "The exact structure of a CTA that triggers action — and the common mistakes that make viewers scroll past.",
+        meta: "Coming soon",
+        free: true,
+      },
+      {
+        title: "Friction Mapping: How to Identify and Remove Every Mental Obstacle Between Viewer and Click",
+        excerpt: "Every objection your viewer has is a friction point. Here's how to map them and dissolve them before they form.",
+        meta: "Coming soon",
+        free: false,
+      },
+      {
+        title: "The Urgency Paradox: Why Fake Scarcity Kills CTAs and What Actually Creates Action",
+        excerpt: "Manufactured urgency destroys trust. Real urgency converts. Here's the difference — and how to use it.",
         meta: "Coming soon",
         free: false,
       },
@@ -96,11 +151,17 @@ export default function Home() {
         title: "The CSP Playbook: Expert Advice for Camera-Shy People Who Still Want to Convert",
         excerpt: "Four field-tested strategies from neuroscience and performance psychology for people who hate the camera.",
         meta: "5 min · April 2026",
-        free: false,
+        free: true,
       },
       {
         title: "Frame, Light, Distance: The Camera Setup That Makes You Look Confident Before You Feel It",
         excerpt: "Your environment is working for you or against you. Here is the exact setup that removes anxiety signals.",
+        meta: "Coming soon",
+        free: false,
+      },
+      {
+        title: "On-Screen Text That Converts: The Typography Rules That Keep Viewers Watching",
+        excerpt: "Most on-screen text is noise. Here's the visual hierarchy that turns text into a retention tool.",
         meta: "Coming soon",
         free: false,
       },
@@ -110,6 +171,18 @@ export default function Home() {
         title: "Wrong Platform, Wrong Format: Why Great Videos Fail Before Anyone Watches Them",
         excerpt: "The best video in the world underperforms on the wrong platform. Here's how to match format to where your audience lives.",
         meta: "Coming soon",
+        free: true,
+      },
+      {
+        title: "The Algorithm Alignment Framework: How to Format Videos That Platforms Actually Promote",
+        excerpt: "Platforms reward specific behaviours. Here's exactly what each major platform is optimising for right now.",
+        meta: "Coming soon",
+        free: false,
+      },
+      {
+        title: "Repurposing Without Diluting: How to Adapt One Video Across Platforms Without Losing Conversion Power",
+        excerpt: "Copy-paste repurposing destroys performance. Here's the adaptation framework that preserves what converts.",
+        meta: "Coming soon",
         free: false,
       },
     ],
@@ -117,6 +190,18 @@ export default function Home() {
       {
         title: "Are You Measuring the Right Things? The Video Metrics That Actually Predict Revenue",
         excerpt: "Views and likes don't pay the bills. Here's the measurement framework that connects video performance to business outcomes.",
+        meta: "Coming soon",
+        free: true,
+      },
+      {
+        title: "The Drop-Off Map: How to Read Your Retention Graph and Know Exactly Where Your Video Breaks",
+        excerpt: "Every retention dip is a message. Here's how to decode what your audience is telling you with their attention.",
+        meta: "Coming soon",
+        free: false,
+      },
+      {
+        title: "Conversion Attribution for Video: How to Actually Know Which Videos Are Driving Revenue",
+        excerpt: "Last-click attribution misses everything video does. Here's the model that shows the real impact.",
         meta: "Coming soon",
         free: false,
       },
