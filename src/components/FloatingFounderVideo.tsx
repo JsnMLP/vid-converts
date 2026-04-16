@@ -26,8 +26,8 @@ export default function FloatingFounderVideo() {
           bottom: '24px',
           right: '0px',
           zIndex: 9999,
-          background: 'linear-gradient(135deg, #0d1f1a 0%, #0a1a16 100%)',
-          border: '1px solid rgba(0,255,178,0.3)',
+          background: 'linear-gradient(135deg, #091418 0%, #0b1a1e 100%)',
+          border: '1px solid rgba(0,212,212,0.3)',
           borderRight: 'none',
           borderRadius: '8px 0 0 8px',
           padding: '8px 12px',
@@ -39,9 +39,9 @@ export default function FloatingFounderVideo() {
         }}
         title="Rewatch — Why I Built Vid Converts"
       >
-        <span style={{ fontSize: '14px', color: '#00FFB2' }}>▶</span>
+        <span style={{ fontSize: '14px', color: '#00D4D4' }}>▶</span>
         <span style={{
-          color: '#00FFB2',
+          color: '#00D4D4',
           fontFamily: "'Encode Sans Expanded', sans-serif",
           fontSize: '9px',
           fontWeight: 900,
@@ -85,27 +85,27 @@ export default function FloatingFounderVideo() {
             paddingTop: '8px',
             paddingBottom: '8px',
             cursor: 'pointer',
-            border: isHoveringPill ? '1px solid rgba(0,255,178,0.4)' : '1px solid rgba(255,255,255,0.1)',
-            background: 'linear-gradient(135deg, #0d1f1a 0%, #0a1a16 100%)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,255,178,0.08)',
+            border: isHoveringPill ? '1px solid rgba(0,212,212,0.4)' : '1px solid rgba(255,255,255,0.1)',
+            background: 'linear-gradient(135deg, #091418 0%, #0b1a1e 100%)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,212,212,0.08)',
             transition: 'border 0.3s ease',
           }}
         >
           <div style={{ position: 'relative', flexShrink: 0, width: '44px', height: '44px' }}>
             <div style={{
               position: 'absolute', inset: '-4px', borderRadius: '50%',
-              background: '#00FFB2', opacity: 0.2,
+              background: '#00D4D4', opacity: 0.2,
               animation: 'vcPing1 2s ease-out infinite',
             }} />
             <div style={{
               position: 'absolute', inset: '-2px', borderRadius: '50%',
-              background: '#00FFB2', opacity: 0.15,
+              background: '#00D4D4', opacity: 0.15,
               animation: 'vcPing2 3s ease-out infinite', animationDelay: '0.5s',
             }} />
             {logoError ? (
               <div style={{
                 position: 'relative', width: '44px', height: '44px', borderRadius: '50%',
-                background: 'linear-gradient(135deg, #00FFB2 0%, #00cc8f 100%)',
+                background: 'linear-gradient(135deg, #00D4D4 0%, #009999 100%)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px',
               }}>▶</div>
             ) : (
@@ -122,7 +122,7 @@ export default function FloatingFounderVideo() {
           </div>
           <div style={{ textAlign: 'left' }}>
             <p style={{
-              margin: 0, color: '#00FFB2',
+              margin: 0, color: '#00D4D4',
               fontFamily: "'Encode Sans Expanded', sans-serif",
               fontSize: '10px', fontWeight: 900, letterSpacing: '0.08em', lineHeight: 1.2,
             }}>WHY I BUILT VID CONVERTS</p>
@@ -139,8 +139,8 @@ export default function FloatingFounderVideo() {
         <div style={{
           width: '300px', borderRadius: '16px', overflow: 'hidden',
           border: '1px solid rgba(255,255,255,0.1)',
-          background: 'linear-gradient(145deg, #0d1f1a 0%, #091510 100%)',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,255,178,0.12), inset 0 1px 0 rgba(255,255,255,0.05)',
+          background: 'linear-gradient(145deg, #091418 0%, #0b1a1e 100%)',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,212,212,0.12), inset 0 1px 0 rgba(255,255,255,0.05)',
         }}>
           {/* Header */}
           <div style={{
@@ -149,7 +149,7 @@ export default function FloatingFounderVideo() {
           }}>
             <div>
               <p style={{
-                margin: 0, color: '#00FFB2',
+                margin: 0, color: '#00D4D4',
                 fontFamily: "'Encode Sans Expanded', sans-serif",
                 fontSize: '10px', fontWeight: 900, letterSpacing: '0.1em',
               }}>WHY I BUILT VID CONVERTS</p>
