@@ -29,9 +29,9 @@ export default function Home() {
     { id: 'offer_clarity', label: 'Offer Clarity', count: 1 },
     { id: 'trust_proof', label: 'Trust & Proof', count: 2 },
     { id: 'cta', label: 'CTA', count: 1 },
-    { id: 'visual_communication', label: 'Visual Communication', count: 2 },
+    { id: 'visual_communication', label: 'Visual Comm.', count: 2 },
     { id: 'platform_fit', label: 'Platform Fit', count: 1 },
-    { id: 'measurement_readiness', label: 'Measurement Readiness', count: 1 },
+    { id: 'measurement_readiness', label: 'Measurement', count: 1 },
   ]
 
   type TabCard = {

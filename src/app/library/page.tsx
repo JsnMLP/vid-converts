@@ -210,7 +210,7 @@ export default async function LibraryPage() {
         .upgrade-cta { background:rgba(46,196,176,0.04); border:1px solid rgba(46,196,176,0.1); border-radius:14px; padding:32px; display:flex; align-items:center; justify-content:space-between; gap:28px; margin-top:48px; }
         .upgrade-cta h3 { font-family:'Encode Sans Expanded',sans-serif; font-weight:900; font-size:17px; color:#fff; margin-bottom:8px; }
         .upgrade-cta p { font-size:13px; color:rgba(255,255,255,0.35); line-height:1.6; max-width:380px; }
-        .upgrade-cta strong { color:#2ec4b0; }
+        .upgrade-cta strong { color:#f5c542; }
         .upgrade-cta-btn { background:#2ec4b0; color:#0a0e1a; font-family:'Encode Sans Expanded',sans-serif; font-weight:900; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; padding:12px 22px; border-radius:8px; text-decoration:none; white-space:nowrap; flex-shrink:0; }
 
         .lib-footer { background:#080c18; border-top:1px solid rgba(255,255,255,0.05); text-align:center; padding:22px; font-size:11px; font-weight:700; color:rgba(255,255,255,0.14); letter-spacing:0.06em; text-transform:uppercase; }

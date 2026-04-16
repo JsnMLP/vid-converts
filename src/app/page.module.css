@@ -455,8 +455,12 @@
   .footerBottom { flex-direction: column; gap: 8px; text-align: center; }
 }
 
+@media (max-width: 768px) {
+  .rubricGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
 @media (max-width: 480px) {
-  .rubricGrid { grid-template-columns: 1fr; }
+  .rubricGrid { grid-template-columns: repeat(2, 1fr); }
   .uploadZone { padding: 20px; }
 }
 
@@ -928,9 +932,9 @@
   text-transform: uppercase;
   padding: 3px 9px;
   border-radius: 100px;
-  background: rgba(255,255,255,0.05);
-  color: rgba(255,255,255,0.25);
-  border: 1px solid rgba(255,255,255,0.09);
+  background: rgba(245,197,66,0.1);
+  color: #f5c542;
+  border: 1px solid rgba(245,197,66,0.25);
 }
 
 .blogCardLock { font-size: 18px; opacity: 0.75; }
