@@ -128,15 +128,29 @@ export default async function LibraryPage() {
         .gate-banner-btn { background:#2ec4b0; color:#0a0e1a; font-family:'Encode Sans Expanded',sans-serif; font-weight:900; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; padding:9px 18px; border-radius:6px; text-decoration:none; white-space:nowrap; flex-shrink:0; }
 
         .hero { padding:52px 0 44px; border-bottom:1px solid rgba(255,255,255,0.05); }
-        .hero-inner { max-width:1200px; margin:0 auto; padding:0 48px; }
-        .hero-kicker { display:inline-flex; align-items:center; gap:8px; font-size:10px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:#2ec4b0; margin-bottom:14px; }
-        .hero-title { font-family:'Encode Sans Expanded',sans-serif; font-weight:900; font-size:clamp(34px,5vw,58px); line-height:1.0; color:#fff; margin-bottom:14px; }
-        .hero-title span { color:#2ec4b0; }
-        .hero-desc { font-size:15px; font-weight:600; color:rgba(255,255,255,0.38); max-width:500px; line-height:1.7; margin-bottom:32px; }
-        .hero-stats { display:flex; align-items:center; gap:36px; flex-wrap:wrap; }
-        .hero-stat-num { font-family:'Encode Sans Expanded',sans-serif; font-weight:900; font-size:30px; color:#2ec4b0; line-height:1; margin-bottom:4px; }
-        .hero-stat-label { font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:rgba(255,255,255,0.18); }
-        .stat-div { width:1px; height:32px; background:rgba(255,255,255,0.06); }
+        .hero-inner { max-width:1200px; margin:0 auto; padding:0 48px; display:grid; grid-template-columns:1fr auto; align-items:center; gap:48px; }
+        .hero-kicker { display:inline-flex; align-items:center; gap:10px; font-size:10px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:#2ec4b0; margin-bottom:22px; }
+        .hero-title { font-family:'Encode Sans Expanded',sans-serif; font-weight:900; font-size:clamp(28px,4vw,52px); line-height:1.05; color:#fff; margin-bottom:0; }
+        .hero-title .line1 { display:block; color:#fff; }
+        .hero-title .line2 { display:block; color:#2ec4b0; }
+        .hero-title .line3 { display:block; color:rgba(255,255,255,0.2); font-size:0.6em; letter-spacing:0.04em; margin-top:8px; }
+        .hero-stats { display:flex; align-items:center; gap:28px; flex-wrap:wrap; margin-top:28px; }
+        .hero-stat-num { font-family:'Encode Sans Expanded',sans-serif; font-weight:900; font-size:28px; color:#2ec4b0; line-height:1; margin-bottom:3px; }
+        .hero-stat-label { font-size:9px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,0.18); }
+        .stat-div { width:1px; height:30px; background:rgba(255,255,255,0.07); }
+
+        .hero-brain { position:relative; width:260px; height:210px; flex-shrink:0; }
+        .hero-brain::before, .hero-brain::after { content:''; position:absolute; inset:-18px; border-radius:55% 45% 50% 50% / 50% 55% 45% 50%; border:1px solid rgba(46,196,176,0.1); animation:brainRing 3.5s ease-in-out infinite; pointer-events:none; }
+        .hero-brain::after { inset:-36px; border-color:rgba(0,170,255,0.06); animation-delay:1.8s; }
+        .hero-brain svg { width:100%; height:100%; overflow:visible; filter:drop-shadow(0 0 16px rgba(46,196,176,0.55)) drop-shadow(0 0 36px rgba(0,170,255,0.22)); }
+
+        @keyframes brainRing { 0%,100%{opacity:.3;transform:scale(1)} 50%{opacity:.9;transform:scale(1.04)} }
+        @keyframes brainNP   { 0%,100%{opacity:.8;r:3.5} 50%{opacity:1;r:5.5} }
+        @keyframes brainNS   { 0%,100%{opacity:.55;r:2} 50%{opacity:1;r:3.5} }
+        @keyframes brainEF   { from{stroke-dashoffset:0} to{stroke-dashoffset:-55} }
+        .bnp { animation:brainNP 2.4s ease-in-out infinite; }
+        .bns { animation:brainNS 3.1s ease-in-out infinite; }
+        .bef { stroke-dasharray:9 8; animation:brainEF 2s linear infinite; }
 
         .lib-layout { max-width:1200px; margin:0 auto; padding:0 48px; display:grid; grid-template-columns:200px 1fr; }
 
@@ -192,6 +206,8 @@ export default async function LibraryPage() {
 
         @media (max-width:960px) {
           .gate-banner-inner, .hero-inner, .lib-layout { padding-left:24px; padding-right:24px; }
+          .hero-inner { grid-template-columns:1fr; }
+          .hero-brain { display:none; }
           .lib-layout { grid-template-columns:1fr; }
           .sidebar { display:none; }
           .lib-main { padding:28px 0 60px; }
@@ -231,17 +247,95 @@ export default async function LibraryPage() {
       {/* HERO */}
       <div className="hero">
         <div className="hero-inner">
-          <div className="hero-kicker"><div className="node"></div> The Conversion Library</div>
-          <h1 className="hero-title">Every Article.<br /><span>One Place.</span></h1>
-          <p className="hero-desc">Psychology, neuroscience, and field-tested strategy — organised by the 8 rubric categories that determine whether your video converts.</p>
-          <div className="hero-stats">
-            <div><div className="hero-stat-num">{allArticles.length}</div><div className="hero-stat-label">Published</div></div>
-            <div className="stat-div"></div>
-            <div><div className="hero-stat-num">{totalFree}</div><div className="hero-stat-label">Free to read</div></div>
-            <div className="stat-div"></div>
-            <div><div className="hero-stat-num">{totalMember}</div><div className="hero-stat-label">Premium exclusive</div></div>
-            <div className="stat-div"></div>
-            <div><div className="hero-stat-num">9</div><div className="hero-stat-label">Categories</div></div>
+          <div className="hero-left">
+            <div className="hero-kicker">
+              <div className="vc-logo"><div className="vc-logo-inner"></div><div className="vc-logo-play"></div></div>
+              The Conversion Library
+            </div>
+            <h1 className="hero-title">
+              <span className="line1">Smart Videos</span>
+              <span className="line2">Have A Formula.</span>
+              <span className="line3">Learn It. Own It. Make It Muscle Memory.</span>
+            </h1>
+            <div className="hero-stats">
+              <div><div className="hero-stat-num">{allArticles.length}</div><div className="hero-stat-label">Published</div></div>
+              <div className="stat-div"></div>
+              <div><div className="hero-stat-num">{totalFree}</div><div className="hero-stat-label">Free to read</div></div>
+              <div className="stat-div"></div>
+              <div><div className="hero-stat-num">{totalMember}</div><div className="hero-stat-label">Premium exclusive</div></div>
+              <div className="stat-div"></div>
+              <div><div className="hero-stat-num">9</div><div className="hero-stat-label">Categories</div></div>
+            </div>
+          </div>
+          <div className="hero-brain">
+            <svg viewBox="0 0 260 210" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="libEg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#2ec4b0"/>
+                  <stop offset="40%" stopColor="#00aaff"/>
+                  <stop offset="100%" stopColor="#a050ff"/>
+                </linearGradient>
+                <radialGradient id="libBg" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#2ec4b0" stopOpacity="0.07"/>
+                  <stop offset="100%" stopColor="#0a0e1a" stopOpacity="0"/>
+                </radialGradient>
+                <filter id="libGlow">
+                  <feGaussianBlur stdDeviation="2.5" result="b"/>
+                  <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+                <filter id="libGlowS">
+                  <feGaussianBlur stdDeviation="5" result="b"/>
+                  <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+              </defs>
+              <ellipse cx="130" cy="110" rx="110" ry="90" fill="url(#libBg)"/>
+              <path d="M 104 182 C 96 182, 84 177, 78 169 C 66 153, 69 133, 64 119 C 58 102, 46 88, 52 67 C 57 48, 78 35, 98 32 C 109 29, 118 35, 127 29 C 138 22, 156 17, 170 23 C 187 30, 199 47, 201 64 C 204 78, 195 90, 198 105 C 201 120, 213 129, 211 145 C 208 162, 193 173, 178 176 C 170 178, 164 173, 158 176 C 152 179, 150 188, 141 191 C 132 194, 123 194, 115 191 C 110 189, 104 182, 104 182 Z" fill="none" stroke="url(#libEg)" strokeWidth="2" opacity="0.65" filter="url(#libGlow)"/>
+              <path d="M 158 176 C 164 170, 176 164, 188 164 C 200 164, 211 170, 213 181 C 215 190, 207 198, 196 198 C 184 198, 173 192, 164 186 C 161 183, 158 179, 158 176 Z" fill="none" stroke="url(#libEg)" strokeWidth="1.8" opacity="0.5" filter="url(#libGlow)"/>
+              <path d="M 127 188 C 127 197, 130 205, 132 209 C 134 205, 137 197, 137 188" fill="none" stroke="#2ec4b0" strokeWidth="1.8" opacity="0.45" filter="url(#libGlow)"/>
+              <path d="M 129 32 C 123 52, 121 76, 127 96" fill="none" stroke="#00aaff" strokeWidth="1.2" opacity="0.35" strokeDasharray="3 4"/>
+              <path d="M 78 116 C 98 107, 121 104, 144 107 C 165 110, 179 116, 191 124" fill="none" stroke="#2ec4b0" strokeWidth="1.2" opacity="0.35" strokeDasharray="3 4"/>
+              <path d="M 181 64 C 190 79, 193 94, 188 111" fill="none" stroke="#a050ff" strokeWidth="1" opacity="0.3" strokeDasharray="3 4"/>
+              <g stroke="url(#libEg)" strokeWidth="0.9" opacity="0.48" fill="none" filter="url(#libGlow)">
+                <line x1="98" y1="46" x2="118" y2="64"/><line x1="118" y1="64" x2="104" y2="84"/><line x1="104" y1="84" x2="80" y2="96"/><line x1="118" y1="64" x2="136" y2="72"/>
+                <line x1="136" y1="72" x2="156" y2="62"/><line x1="156" y1="62" x2="170" y2="76"/><line x1="170" y1="76" x2="184" y2="92"/><line x1="136" y1="72" x2="144" y2="90"/>
+                <line x1="144" y1="90" x2="158" y2="96"/><line x1="158" y1="96" x2="184" y2="92"/><line x1="144" y1="90" x2="144" y2="112"/><line x1="144" y1="112" x2="158" y2="120"/>
+                <line x1="158" y1="120" x2="184" y2="92"/><line x1="80" y1="96" x2="96" y2="116"/><line x1="96" y1="116" x2="120" y2="120"/><line x1="120" y1="120" x2="144" y2="112"/>
+                <line x1="120" y1="120" x2="132" y2="140"/><line x1="132" y1="140" x2="158" y2="120"/><line x1="104" y1="84" x2="96" y2="116"/><line x1="136" y1="72" x2="120" y2="120"/>
+                <line x1="132" y1="140" x2="118" y2="156"/><line x1="118" y1="156" x2="132" y2="168"/><line x1="132" y1="168" x2="158" y2="156"/><line x1="158" y1="156" x2="170" y2="140"/>
+                <line x1="170" y1="140" x2="158" y2="120"/><line x1="132" y1="168" x2="128" y2="182"/><line x1="158" y1="156" x2="178" y2="160"/><line x1="178" y1="160" x2="188" y2="148"/>
+                <line x1="188" y1="148" x2="184" y2="92"/>
+              </g>
+              <g fill="none" filter="url(#libGlow)">
+                <line className="bef" x1="98" y1="46" x2="184" y2="92" stroke="#2ec4b0" strokeWidth="1.4" opacity="0.65"/>
+                <line className="bef" x1="80" y1="96" x2="184" y2="92" stroke="#00aaff" strokeWidth="1.3" opacity="0.55" style={{animationDelay:'0.8s'}}/>
+                <line className="bef" x1="96" y1="116" x2="188" y2="148" stroke="#a050ff" strokeWidth="1.1" opacity="0.5" style={{animationDelay:'1.4s'}}/>
+                <line className="bef" x1="118" y1="156" x2="188" y2="148" stroke="#2ec4b0" strokeWidth="1.1" opacity="0.5" style={{animationDelay:'0.4s'}}/>
+                <line className="bef" x1="132" y1="140" x2="170" y2="140" stroke="#00aaff" strokeWidth="1" opacity="0.45" style={{animationDelay:'1.0s'}}/>
+              </g>
+              <g filter="url(#libGlowS)">
+                <circle className="bnp" cx="136" cy="72" r="4" fill="#2ec4b0" style={{animationDelay:'0s'}}/>
+                <circle className="bnp" cx="144" cy="90" r="3.5" fill="#2ec4b0" style={{animationDelay:'0.5s'}}/>
+                <circle className="bnp" cx="120" cy="120" r="4" fill="#2ec4b0" style={{animationDelay:'1s'}}/>
+                <circle className="bnp" cx="132" cy="140" r="3.5" fill="#2ec4b0" style={{animationDelay:'1.5s'}}/>
+                <circle className="bns" cx="98" cy="46" r="3" fill="#00aaff" style={{animationDelay:'0.2s'}}/>
+                <circle className="bns" cx="118" cy="64" r="2.5" fill="#00ccee" style={{animationDelay:'0.7s'}}/>
+                <circle className="bns" cx="156" cy="62" r="3" fill="#00aaff" style={{animationDelay:'1.1s'}}/>
+                <circle className="bns" cx="170" cy="76" r="2.5" fill="#00ccee" style={{animationDelay:'0.4s'}}/>
+                <circle className="bns" cx="184" cy="92" r="3" fill="#00aaff" style={{animationDelay:'0.9s'}}/>
+                <circle className="bns" cx="158" cy="96" r="2.5" fill="#00aaff" style={{animationDelay:'1.3s'}}/>
+                <circle className="bns" cx="80" cy="96" r="2.5" fill="#5090ff" style={{animationDelay:'0.6s'}}/>
+                <circle className="bns" cx="104" cy="84" r="2.5" fill="#5090ff" style={{animationDelay:'1.6s'}}/>
+                <circle className="bns" cx="96" cy="116" r="2.5" fill="#00aaff" style={{animationDelay:'0.3s'}}/>
+                <circle className="bns" cx="144" cy="112" r="2.5" fill="#00aaff" style={{animationDelay:'1.8s'}}/>
+                <circle className="bns" cx="158" cy="120" r="2.5" fill="#00ccee" style={{animationDelay:'0.8s'}}/>
+                <circle className="bns" cx="188" cy="148" r="2.5" fill="#00aaff" style={{animationDelay:'1.2s'}}/>
+                <circle className="bns" cx="118" cy="156" r="2.5" fill="#a050ff" style={{animationDelay:'0.5s'}}/>
+                <circle className="bns" cx="158" cy="156" r="2.5" fill="#a050ff" style={{animationDelay:'1.0s'}}/>
+                <circle className="bns" cx="170" cy="140" r="2.5" fill="#a050ff" style={{animationDelay:'1.7s'}}/>
+                <circle className="bns" cx="132" cy="168" r="2.5" fill="#a050ff" style={{animationDelay:'0.2s'}}/>
+                <circle className="bns" cx="178" cy="160" r="2" fill="#00aaff" style={{animationDelay:'1.4s'}}/>
+              </g>
+            </svg>
           </div>
         </div>
       </div>
