@@ -366,6 +366,881 @@ export default async function BlogArticlePage({ params }: PageProps) {
         /* ── Hero bg number ── */
         .hero-bg-number { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-family:'Encode Sans Expanded',sans-serif; font-weight:900; font-size:clamp(200px,40vw,380px); color:rgba(46,196,176,0.04); line-height:1; pointer-events:none; user-select:none; letter-spacing:-0.05em; }
 
+        /* ==========================================================================
+           NEW CSS FOR BLOG ARTICLES — 7 Articles Added
+           ========================================================================== */
+
+        /* ==================================================
+           What Is a Video Hook? Why the First 3 Seconds Determine Everything
+           blog-hook-free-what-is-a-hook.html
+           ================================================== */
+
+        .countdown-strip {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 0;
+          border: 1px solid #e0e0e0;
+          border-radius: 14px;
+          overflow: hidden;
+          margin: 36px 0;
+        }
+        .countdown-cell {
+          background: #ffffff;
+          padding: 28px 20px;
+          border-right: 1px solid #e0e0e0;
+        }
+        .countdown-cell:last-child {
+          border-right: none;
+        }
+        .countdown-second {
+          font-family: 'Encode Sans Expanded', sans-serif;
+          font-weight: 900;
+          font-size: 22px;
+          color: #1fa898;
+          line-height: 1;
+          margin-bottom: 8px;
+        }
+        .countdown-label {
+          font-size: 12px;
+          font-weight: 800;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: #1a1a1a;
+          margin-bottom: 10px;
+        }
+        .countdown-desc {
+          font-size: 14px;
+          font-weight: 600;
+          color: #666666;
+          line-height: 1.6;
+        }
+
+        /* ==================================================
+           Video Call to Action: Why Most CTAs Are Just Suggestions (And How to Fix Yours)
+           blog-cta-free.html
+           ================================================== */
+
+        /* CTA Strength Meter — visual weak-to-strong spectrum */
+        .cta-spectrum {
+          margin: 32px 0;
+          background: #ffffff;
+          border: 1px solid #e0e0e0;
+          border-radius: 14px;
+          overflow: hidden;
+        }
+        .cta-spectrum-track {
+          height: 8px;
+          background: linear-gradient(to right, #f87171 0%, #fbbf24 50%, #2ec4b0 100%);
+          width: 100%;
+        }
+        .cta-spectrum-examples {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          border-top: 1px solid #e0e0e0;
+        }
+        .cta-spectrum-col {
+          padding: 20px 18px;
+          border-right: 1px solid #e0e0e0;
+        }
+        .cta-spectrum-col:last-child { border-right: none; }
+        .cta-spectrum-rating {
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          margin-bottom: 10px;
+        }
+        .cta-spectrum-col:nth-child(1) .cta-spectrum-rating { color: #ef4444; }
+        .cta-spectrum-col:nth-child(2) .cta-spectrum-rating { color: #d97706; }
+        .cta-spectrum-col:nth-child(3) .cta-spectrum-rating { color: #1fa898; }
+        .cta-spectrum-example {
+          font-size: 14px;
+          font-weight: 700;
+          color: #1a1a1a;
+          line-height: 1.4;
+          margin-bottom: 8px;
+          font-style: italic;
+        }
+        .cta-spectrum-why {
+          font-size: 12px;
+          font-weight: 600;
+          color: #666666;
+          line-height: 1.5;
+        }
+
+        /* CTA Autopsy — dark dissection block */
+        .cta-autopsy {
+          background: #1a1a1a;
+          border-radius: 14px;
+          overflow: hidden;
+          margin: 32px 0;
+        }
+        .cta-autopsy-header {
+          padding: 20px 24px 0;
+        }
+        .cta-autopsy-kicker {
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: #2ec4b0;
+          margin-bottom: 8px;
+        }
+        .cta-autopsy-title {
+          font-family: 'Encode Sans Expanded', sans-serif;
+          font-weight: 900;
+          font-size: 18px;
+          color: #fff;
+          line-height: 1.2;
+          margin-bottom: 20px;
+        }
+        .cta-autopsy-sentence {
+          font-family: 'Encode Sans Expanded', sans-serif;
+          font-weight: 900;
+          font-size: clamp(16px, 2.5vw, 22px);
+          color: #fff;
+          line-height: 1.4;
+          padding: 16px 24px;
+          background: rgba(255,255,255,0.05);
+          border-top: 1px solid rgba(255,255,255,0.08);
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+          margin: 0 0 0 0;
+        }
+        .cta-autopsy-sentence .highlight-what { color: #2ec4b0; }
+        .cta-autopsy-sentence .highlight-when { color: #fbbf24; }
+        .cta-autopsy-sentence .highlight-why { color: #f472b6; }
+        .cta-autopsy-legend {
+          display: flex;
+          gap: 20px;
+          padding: 16px 24px;
+          flex-wrap: wrap;
+        }
+        .cta-autopsy-legend-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 12px;
+          font-weight: 700;
+          color: rgba(255,255,255,0.5);
+        }
+        .legend-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+        .legend-dot.what { background: #2ec4b0; }
+        .legend-dot.when { background: #fbbf24; }
+        .legend-dot.why { background: #f472b6; }
+        .cta-autopsy-breakdown {
+          border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .cta-autopsy-part {
+          display: grid;
+          grid-template-columns: 80px 1fr;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          align-items: stretch;
+        }
+        .cta-autopsy-part:last-child { border-bottom: none; }
+        .cta-autopsy-part-label {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          padding: 16px 8px;
+          text-align: center;
+          line-height: 1.3;
+        }
+        .cta-autopsy-part-label.what { color: #2ec4b0; }
+        .cta-autopsy-part-label.when { color: #fbbf24; }
+        .cta-autopsy-part-label.why { color: #f472b6; }
+        .cta-autopsy-part-body {
+          padding: 16px 20px;
+          border-left: 1px solid rgba(255,255,255,0.06);
+        }
+        .cta-autopsy-part-body p {
+          color: rgba(255,255,255,0.65);
+          font-size: 14px;
+          margin-bottom: 0;
+          line-height: 1.6;
+        }
+        .cta-autopsy-part-body strong { color: #fff; }
+
+        /* ==================================================
+           Video Measurement Readiness: If You Can't Track It, You Can't Improve It
+           blog-measurement-readiness-free.html
+           ================================================== */
+
+        /* Vanity vs Signal Table */
+        .metric-table {
+          margin: 32px 0;
+          border: 1px solid #e0e0e0;
+          border-radius: 14px;
+          overflow: hidden;
+        }
+        .metric-table-header {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          border-bottom: 2px solid #e0e0e0;
+        }
+        .metric-table-header-cell {
+          padding: 14px 20px;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+        }
+        .metric-table-header-cell.vanity {
+          background: #fff0f0;
+          color: #dc2626;
+          border-right: 1px solid #e0e0e0;
+        }
+        .metric-table-header-cell.signal {
+          background: #e0f7f4;
+          color: #1fa898;
+        }
+        .metric-table-rows { display: flex; flex-direction: column; }
+        .metric-table-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          border-bottom: 1px solid #e0e0e0;
+        }
+        .metric-table-row:last-child { border-bottom: none; }
+        .metric-cell {
+          padding: 14px 20px;
+          font-size: 14px;
+          font-weight: 700;
+          color: #1a1a1a;
+          line-height: 1.4;
+        }
+        .metric-cell.vanity-cell {
+          border-right: 1px solid #e0e0e0;
+          color: #666666;
+        }
+        .metric-cell.signal-cell {
+          color: #1a1a1a;
+        }
+
+        /* Tracking Mechanism Checklist */
+        .tracking-checklist {
+          display: flex;
+          flex-direction: column;
+          gap: 0;
+          border: 1px solid #e0e0e0;
+          border-radius: 14px;
+          overflow: hidden;
+          margin: 32px 0;
+        }
+        .tracking-item {
+          display: grid;
+          grid-template-columns: 52px 1fr;
+          align-items: stretch;
+          border-bottom: 1px solid #e0e0e0;
+        }
+        .tracking-item:last-child { border-bottom: none; }
+        .tracking-check {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #1a1a1a;
+          font-size: 18px;
+          padding: 0 14px;
+        }
+        .tracking-body {
+          background: #ffffff;
+          padding: 18px 20px;
+          border-left: 1px solid #e0e0e0;
+        }
+        .tracking-title {
+          font-family: 'Encode Sans Expanded', sans-serif;
+          font-weight: 900;
+          font-size: 14px;
+          color: #1a1a1a;
+          margin-bottom: 4px;
+        }
+        .tracking-desc {
+          font-size: 13px;
+          font-weight: 600;
+          color: #666666;
+          line-height: 1.55;
+          margin: 0;
+        }
+        .tracking-item.active .tracking-check { background: #1fa898; }
+        .tracking-item.active .tracking-body { background: #e0f7f4; }
+        .tracking-item.active .tracking-title { color: #1fa898; }
+
+        /* Improvement Loop — causal chain */
+        .improvement-loop {
+          display: flex;
+          align-items: center;
+          gap: 0;
+          margin: 32px 0;
+          background: #ffffff;
+          border: 1px solid #e0e0e0;
+          border-radius: 14px;
+          overflow: hidden;
+        }
+        .loop-step {
+          flex: 1;
+          padding: 20px 16px;
+          text-align: center;
+          border-right: 1px solid #e0e0e0;
+          position: relative;
+        }
+        .loop-step:last-child { border-right: none; }
+        .loop-step-num {
+          font-family: 'Encode Sans Expanded', sans-serif;
+          font-weight: 900;
+          font-size: 28px;
+          color: #2ec4b0;
+          line-height: 1;
+          margin-bottom: 6px;
+        }
+        .loop-step-title {
+          font-size: 12px;
+          font-weight: 800;
+          color: #1a1a1a;
+          line-height: 1.3;
+          margin-bottom: 4px;
+        }
+        .loop-step-desc {
+          font-size: 11px;
+          font-weight: 600;
+          color: #666666;
+          line-height: 1.4;
+        }
+        .loop-arrow {
+          font-size: 18px;
+          color: #2ec4b0;
+          flex-shrink: 0;
+          padding: 0 4px;
+          display: none; /* arrows shown via border-right instead */
+        }
+
+        /* ==================================================
+           Offer Clarity in Video Marketing: Why Confused Viewers Never Buy
+           blog-offer-clarity-free.html
+           ================================================== */
+
+        .stranger-test {
+          background: #1a1a1a;
+          border-radius: 14px;
+          padding: 36px 32px;
+          margin: 32px 0;
+          text-align: center;
+        }
+        .stranger-test-label {
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: #2ec4b0;
+          margin-bottom: 16px;
+        }
+        .stranger-test-question {
+          font-family: 'Encode Sans Expanded', sans-serif;
+          font-weight: 900;
+          font-size: clamp(20px, 3vw, 30px);
+          color: #fff;
+          line-height: 1.2;
+          margin-bottom: 24px;
+        }
+        .stranger-test-answers {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+          max-width: 560px;
+          margin: 0 auto;
+        }
+        .stranger-answer {
+          border-radius: 10px;
+          padding: 16px 18px;
+          font-size: 14px;
+          font-weight: 700;
+          line-height: 1.4;
+          text-align: left;
+        }
+        .stranger-answer.fail {
+          background: rgba(248,113,113,0.12);
+          border: 1px solid rgba(248,113,113,0.25);
+          color: rgba(255,255,255,0.6);
+        }
+        .stranger-answer.pass {
+          background: rgba(46,196,176,0.1);
+          border: 1px solid rgba(46,196,176,0.25);
+          color: rgba(255,255,255,0.85);
+        }
+        .stranger-answer .answer-icon {
+          display: block;
+          font-size: 16px;
+          margin-bottom: 6px;
+        }
+
+        .offer-anatomy {
+          display: flex;
+          flex-direction: column;
+          gap: 0;
+          border: 1px solid #e0e0e0;
+          border-radius: 14px;
+          overflow: hidden;
+          margin: 32px 0;
+        }
+        .offer-anatomy-row {
+          display: grid;
+          grid-template-columns: 140px 1fr;
+          align-items: stretch;
+          border-bottom: 1px solid #e0e0e0;
+        }
+        .offer-anatomy-row:last-child { border-bottom: none; }
+        .offer-anatomy-label {
+          background: #1a1a1a;
+          color: #2ec4b0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: 'Encode Sans Expanded', sans-serif;
+          font-weight: 900;
+          font-size: 11px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 20px 14px;
+          text-align: center;
+          line-height: 1.4;
+        }
+        .offer-anatomy-body {
+          background: #ffffff;
+          padding: 20px 22px;
+        }
+        .offer-anatomy-question {
+          font-size: 13px;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: #666666;
+          margin-bottom: 6px;
+        }
+        .offer-anatomy-answer {
+          font-size: 15px;
+          font-weight: 700;
+          color: #1a1a1a;
+          line-height: 1.5;
+          margin: 0;
+        }
+        .offer-anatomy-note {
+          font-size: 13px;
+          color: #666666;
+          margin-top: 6px;
+          line-height: 1.5;
+          font-weight: 600;
+        }
+
+        /* ==================================================
+           Video Platform Fit: Why the Right Video on the Wrong Platform Gets Ignored
+           blog-platform-fit-free.html
+           ================================================== */
+
+        /* Platform Cards — scannable per-platform breakdown */
+        .platform-cards {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          margin: 32px 0;
+        }
+        .platform-card {
+          display: grid;
+          grid-template-columns: 110px 1fr;
+          border: 1px solid #e0e0e0;
+          border-radius: 12px;
+          overflow: hidden;
+        }
+        .platform-card-label {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 20px 12px;
+          text-align: center;
+          gap: 6px;
+        }
+        .platform-card-icon {
+          font-size: 22px;
+          line-height: 1;
+        }
+        .platform-card-name {
+          font-family: 'Encode Sans Expanded', sans-serif;
+          font-weight: 900;
+          font-size: 11px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          line-height: 1.2;
+        }
+        /* Platform-specific colour coding */
+        .platform-card.youtube .platform-card-label { background: #fff0f0; }
+        .platform-card.youtube .platform-card-name { color: #dc2626; }
+        .platform-card.tiktok .platform-card-label { background: #f0f0ff; }
+        .platform-card.tiktok .platform-card-name { color: #4f46e5; }
+        .platform-card.instagram .platform-card-label { background: #fff0f8; }
+        .platform-card.instagram .platform-card-name { color: #9d174d; }
+        .platform-card.linkedin .platform-card-label { background: #f0f7ff; }
+        .platform-card.linkedin .platform-card-name { color: #1d4ed8; }
+        .platform-card-body {
+          background: #ffffff;
+          border-left: 1px solid #e0e0e0;
+          padding: 18px 20px;
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 12px;
+          align-items: start;
+        }
+        .platform-spec {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+        }
+        .platform-spec-label {
+          font-size: 9px;
+          font-weight: 800;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: #666666;
+        }
+        .platform-spec-value {
+          font-size: 14px;
+          font-weight: 800;
+          color: #1a1a1a;
+          line-height: 1.3;
+        }
+        .platform-spec-note {
+          font-size: 12px;
+          font-weight: 600;
+          color: #666666;
+          line-height: 1.4;
+        }
+
+        /* Wrong Platform Tax — loss-framing consequence block */
+        .platform-tax {
+          margin: 32px 0;
+          border: 1px solid rgba(248,113,113,0.25);
+          border-radius: 14px;
+          overflow: hidden;
+        }
+        .platform-tax-header {
+          background: #fff0f0;
+          padding: 14px 22px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .platform-tax-header-label {
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #dc2626;
+        }
+        .platform-tax-rows {
+          display: flex;
+          flex-direction: column;
+        }
+        .platform-tax-row {
+          display: grid;
+          grid-template-columns: 1fr auto;
+          align-items: center;
+          padding: 14px 22px;
+          border-bottom: 1px solid rgba(248,113,113,0.12);
+          gap: 16px;
+        }
+        .platform-tax-row:last-child { border-bottom: none; }
+        .platform-tax-scenario {
+          font-size: 14px;
+          font-weight: 700;
+          color: #1a1a1a;
+          line-height: 1.4;
+        }
+        .platform-tax-consequence {
+          font-size: 12px;
+          font-weight: 800;
+          color: #dc2626;
+          white-space: nowrap;
+          text-align: right;
+        }
+
+        /* ==================================================
+           Video Problem Clarity: Why Vague Pain Statements Kill Conversions
+           blog-problem-clarity-free.html
+           ================================================== */
+
+        /* Recognition Ladder — ascending specificity visual */
+        .recognition-ladder {
+          margin: 32px 0;
+          border: 1px solid #e0e0e0;
+          border-radius: 14px;
+          overflow: hidden;
+        }
+        .ladder-rung {
+          display: grid;
+          grid-template-columns: 56px 1fr;
+          align-items: stretch;
+          border-bottom: 1px solid #e0e0e0;
+        }
+        .ladder-rung:last-child { border-bottom: none; }
+        .ladder-rail {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: 'Encode Sans Expanded', sans-serif;
+          font-weight: 900;
+          font-size: 18px;
+          color: #fff;
+          padding: 0;
+        }
+        /* Each rung gets progressively more teal — visual encoding of specificity */
+        .ladder-rung:nth-child(1) .ladder-rail { background: #2a2a2a; color: rgba(255,255,255,0.3); }
+        .ladder-rung:nth-child(2) .ladder-rail { background: #1d3a38; color: rgba(46,196,176,0.5); }
+        .ladder-rung:nth-child(3) .ladder-rail { background: #1a4f4b; color: rgba(46,196,176,0.75); }
+        .ladder-rung:nth-child(4) .ladder-rail { background: #1fa898; color: #fff; }
+        .ladder-body {
+          background: #ffffff;
+          padding: 18px 22px;
+        }
+        .ladder-tag {
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #666666;
+          margin-bottom: 6px;
+        }
+        .ladder-rung:last-child .ladder-tag { color: #1fa898; }
+        .ladder-statement {
+          font-size: 15px;
+          font-weight: 700;
+          color: #1a1a1a;
+          line-height: 1.5;
+          margin-bottom: 4px;
+        }
+        .ladder-rung:last-child .ladder-body { background: #e0f7f4; }
+        .ladder-rung:last-child .ladder-statement { color: #1fa898; }
+        .ladder-note {
+          font-size: 13px;
+          font-weight: 600;
+          color: #666666;
+          line-height: 1.5;
+        }
+
+        /* Emotion Dial — a split card showing surface vs deep */
+        .emotion-dial {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0;
+          border: 1px solid #e0e0e0;
+          border-radius: 14px;
+          overflow: hidden;
+          margin: 32px 0;
+        }
+        .emotion-dial-side {
+          padding: 24px 22px;
+        }
+        .emotion-dial-side.surface {
+          background: #ffffff;
+          border-right: 1px solid #e0e0e0;
+        }
+        .emotion-dial-side.deep {
+          background: #1a1a1a;
+        }
+        .emotion-dial-label {
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          margin-bottom: 12px;
+        }
+        .emotion-dial-side.surface .emotion-dial-label { color: #666666; }
+        .emotion-dial-side.deep .emotion-dial-label { color: #2ec4b0; }
+        .emotion-dial-statement {
+          font-size: 15px;
+          font-weight: 700;
+          line-height: 1.55;
+          margin-bottom: 12px;
+        }
+        .emotion-dial-side.surface .emotion-dial-statement { color: #1a1a1a; }
+        .emotion-dial-side.deep .emotion-dial-statement { color: #fff; }
+        .emotion-dial-verdict {
+          font-size: 12px;
+          font-weight: 700;
+          line-height: 1.5;
+        }
+        .emotion-dial-side.surface .emotion-dial-verdict { color: #ef4444; }
+        .emotion-dial-side.deep .emotion-dial-verdict { color: #2ec4b0; }
+
+        /* Three Questions — Zeigarnik-effect numbered framework */
+        .question-stack {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          margin: 24px 0 32px;
+        }
+        .question-item {
+          display: grid;
+          grid-template-columns: 44px 1fr;
+          gap: 0;
+          border: 1px solid #e0e0e0;
+          border-radius: 12px;
+          overflow: hidden;
+        }
+        .question-num {
+          background: #1a1a1a;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: 'Encode Sans Expanded', sans-serif;
+          font-weight: 900;
+          font-size: 18px;
+          color: #2ec4b0;
+        }
+        .question-body {
+          background: #ffffff;
+          padding: 18px 20px;
+          border-left: 1px solid #e0e0e0;
+        }
+        .question-title {
+          font-family: 'Encode Sans Expanded', sans-serif;
+          font-weight: 900;
+          font-size: 15px;
+          color: #1a1a1a;
+          margin-bottom: 6px;
+          line-height: 1.3;
+        }
+        .question-desc {
+          font-size: 14px;
+          font-weight: 600;
+          color: #666666;
+          line-height: 1.6;
+          margin: 0;
+        }
+
+        /* ==================================================
+           Video Visual Communication: How Your Visuals Are Silently Judging Your Credibility
+           blog-visual-communication-free.html
+           ================================================== */
+
+        /* Signal Board — diagnostic panel of visual elements */
+        .signal-board {
+          background: #1a1a1a;
+          border-radius: 14px;
+          overflow: hidden;
+          margin: 32px 0;
+        }
+        .signal-board-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px 24px;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .signal-board-title {
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: #2ec4b0;
+        }
+        .signal-board-subtitle {
+          font-size: 11px;
+          font-weight: 700;
+          color: rgba(255,255,255,0.3);
+          letter-spacing: 0.06em;
+        }
+        .signal-board-rows {
+          display: flex;
+          flex-direction: column;
+        }
+        .signal-row {
+          display: grid;
+          grid-template-columns: 120px 1fr 80px;
+          align-items: center;
+          padding: 14px 24px;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          gap: 16px;
+        }
+        .signal-row:last-child { border-bottom: none; }
+        .signal-element {
+          font-size: 12px;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.5);
+        }
+        .signal-desc {
+          font-size: 14px;
+          font-weight: 600;
+          color: rgba(255,255,255,0.65);
+          line-height: 1.5;
+        }
+        .signal-impact {
+          font-family: 'Encode Sans Expanded', sans-serif;
+          font-weight: 900;
+          font-size: 13px;
+          text-align: right;
+          white-space: nowrap;
+        }
+        .signal-impact.high { color: #f87171; }
+        .signal-impact.medium { color: #fbbf24; }
+        .signal-impact.low { color: rgba(255,255,255,0.3); }
+
+        /* Fix/Fail Grid — side-by-side visual checklist */
+        .fix-fail-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0;
+          border: 1px solid #e0e0e0;
+          border-radius: 14px;
+          overflow: hidden;
+          margin: 32px 0;
+        }
+        .fix-fail-col {
+          padding: 0;
+        }
+        .fix-fail-col.fail { border-right: 1px solid #e0e0e0; }
+        .fix-fail-col-header {
+          padding: 14px 20px;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          border-bottom: 1px solid #e0e0e0;
+        }
+        .fix-fail-col.fail .fix-fail-col-header {
+          background: #fff0f0;
+          color: #dc2626;
+        }
+        .fix-fail-col.fix .fix-fail-col-header {
+          background: #e0f7f4;
+          color: #1fa898;
+        }
+        .fix-fail-items {
+          display: flex;
+          flex-direction: column;
+        }
+        .fix-fail-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          padding: 12px 20px;
+          border-bottom: 1px solid #e0e0e0;
+          font-size: 14px;
+          font-weight: 700;
+          color: #1a1a1a;
+          line-height: 1.4;
+        }
+        .fix-fail-item:last-child { border-bottom: none; }
+        .fix-fail-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+
+        /* END NEW CSS FOR BLOG ARTICLES */
+
         @media (max-width:600px) {
           .hero { padding:44px 20px 52px; }
           .article-wrap { padding:40px 20px 64px; }
@@ -373,12 +1248,45 @@ export default async function BlogArticlePage({ params }: PageProps) {
           .addon-cards { grid-template-columns:1fr; }
           .gratitude-body, .gratitude-cta-wrap { padding-left:20px; padding-right:20px; }
           .countdown-strip { grid-template-columns:1fr; }
-          .countdown-cell { border-right:none; border-bottom:1px solid rgba(255,255,255,0.07); }
+          .countdown-cell { border-right:none; border-bottom:1px solid #e0e0e0; }
           .countdown-cell:last-child { border-bottom:none; }
           .before-after { grid-template-columns:1fr; }
           .hook-row { grid-template-columns:52px 1fr; }
           .cta-section { padding:36px 20px; }
           .sources-section { padding-left:20px; padding-right:20px; }
+          
+          /* Mobile responsive for new components */
+          .cta-spectrum-examples { grid-template-columns: 1fr; }
+          .cta-spectrum-col { border-right: none; border-bottom: 1px solid #e0e0e0; }
+          .cta-spectrum-col:last-child { border-bottom: none; }
+          .cta-autopsy-part { grid-template-columns: 60px 1fr; }
+          .metric-table-header { grid-template-columns: 1fr; }
+          .metric-table-header-cell.vanity { border-right: none; border-bottom: 1px solid #e0e0e0; }
+          .metric-table-row { grid-template-columns: 1fr; }
+          .metric-cell.vanity-cell { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); }
+          .improvement-loop { flex-direction: column; }
+          .loop-step { border-right: none; border-bottom: 1px solid #e0e0e0; }
+          .loop-step:last-child { border-bottom: none; }
+          .stranger-test { padding: 28px 20px; }
+          .stranger-test-answers { grid-template-columns: 1fr; }
+          .offer-anatomy-row { grid-template-columns: 1fr; }
+          .offer-anatomy-label { padding: 12px 20px; justify-content: flex-start; text-align: left; }
+          .platform-card { grid-template-columns: 1fr; }
+          .platform-card-label { flex-direction: row; justify-content: flex-start; padding: 14px 16px; border-bottom: 1px solid #e0e0e0; }
+          .platform-card-body { grid-template-columns: 1fr 1fr; border-left: none; }
+          .platform-tax-row { grid-template-columns: 1fr; gap: 4px; }
+          .platform-tax-consequence { text-align: left; }
+          .ladder-rung { grid-template-columns: 44px 1fr; }
+          .ladder-rail { font-size: 14px; }
+          .emotion-dial { grid-template-columns: 1fr; }
+          .emotion-dial-side.surface { border-right: none; border-bottom: 1px solid #e0e0e0; }
+          .question-item { grid-template-columns: 36px 1fr; }
+          .question-num { font-size: 15px; }
+          .signal-row { grid-template-columns: 1fr; gap: 6px; }
+          .signal-impact { text-align: left; }
+          .signal-board-header { flex-direction: column; align-items: flex-start; gap: 4px; }
+          .fix-fail-grid { grid-template-columns: 1fr; }
+          .fix-fail-col.fail { border-right: none; border-bottom: 1px solid #e0e0e0; }
         }
       `}</style>
 
