@@ -840,12 +840,12 @@
 .blogTabBtn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 15px 14px;
+  gap: 6px;
+  padding: 15px 11px;
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 11px;
-  letter-spacing: 0.08em;
+  font-size: 10px;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: rgba(255,255,255,0.25);
   background: none;
