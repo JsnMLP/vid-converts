@@ -151,7 +151,7 @@ export default function Home() {
         title: "The CSP Playbook: Expert Advice for Camera-Shy People Who Still Want to Convert",
         excerpt: "Four field-tested strategies from neuroscience and performance psychology for people who hate the camera.",
         meta: "5 min · April 2026",
-        free: true,
+        free: false,
       },
       {
         title: "Frame, Light, Distance: The Camera Setup That Makes You Look Confident Before You Feel It",
