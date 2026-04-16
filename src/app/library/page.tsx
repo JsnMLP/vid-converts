@@ -119,12 +119,16 @@ export default async function LibraryPage() {
         .plan-pill.premium { background:rgba(46,196,176,0.12); border:1px solid rgba(46,196,176,0.25); color:#2ec4b0; }
         .plan-pill.free { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.3); }
 
-        .gate-banner { background:rgba(46,196,176,0.05); border-bottom:1px solid rgba(46,196,176,0.1); padding:14px 48px; display:flex; align-items:center; justify-content:space-between; gap:24px; }
+        .page-wrap { max-width:1200px; margin:0 auto; padding:0 48px; }
+
+        .gate-banner { background:rgba(46,196,176,0.05); border-bottom:1px solid rgba(46,196,176,0.1); padding:14px 0; }
+        .gate-banner-inner { max-width:1200px; margin:0 auto; padding:0 48px; display:flex; align-items:center; justify-content:space-between; gap:24px; }
         .gate-banner-text { font-size:13px; font-weight:700; color:rgba(255,255,255,0.35); }
         .gate-banner-text strong { color:#2ec4b0; }
         .gate-banner-btn { background:#2ec4b0; color:#0a0e1a; font-family:'Encode Sans Expanded',sans-serif; font-weight:900; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; padding:9px 18px; border-radius:6px; text-decoration:none; white-space:nowrap; flex-shrink:0; }
 
-        .hero { padding:52px 48px 44px; border-bottom:1px solid rgba(255,255,255,0.05); }
+        .hero { padding:52px 0 44px; border-bottom:1px solid rgba(255,255,255,0.05); }
+        .hero-inner { max-width:1200px; margin:0 auto; padding:0 48px; }
         .hero-kicker { display:inline-flex; align-items:center; gap:8px; font-size:10px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:#2ec4b0; margin-bottom:14px; }
         .hero-title { font-family:'Encode Sans Expanded',sans-serif; font-weight:900; font-size:clamp(34px,5vw,58px); line-height:1.0; color:#fff; margin-bottom:14px; }
         .hero-title span { color:#2ec4b0; }
@@ -134,7 +138,7 @@ export default async function LibraryPage() {
         .hero-stat-label { font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:rgba(255,255,255,0.18); }
         .stat-div { width:1px; height:32px; background:rgba(255,255,255,0.06); }
 
-        .lib-layout { display:grid; grid-template-columns:200px 1fr; }
+        .lib-layout { max-width:1200px; margin:0 auto; padding:0 48px; display:grid; grid-template-columns:200px 1fr; }
 
         .sidebar { border-right:1px solid rgba(255,255,255,0.05); padding:28px 0; position:sticky; top:57px; height:calc(100vh - 57px); overflow-y:auto; scrollbar-width:none; }
         .sidebar::-webkit-scrollbar { display:none; }
@@ -187,10 +191,10 @@ export default async function LibraryPage() {
         .lib-footer .converts { color:#fff; }
 
         @media (max-width:960px) {
-          .topbar, .hero, .gate-banner { padding-left:24px; padding-right:24px; }
+          .gate-banner-inner, .hero-inner, .lib-layout { padding-left:24px; padding-right:24px; }
           .lib-layout { grid-template-columns:1fr; }
           .sidebar { display:none; }
-          .lib-main { padding:28px 24px 60px; }
+          .lib-main { padding:28px 0 60px; }
           .article-grid { grid-template-columns:1fr 1fr; }
           .upgrade-cta { flex-direction:column; align-items:flex-start; }
         }
@@ -215,26 +219,30 @@ export default async function LibraryPage() {
       {/* GATE BANNER — free users */}
       {!isPremium && (
         <div className="gate-banner">
-          <p className="gate-banner-text">
-            <strong>Premium</strong> unlocks every article in the library — all categories, no limits, anytime.
-          </p>
-          <a href="/pricing" className="gate-banner-btn">Upgrade to Premium &rarr;</a>
+          <div className="gate-banner-inner">
+            <p className="gate-banner-text">
+              <strong>Premium</strong> unlocks every article in the library — all categories, no limits, anytime.
+            </p>
+            <a href="/pricing" className="gate-banner-btn">Upgrade to Premium &rarr;</a>
+          </div>
         </div>
       )}
 
       {/* HERO */}
       <div className="hero">
-        <div className="hero-kicker"><div className="node"></div> The Conversion Library</div>
-        <h1 className="hero-title">Every Article.<br /><span>One Place.</span></h1>
-        <p className="hero-desc">Psychology, neuroscience, and field-tested strategy — organised by the 8 rubric categories that determine whether your video converts.</p>
-        <div className="hero-stats">
-          <div><div className="hero-stat-num">{allArticles.length}</div><div className="hero-stat-label">Published</div></div>
-          <div className="stat-div"></div>
-          <div><div className="hero-stat-num">{totalFree}</div><div className="hero-stat-label">Free to read</div></div>
-          <div className="stat-div"></div>
-          <div><div className="hero-stat-num">{totalMember}</div><div className="hero-stat-label">Premium exclusive</div></div>
-          <div className="stat-div"></div>
-          <div><div className="hero-stat-num">9</div><div className="hero-stat-label">Categories</div></div>
+        <div className="hero-inner">
+          <div className="hero-kicker"><div className="node"></div> The Conversion Library</div>
+          <h1 className="hero-title">Every Article.<br /><span>One Place.</span></h1>
+          <p className="hero-desc">Psychology, neuroscience, and field-tested strategy — organised by the 8 rubric categories that determine whether your video converts.</p>
+          <div className="hero-stats">
+            <div><div className="hero-stat-num">{allArticles.length}</div><div className="hero-stat-label">Published</div></div>
+            <div className="stat-div"></div>
+            <div><div className="hero-stat-num">{totalFree}</div><div className="hero-stat-label">Free to read</div></div>
+            <div className="stat-div"></div>
+            <div><div className="hero-stat-num">{totalMember}</div><div className="hero-stat-label">Premium exclusive</div></div>
+            <div className="stat-div"></div>
+            <div><div className="hero-stat-num">9</div><div className="hero-stat-label">Categories</div></div>
+          </div>
         </div>
       </div>
 
