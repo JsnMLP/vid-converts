@@ -776,8 +776,8 @@
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-  color: rgba(255,255,255,0.25);
-  font-size: 20px;
+  color: var(--teal);
+  font-size: 28px;
   line-height: 1;
   pointer-events: none;
   background: linear-gradient(to right, transparent, #0d1117 60%);
@@ -895,7 +895,7 @@
   border: 1px solid rgba(255,255,255,0.09);
 }
 
-.blogCardLock { font-size: 13px; opacity: 0.28; }
+.blogCardLock { font-size: 18px; opacity: 0.75; }
 
 .blogCardTitle {
   font-family: var(--font-display);
