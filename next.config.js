@@ -3,6 +3,15 @@ const nextConfig = {
   images: {
     domains: ['lh3.googleusercontent.com'],
   },
+  async redirects() {
+    return [
+      {
+        source: '/report/:id',
+        destination: '/reports/:id',
+        permanent: true,
+      },
+    ]
+  },
   async headers() {
     return [
       {
