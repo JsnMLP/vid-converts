@@ -358,6 +358,13 @@ export default function Home() {
                 </button>
               ))}
             </div>
+            <div className={styles.blogTabsScrollHint} aria-hidden>
+              <span className={styles.blogTabsScrollHintLabel}>more</span>
+              <div className={styles.blogTabsScrollHintChevrons}>
+                <span>›</span>
+                <span>›</span>
+              </div>
+            </div>
             </div>
 
             {/* Tab cards */}
