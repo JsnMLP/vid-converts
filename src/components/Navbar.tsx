@@ -50,6 +50,10 @@ export default function Navbar({ user, onSignIn }: NavbarProps) {
     <nav className={styles.nav} ref={menuRef}>
       <div className={styles.inner}>
         <Link href="/" className={styles.logo} onClick={() => setMenuOpen(false)}>
+          <span className={styles.vcOrb}>
+            <span className={styles.vcOrbInner} />
+            <span className={styles.vcOrbPlay} />
+          </span>
           <BrandLogo />
         </Link>
 
