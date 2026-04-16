@@ -45,16 +45,17 @@ export default function Home() {
   const tabCards: Record<string, TabCard[]> = {
     hook: [
       {
+        slug: "what-is-video-hook-3-seconds",
+        title: "What Is a Video Hook and Why Do 70% of Viewers Leave in 3 Seconds?",
+        excerpt: "Your video's best content means nothing if nobody stays to see it. Here's the neuroscience behind the first 3 seconds — and why most hooks fail before they begin.",
+        meta: "4 min · April 2026",
+        free: true,
+      },
+      {
         slug: "hook-3-seconds",
         title: "Your Hook Has 3 Seconds. Here's How to Use All of Them.",
         excerpt: "The algorithm doesn't kill your videos. Your opening does. Here's the neuroscience of why — and how to fix it.",
         meta: "7 min · April 2026",
-        free: false,
-      },
-      {
-        title: "The 3-Second Decision: What Neuroscience Says About Hooks That Stop the Scroll",
-        excerpt: "Your viewer's brain makes a stay-or-leave decision in under 400ms. Here's what it's scanning for.",
-        meta: "Coming soon",
         free: false,
       },
       {
@@ -66,9 +67,10 @@ export default function Home() {
     ],
     problem_clarity: [
       {
-        title: "The Pain Precision Framework: How to Name Your Viewer's Problem So Clearly They Feel Seen",
-        excerpt: "Vague pain statements get ignored. Specific ones stop the scroll. Here's how to articulate your viewer's problem better than they can.",
-        meta: "Coming soon",
+        slug: "video-problem-statement-examples",
+        title: "Video Problem Statement Examples: Surface Pain vs. Deep Pain",
+        excerpt: "Naming a problem isn't enough. Your viewer needs to feel you understand it. Here's the difference between surface-level pain and the deep pain that actually converts.",
+        meta: "4 min · April 2026",
         free: true,
       },
       {
@@ -86,9 +88,10 @@ export default function Home() {
     ],
     offer_clarity: [
       {
-        title: "Why Your Offer Lands Flat on Video — And the One Reframe That Fixes It",
-        excerpt: "The problem is not your offer. It is the sequence your brain presents it in. One structural shift changes everything.",
-        meta: "Coming soon",
+        slug: "video-offer-clarity",
+        title: "Video Offer Clarity: Why Confused Viewers Never Buy",
+        excerpt: "A stranger watched your video. Do they know what you're selling? If the answer isn't an immediate yes, you're losing conversions before the CTA.",
+        meta: "4 min · April 2026",
         free: true,
       },
       {
@@ -127,9 +130,10 @@ export default function Home() {
     ],
     cta: [
       {
-        title: "The CTA Science: Why Most Calls to Action Fail and How to Write One That Converts",
-        excerpt: "The exact structure of a CTA that triggers action — and the common mistakes that make viewers scroll past.",
-        meta: "Coming soon",
+        slug: "video-call-to-action-psychology",
+        title: "Video Call to Action Psychology: Why Most CTAs Are Just Suggestions",
+        excerpt: "You probably think you have a CTA. You might just have a suggestion. Here's the measurable difference — and the structure that makes viewers actually act.",
+        meta: "4 min · April 2026",
         free: true,
       },
       {
@@ -147,16 +151,17 @@ export default function Home() {
     ],
     visual_communication: [
       {
+        slug: "video-visual-credibility",
+        title: "Video Visual Credibility: How Your Visuals Are Silently Judging You",
+        excerpt: "Before you say a word, your visuals have already said something. Make sure it's the right thing. Here's what your lighting, framing and background are quietly communicating.",
+        meta: "4 min · April 2026",
+        free: true,
+      },
+      {
         slug: "csp-playbook",
         title: "The CSP Playbook: Expert Advice for Camera-Shy People Who Still Want to Convert",
         excerpt: "Four field-tested strategies from neuroscience and performance psychology for people who hate the camera.",
         meta: "5 min · April 2026",
-        free: false,
-      },
-      {
-        title: "Frame, Light, Distance: The Camera Setup That Makes You Look Confident Before You Feel It",
-        excerpt: "Your environment is working for you or against you. Here is the exact setup that removes anxiety signals.",
-        meta: "Coming soon",
         free: false,
       },
       {
@@ -168,9 +173,10 @@ export default function Home() {
     ],
     platform_fit: [
       {
-        title: "Wrong Platform, Wrong Format: Why Great Videos Fail Before Anyone Watches Them",
-        excerpt: "The best video in the world underperforms on the wrong platform. Here's how to match format to where your audience lives.",
-        meta: "Coming soon",
+        slug: "video-platform-comparison",
+        title: "Video Platform Comparison: YouTube vs TikTok vs Instagram vs LinkedIn",
+        excerpt: "A great video formatted for the wrong platform gets ignored. Here is what each platform actually rewards — and how to match format to where your audience lives.",
+        meta: "4 min · April 2026",
         free: true,
       },
       {
@@ -188,9 +194,10 @@ export default function Home() {
     ],
     measurement_readiness: [
       {
-        title: "Are You Measuring the Right Things? The Video Metrics That Actually Predict Revenue",
-        excerpt: "Views and likes don't pay the bills. Here's the measurement framework that connects video performance to business outcomes.",
-        meta: "Coming soon",
+        slug: "video-marketing-metrics",
+        title: "Video Marketing Metrics That Matter: How to Measure What Actually Drives Conversions",
+        excerpt: "Most creators have no idea if their video is working. Views and likes don't pay the bills. Here are the metrics that actually predict revenue.",
+        meta: "4 min · April 2026",
         free: true,
       },
       {
