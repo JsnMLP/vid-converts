@@ -95,6 +95,31 @@ export default async function LibraryPage() {
     })
   }
 
+  // Placeholder articles for categories with no published content yet
+  const PLACEHOLDERS: Record<string, {title: string, excerpt: string}[]> = {
+    hook: [
+      { title: "The 3-Second Decision: What Neuroscience Says About Hooks That Stop the Scroll", excerpt: "Your viewer's brain makes a stay-or-leave decision in under 400ms. Here's what it's scanning for." },
+    ],
+    problem_clarity: [
+      { title: "The Pain Precision Framework: How to Name Your Viewer's Problem So Clearly They Feel Seen", excerpt: "Vague pain statements get ignored. Specific ones stop the scroll. Here's how to articulate your viewer's problem better than they can." },
+    ],
+    offer_clarity: [
+      { title: "Why Your Offer Lands Flat on Video — And the One Reframe That Fixes It", excerpt: "The problem is not your offer. It is the sequence your brain presents it in. One structural shift changes everything." },
+    ],
+    cta: [
+      { title: "The CTA Science: Why Most Calls to Action Fail and How to Write One That Converts", excerpt: "The exact structure of a CTA that triggers action — and the common mistakes that make viewers scroll past." },
+    ],
+    visual_communication: [
+      { title: "Frame, Light, Distance: The Camera Setup That Makes You Look Confident Before You Feel It", excerpt: "Your environment is working for you or against you. Here is the exact setup that removes anxiety signals." },
+    ],
+    platform_fit: [
+      { title: "Wrong Platform, Wrong Format: Why Great Videos Fail Before Anyone Watches Them", excerpt: "The best video in the world underperforms on the wrong platform. Here's how to match format to where your audience lives." },
+    ],
+    measurement_readiness: [
+      { title: "Are You Measuring the Right Things? The Video Metrics That Actually Predict Revenue", excerpt: "Views and likes don't pay the bills. Here's the measurement framework that connects video performance to business outcomes." },
+    ],
+  }
+
   const totalFree = allArticles.filter(a => a.tier === 'free').length
   const totalMember = allArticles.filter(a => a.tier === 'member').length
 
@@ -204,6 +229,7 @@ export default async function LibraryPage() {
 
         .card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:10px; border-top:1px solid rgba(255,255,255,0.04); }
         .card-meta { font-size:9px; font-weight:700; color:rgba(255,255,255,0.1); letter-spacing:0.04em; }
+        .card-meta.coming-soon { color:rgba(255,255,255,0.18); font-style:italic; }
         .card-arrow { font-size:12px; color:#2ec4b0; opacity:0.3; transition:opacity 0.2s, transform 0.2s; }
         .article-card:not(.locked):hover .card-arrow { opacity:1; transform:translateX(3px); }
 
@@ -378,7 +404,24 @@ export default async function LibraryPage() {
                 </div>
 
                 {catArticles.length === 0 ? (
-                  <p className="cat-empty">Articles coming soon.</p>
+                  <div className="article-grid">
+                    {(PLACEHOLDERS[cat.id] || []).map((ph, i) => (
+                      <div key={i} className="article-card locked">
+                        <div className="card-top">
+                          <span className="badge member">⭐ Premium</span>
+                          <span className="card-lock">🔒</span>
+                        </div>
+                        <div className="card-title">{ph.title}</div>
+                        <p className="card-excerpt blurred">{ph.excerpt}</p>
+                        <div className="card-footer">
+                          <span className="card-meta coming-soon">Coming soon</span>
+                        </div>
+                      </div>
+                    ))}
+                    {(!PLACEHOLDERS[cat.id] || PLACEHOLDERS[cat.id].length === 0) && (
+                      <p className="cat-empty">Articles coming soon.</p>
+                    )}
+                  </div>
                 ) : (
                   <>
                     <div className="article-grid">
