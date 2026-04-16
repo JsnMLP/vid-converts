@@ -49,7 +49,7 @@ export default function Home() {
         title: "Your Hook Has 3 Seconds. Here's How to Use All of Them.",
         excerpt: "The algorithm doesn't kill your videos. Your opening does. Here's the neuroscience of why — and how to fix it.",
         meta: "7 min · April 2026",
-        free: true,
+        free: false,
       },
       {
         title: "The 3-Second Decision: What Neuroscience Says About Hooks That Stop the Scroll",

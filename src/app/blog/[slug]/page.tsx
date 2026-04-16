@@ -90,7 +90,7 @@ export default async function BlogArticlePage({ params }: PageProps) {
     userPlan = sub?.plan ?? null
   }
 
-  // Fetch article — RLS controls access at database level
+  // Fetch article — try to get full article first
   const { data: article, error } = await supabase
     .from('articles')
     .select('id, slug, title, subtitle, tier, rubric_category, body_html, excerpt, read_minutes, published_at')
@@ -98,12 +98,19 @@ export default async function BlogArticlePage({ params }: PageProps) {
     .eq('status', 'published')
     .single()
 
-  // Not returned — show gate or 404
+  // If no article returned, check if it exists but is gated
   if (error || !article) {
-    const { data: meta } = await supabase
+    // Use anon key directly to bypass RLS for metadata only
+    const anonSupabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { cookies: { getAll: () => [], setAll: () => {} } }
+    )
+    const { data: meta } = await anonSupabase
       .from('articles')
       .select('tier, title, excerpt, rubric_category')
       .eq('slug', params.slug)
+      .eq('status', 'published')
       .maybeSingle()
 
     if (meta) return <ArticleGate article={meta} userPlan={userPlan} />
