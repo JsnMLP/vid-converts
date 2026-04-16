@@ -73,7 +73,15 @@ export default async function LibraryPage() {
   // Complete members have no library — redirect to dashboard
   if (isComplete) redirect('/dashboard')
 
-  const { data: articles } = await supabase
+  // Use a fresh client with no session cookies so RLS doesn't filter by tier
+  // We control access in the UI — all published articles show, member ones are locked
+  const anonSupabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { getAll: () => [], setAll: () => {} } }
+  )
+
+  const { data: articles } = await anonSupabase
     .from('articles')
     .select('id, slug, title, excerpt, tier, rubric_category, read_minutes, published_at')
     .eq('status', 'published')
