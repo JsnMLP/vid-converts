@@ -1314,6 +1314,36 @@ export default async function BlogArticlePage({ params }: PageProps) {
         }}
       />
 
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: 'https://www.vidconverts.com',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Blog',
+                item: 'https://www.vidconverts.com/library',
+              },
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: article.title,
+                item: `https://www.vidconverts.com/blog/${article.slug}`,
+              },
+            ],
+          }),
+        }}
+      />
+
       {/* TOP BAR */}
       <div className="topbar">
         <a href="/" className="topbar-brand">
