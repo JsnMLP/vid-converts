@@ -74,9 +74,10 @@ export default function Home() {
         free: true,
       },
       {
-        title: "Before & After States: The Psychological Bridge That Makes Viewers Trust Your Solution",
-        excerpt: "The brain doesn't buy solutions. It buys distance from pain. Here's how to map that distance on video.",
-        meta: "Coming soon",
+        slug: "problem-statement-deep-frustration-framework",
+        title: "How to Write a Problem Statement That Makes Your Viewer Feel Seen",
+        excerpt: "The free article showed you levels. This is the excavation work underneath — 5 questions to find deep frustration, before-and-after rewrites across 5 niches, and how to be specific without narrowing your audience.",
+        meta: "4 min · April 2026",
         free: false,
       },
       {
@@ -95,9 +96,10 @@ export default function Home() {
         free: true,
       },
       {
-        title: "The Outcome Stack: How to Layer Benefits So Each One Builds Desire for the Next",
-        excerpt: "One benefit isn't enough. Here's the stacking sequence that makes viewers feel like they'd be foolish not to act.",
-        meta: "Coming soon",
+        slug: "offer-clarity-video-framework",
+        title: "How to Write an Irresistible Offer Description for Video",
+        excerpt: "The 4-part framework with fill-in templates, rewrites across 5 niches, a jargon audit, offer stacking, and the 30-second stranger test.",
+        meta: "4 min · April 2026",
         free: false,
       },
       {
@@ -116,9 +118,10 @@ export default function Home() {
         free: true,
       },
       {
-        title: "Social Proof on Video: The Hierarchy That Makes Testimonials Actually Convert",
-        excerpt: "Not all social proof is equal. Here's the credibility hierarchy that makes viewers believe what they're seeing.",
-        meta: "Coming soon",
+        slug: "trust-proof-video-system",
+        title: "The Trust Stack: How to Build Credibility Into Every Video You Post",
+        excerpt: "Showing up on camera earns the first layer of trust. Here's how to build the rest — systematically, compounding, and in a way your competitors can't copy.",
+        meta: "4 min · April 2026",
         free: false,
       },
       {
@@ -137,9 +140,10 @@ export default function Home() {
         free: true,
       },
       {
-        title: "Friction Mapping: How to Identify and Remove Every Mental Obstacle Between Viewer and Click",
-        excerpt: "Every objection your viewer has is a friction point. Here's how to map them and dissolve them before they form.",
-        meta: "Coming soon",
+        slug: "cta-video-conversion-framework",
+        title: "How to Write a Video CTA That Converts: The What, When and Why Framework",
+        excerpt: "12 CTA formulas, an urgency language vault, rewrites across 5 niches, the objection-removal CTA, and platform-specific placement — all in one playbook.",
+        meta: "4 min · April 2026",
         free: false,
       },
       {
@@ -180,9 +184,10 @@ export default function Home() {
         free: true,
       },
       {
-        title: "The Algorithm Alignment Framework: How to Format Videos That Platforms Actually Promote",
-        excerpt: "Platforms reward specific behaviours. Here's exactly what each major platform is optimising for right now.",
-        meta: "Coming soon",
+        slug: "platform-fit-repurposing-playbook",
+        title: "The Platform Fit Playbook: How to Adapt One Video for Every Major Platform Without Starting Over",
+        excerpt: "Film once, adapt four times — the complete repurposing system for YouTube, TikTok, Instagram and LinkedIn without recreating your content from scratch each time.",
+        meta: "4 min · April 2026",
         free: false,
       },
       {
@@ -201,9 +206,10 @@ export default function Home() {
         free: true,
       },
       {
-        title: "The Drop-Off Map: How to Read Your Retention Graph and Know Exactly Where Your Video Breaks",
-        excerpt: "Every retention dip is a message. Here's how to decode what your audience is telling you with their attention.",
-        meta: "Coming soon",
+        slug: "video-measurement-playbook",
+        title: "The Video Measurement Playbook: How to Build a Feedback Loop That Makes Every Video Better Than the Last",
+        excerpt: "UTM setup, attribution models, platform analytics interpretation, bottleneck diagnosis, and the 30-day improvement protocol for iterating every video.",
+        meta: "4 min · April 2026",
         free: false,
       },
       {
