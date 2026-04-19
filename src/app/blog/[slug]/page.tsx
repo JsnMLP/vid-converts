@@ -131,6 +131,24 @@ export default async function BlogArticlePage({ params }: PageProps) {
         html { scroll-behavior: smooth; }
         body { background: #f5f5f5; color: #1a1a1a; font-family: 'Mulish', sans-serif; font-size: 17px; line-height: 1.75; -webkit-font-smoothing: antialiased; }
 
+        /* ═════════════════════════════════════════════════════════════════ */
+        /* DESIGN TOKENS — use these in inline styles within article body_html */
+        /* to prevent the invisible-link bug documented in v4 Section 2a.     */
+        /* Existing hex literals throughout this file still work unchanged.  */
+        /* ═════════════════════════════════════════════════════════════════ */
+        :root {
+          --ink: #1a1a1a;
+          --paper: #f5f5f5;
+          --white: #ffffff;
+          --teal: #2ec4b0;
+          --teal-dark: #1fa898;
+          --teal-light: #e0f7f4;
+          --rule: #e0e0e0;
+          --muted: #666666;
+          --font-display: 'Encode Sans Expanded', sans-serif;
+          --font-body: 'Mulish', sans-serif;
+        }
+
         /* ── Node ── */
         .node { display:inline-block; width:20px; height:20px; border-radius:50%; background:radial-gradient(circle at 38% 35%, #5ef0de 0%, #2ec4b0 45%, #1a8a7d 100%); border:3px solid #1a1a1a; box-shadow:0 0 0 2px #2ec4b0, inset 0 1px 3px rgba(255,255,255,0.4); vertical-align:middle; flex-shrink:0; position:relative; }
         .node::after { content:''; position:absolute; top:2px; left:3px; width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,0.55); }
