@@ -10,6 +10,11 @@ const nextConfig = {
         destination: '/reports/:id',
         permanent: true,
       },
+      {
+        source: '/library/:slug',
+        destination: '/blog/:slug',
+        permanent: true,
+      },
     ]
   },
   async headers() {
